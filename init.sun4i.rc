@@ -10,7 +10,7 @@ on init
 
 on fs
     mount ext4 /dev/block/nandd /system wait ro
-    mount ext4 /dev/block/nande /data wait noatime nosuid nodev
+    mount ext4 /dev/block/nande /data wait noatime nodev
     mount ext4 /dev/block/nandh /cache wait noatime nosuid nodev
 
 on boot	
