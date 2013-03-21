@@ -6,6 +6,7 @@
 
 import /init.sun4i.rc
 import /init.sun4i.usb.rc
+import /init.trace.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -137,7 +138,7 @@ loglevel 3
     # Mount /system rw first to give the filesystem a chance to save a checkpoint
 #    mount yaffs2 mtd@system /system
 #    mount yaffs2 mtd@system /system ro remount
-#    mount yaffs2 mtd@userdata /data nosuid nodev
+#    mount yaffs2 mtd@userdata /data nodev
 #    mount yaffs2 mtd@cache /cache nosuid nodev
 
 on post-fs
@@ -291,6 +292,7 @@ on boot
     chown radio system /sys/android_power/acquire_full_wake_lock
     chown radio system /sys/android_power/acquire_partial_wake_lock
     chown radio system /sys/android_power/release_wake_lock
+    chown system system /sys/power/autosleep
     chown system system /sys/power/state
     chown system system /sys/power/wakeup_count
     chown radio system /sys/power/wake_lock
@@ -499,12 +501,12 @@ service media /system/bin/mediaserver
     group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
     ioprio rt 4
 
-service bootanim /system/bin/bootanimation
-    class main
-    user graphics
-    group graphics
-    disabled
-    oneshot
+#service bootanim /system/bin/bootanimation
+#    class main
+#    user graphics
+#    group graphics
+#    disabled
+#    oneshot
 
 service dbus /system/bin/dbus-daemon --system --nofork
     class main
@@ -563,6 +565,18 @@ service mdnsd /system/bin/mdnsd
     group inet net_raw
     socket mdnsd stream 0660 mdnsr inet
     disabled
+    oneshot
+
+service sensorservice /system/bin/sensorservice
+    class main
+    user system
+    group graphics audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
+
+service ubuntuappmanager /system/bin/ubuntuappmanager
+    class main
+
+service ubuntu_chroot /system/bin/ubuntu_chroot
+    class main
     oneshot
 
 on property:sys.boot_completed=1
