@@ -33,6 +33,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.opengles.version = 131072 \
   ro.opengles.surface.rgb565=true \
 	debug.egl.hw=1 \
+	ro.carrier=wifi-only \
 	ro.display.switch=1 \
 	ro.sf.lcd_density=160 \
 	hwui.render_dirty_regions=false \
