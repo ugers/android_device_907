@@ -48,7 +48,6 @@
   <remove-project name="android_kernel_samsung_smdk4412"/>
   <remove-project name="android_kernel_samsung_tuna"/>
 
-  /*<project remote="github" revision="jb-mr1" name="AOKP/packages_apps_PerformanceControl" path="packages/apps/PerformanceControl"/>*/
-  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
+  <project remote="github" revision="jb2" name="francescofavero/android_device_907" path="device/softwinner/907" />
   <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
 </manifest>

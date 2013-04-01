@@ -3,13 +3,14 @@ CarbonDev sunxi
 This is an attempt to port CarbonRom to the allwinner A10 (crane sunxi) tablets
 Compilation Notes
 -----------------
-Sources
-* Github repository
+
+* Build from Sources
+
 Create a directory
 
 	mkdir carbon
 
-Chance to created directory
+Change to the created directory
 
 	cd carbon
 
