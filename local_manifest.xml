@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote  name="github" fetch="git://github.com/"/>
+  <remove-project name="android_system_vold"/>
+
+  <remove-project name="android_device_asus_grouper"/>
+  <remove-project name="android_device_htc_msm8960-common"/>
+  <remove-project name="android_device_sony_pepper"/>
+  <remove-project name="android_device_sony_peppercorn"/>
+  <remove-project name="android_device_lge_mako"/>
+  <remove-project name="android_device_samsung_aries-common"/>
+  <remove-project name="android_device_samsung_d2-common"/>
+  <remove-project name="android_device_samsung_d2att"/>
+  <remove-project name="android_device_samsung_d2cri"/>
+  <remove-project name="android_device_samsung_d2mtr"/>
+  <remove-project name="android_device_samsung_d2spr"/>
+  <remove-project name="android_device_samsung_d2tmo"/>
+  <remove-project name="android_device_samsung_d2usc"/>
+  <remove-project name="android_device_samsung_d2vzw"/>
+  <remove-project name="android_device_samsung_galaxys2-common"/>
+  <remove-project name="android_device_samsung_infuse4g"/>
+  <remove-project name="android_device_samsung_i605"/>
+  <remove-project name="android_device_samsung_l900"/>
+  <remove-project name="android_device_samsung_i9100"/>
+  <remove-project name="android_device_samsung_i9300"/>
+  <remove-project name="android_device_samsung_i9305"/>
+  <remove-project name="android_device_samsung_maguro"/>
+  <remove-project name="android_device_samsung_manta"/>
+  <remove-project name="android_device_samsung_msm8960-common"/>
+  <remove-project name="android_device_samsung_msm8660-common"/>
+  <remove-project name="android_device_samsung_n7000"/>
+  <remove-project name="android_device_samsung_n7100"/>
+  <remove-project name="android_device_samsung_qcom-common"/>
+  <remove-project name="android_device_samsung_smdk4412-common"/>
+  <remove-project name="android_device_samsung_smdk4412-qcom-common"/>
+  <remove-project name="android_device_samsung_toro"/>
+  <remove-project name="android_device_samsung_toroplus"/>
+  <remove-project name="android_device_samsung_t0lte"/>
+  <remove-project name="android_device_samsung_t0ltecdma"/>
+  <remove-project name="android_device_samsung_tuna"/>
+  <remove-project name="android_kernel_asus_grouper"/>
+  <remove-project name="android_kernel_htc_msm8960"/>
+  <remove-project name="lge-kernel-mako"/>
+  <remove-project name="scotthartbti/cm_samsung_kernel_dempsey"/>
+  <remove-project name="android_kernel_samsung_d2"/>
+  <remove-project name="android_kernel_samsung_manta"/>
+  <remove-project name="android_kernel_samsung_smdk4210"/>
+  <remove-project name="android_kernel_samsung_smdk4412"/>
+  <remove-project name="android_kernel_samsung_tuna"/>
+
+  /*<project remote="github" revision="jb-mr1" name="AOKP/packages_apps_PerformanceControl" path="packages/apps/PerformanceControl"/>*/
+  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
+  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
+</manifest>

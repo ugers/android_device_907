@@ -1,32 +1,41 @@
+CarbonDev sunxi
+===============
+This is an attempt to port CarbonRom to the allwinner A10 (crane sunxi) tablets
 Compilation Notes
-
+-----------------
 Sources
 * Github repository
+Create a directory
 
-repo init -u git://github.com/CyanogenMod/android.git -b cm-10.1
+	mkdir carbon
 
-paste these lines inside new file .repo/manifests/local_manifest.xml
-and paste these lines inside new file .repo/local_manifest.xml
+Chance to created directory
 
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <!-- remote  name="github" fetch="git://github.com/" /-->
-  <remove-project name="CyanogenMod/android_system_vold"/>
-  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
-  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
-</manifest>
+	cd carbon
 
-now type this command
+Init the CarbonDev repository
 
-repo sync -j16
+	repo init -u git://github.com/CarbonDev/android.git -b jb2
+
+create a directory .repo/local_manifests.xml
+
+	mkdir .repo/local_manifests
+
+copy local_manifest.xml into the directory .repo/manifests/local_manifest.xml
+
+	cp local_manifest.xml .repo/local_manifests/local_manifest.xml
+
+Syncronyze the server
+
+	repo sync -f -j16
 
 finally you're ready to build it
 
-source build/envsetup.sh
-brunch cm_907-userdebug
+	source build/envsetup.sh
+	brunch carbon_907-userdebug -j8
 
-Prerequisites:
-Prebuilts
-	cd into vendor/cm and do
-	./get-prebuilts
+--------------
+
+--------------
+
 Patches - (if you have already modify your tree and patches can't be applied, run: repo forall -c git reset --hard)
