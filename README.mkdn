@@ -1,6 +1,6 @@
-CarbonDev sunxi
+CarbonDev sun4i
 ===============
-This is an attempt to port CarbonRom to the allwinner A10 (crane sunxi) tablets
+This is an attempt to port CarbonRom to the allwinner A10 (crane sun4i) tablets
 Compilation Notes
 -----------------
 
