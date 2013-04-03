@@ -70,6 +70,34 @@ hwc_module_t HAL_MODULE_INFO_SYM =
     }
 };
 
+static int hwc_open_disp(void)
+{
+        int fd, tmp, ret;
+
+	fd = open("/dev/disp", O_RDWR);
+	if (fd < 0) {
+		ALOGE("Failed to open overlay device : %s\n", strerror(errno));
+		return -1;
+	}
+
+	/* check version */
+	tmp = SUNXI_DISP_VERSION;
+	ret = ioctl(fd, DISP_CMD_VERSION, &tmp);
+	if (ret == -1) {
+		printf("Warning: kernel sunxi disp driver does not support "
+		       "versioning.\n");
+	} else if (ret < 0) {
+		fprintf(stderr, "Error: ioctl(VERSION) failed: %s\n",
+			strerror(-ret));
+		return ret;
+	} else {
+		printf("sunxi disp kernel module version is %d.%d\n",
+		       ret >> 16, ret & 0xFFFF);
+	}
+
+	return fd;
+}
+
 static int hwc_setcolorkey(sun4i_hwc_context_t  *ctx)
 {
     int                          fbfh0;
@@ -179,13 +207,9 @@ static int hwc_requestlayer(sun4i_hwc_context_t *ctx,uint32_t screenid)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
             return  -1;
-        }
     }
 
     ALOGV("screenid = %d\n",screenid);
@@ -265,12 +289,9 @@ static void hwc_computerlayerdisplayframe(hwc_composer_device_1_t *dev)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
-            return ;
+            return  -1;
         }
     }
 
@@ -581,13 +602,9 @@ static int hwc_startset(hwc_composer_device_1_t *dev)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
-            return -1;
-        }
+            return  -1;
     }
 
     args[0]                = ctx->hwc_screen;
@@ -601,13 +618,9 @@ static int hwc_endset(hwc_composer_device_1_t *dev)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
             return -1;
-        }
     }
 
     args[0]                = ctx->hwc_screen;
@@ -634,13 +647,9 @@ static int hwc_setlayerframepara(sun4i_hwc_context_t *ctx,uint32_t value)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
             return -1;
-        }
     }
 
     screen                          = ctx->hwc_screen;
@@ -792,13 +801,9 @@ static int hwc_setlayerpara(sun4i_hwc_context_t *ctx,uint32_t value)
 
     if(ctx->dispfd == 0)
     {
-        ctx->dispfd                 = open("/dev/disp", O_RDWR);
+        ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-        {
-            ALOGE("Failed to open overlay device : %s\n", strerror(errno));
-
             return  -1;
-        }
     }
 
     if(screenid > 1)
