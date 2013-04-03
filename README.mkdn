@@ -22,7 +22,7 @@ create a directory .repo/local_manifests.xml
 
 	mkdir .repo/local_manifests
 
-copy local_manifest.xml into the directory .repo/manifests/local_manifest.xml
+copy local_manifest.xml into the directory .repo/local_manifests/local_manifest.xml
 
 	cp local_manifest.xml .repo/local_manifests/local_manifest.xml
 
