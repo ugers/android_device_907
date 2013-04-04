@@ -16,9 +16,9 @@
 
 PRODUCT_COPY_FILES := \
 	device/softwinner/907/kernel:kernel \
-  device/softwinner/907/modules:system/lib/modules \
-  device/softwinner/907/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
-  device/softwinner/907/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
+        device/softwinner/907/modules:system/lib/modules \
+        device/softwinner/907/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
+        device/softwinner/907/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
 	device/softwinner/907/init.rc:root/init.rc \
 	device/softwinner/907/initlogo.rle:root/initlogo.rle \
 	device/softwinner/907/init.sun4i.rc:root/init.sun4i.rc \
@@ -31,7 +31,7 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.opengles.version = 131072 \
-  ro.opengles.surface.rgb565=true \
+        ro.opengles.surface.rgb565=true \
 	debug.egl.hw=1 \
 	ro.carrier=wifi-only \
 	ro.display.switch=1 \
@@ -69,7 +69,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
         keyguard.no_require_sim=true \
         ro.telephony.ril.v3=skipnullaid,skippinpukcount,skipbrokendatacall \
 	logcat.live=disable \
-	ro.config.nocheckin=1
+	ro.config.nocheckin=1 \
+        ro.carrier=wifi-only \
 
 DEVICE_PACKAGE_OVERLAYS := device/softwinner/907/overlay
 
@@ -104,24 +105,27 @@ PRODUCT_PACKAGES += \
 	power.sun4i \
 	hwcomposer.exDroid \
 	lights.sun4i \
-  libcedarxbase \
-  libcedarxosal \
-	libcedarv \
-	libcedarv_adapter \
-  libcedarv_base \
-	libCedarA \
-	libCedarX \
-	libstagefright_soft_cedar_h264dec \
-  libswdrm \
-	libaw_audio \
-	libaw_audioa \
-	libfacedetection \
-	librtmp \
-	libve \
 	libaudioutils \
 	chat \
 	u3gmonitor \
 	devlistener
+
+# CedarX libraries
+PRODUCT_PACKAGES += \
+	libCedarA \
+	libCedarX \
+	libcedarv \
+        libcedarxbase \
+        libcedarxosal \
+        libswdrm \
+	libcedarv_adapter \
+	libve \
+	libfacedetection \
+	libaw_audio \
+	libaw_audioa \
+        libcedarv_base \
+	libstagefright_soft_cedar_h264dec \
+	librtmp
 
 # CyanogenMOD
 PRODUCT_PACKAGES += \
