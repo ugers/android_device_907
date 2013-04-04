@@ -73,7 +73,7 @@
 
          Note: Disable SMS also disable voicemail waiting sms,
                cell broadcasting sms, and MMS. -->
-    <bool name="config_sms_capable">true</bool>
+    <bool name="config_sms_capable">false</bool>
 
     <!-- True will enable the electron beam screen-off animation. -->
     <!-- bool name="config_screenOffAnimation">true</bool -->
@@ -90,6 +90,7 @@
 	         config to 7. -->
 	    <!-- integer name="config_deviceHardwareKeys">2</integer -->
   
+    <!-- Separate software navigation bar required on this device. -->
     <bool name="config_showNavigationBar">true</bool>
     
     <bool translatable="false" name="config_wifi_dual_band_support">false</bool>
@@ -115,10 +116,10 @@
     
     <integer name="config_lowBatteryWarningLevel">10</integer>
     
+    <!-- The default iface on which to monitor data use -->
     <string name="config_datause_iface">wlan0</string>
-    <integer name="config_multiuserMaximumUsers">8</integer>
   
-      <!-- XXXXX NOTE THE FOLLOWING RESOURCES USE THE WRONG NAMING CONVENTION.
+    <!-- XXXXX NOTE THE FOLLOWING RESOURCES USE THE WRONG NAMING CONVENTION.
          Please don't copy them, copy anything else. -->
 
     <!-- This string array should be overridden by the device to present a
@@ -144,5 +145,8 @@
     <string-array translatable="false" name="radioAttributes">
         <item>"1,1"</item>
         <item>"7,1"</item>
-    </string-array>  
+    </string-array>
+    
+    <!-- Enable multi-user -->
+    <integer name="config_multiuserMaximumUsers">8</integer>
   </resources>

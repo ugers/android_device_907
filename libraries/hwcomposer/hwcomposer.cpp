@@ -33,7 +33,7 @@
 #include <utils/Timers.h>
 
 #include <hardware/hwcomposer.h>
-#include <drv_display_sun4i.h>
+#include <sunxi_disp_ioctl.h>
 #include <fb.h>
 #include <EGL/egl.h>
 
@@ -291,8 +291,7 @@ static void hwc_computerlayerdisplayframe(hwc_composer_device_1_t *dev)
     {
         ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-            return  -1;
-        }
+            return;
     }
 
     curlayer->posX_last = curlayer->posX;
@@ -620,7 +619,7 @@ static int hwc_endset(hwc_composer_device_1_t *dev)
     {
         ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-            return -1;
+            return  -1;
     }
 
     args[0]                = ctx->hwc_screen;
@@ -649,7 +648,7 @@ static int hwc_setlayerframepara(sun4i_hwc_context_t *ctx,uint32_t value)
     {
         ctx->dispfd = hwc_open_disp();
         if (ctx->dispfd < 0)
-            return -1;
+            return  -1;
     }
 
     screen                          = ctx->hwc_screen;

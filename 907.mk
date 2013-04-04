@@ -64,6 +64,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	persist.sys.vold.switchexternal=0 \
 	debug.sf.hw=1 \
         rild.libpath=/system/lib/liballwinner-ril.so \
+        mobiledata.interfaces=pdp0,wlan0,gprs,ppp0 \
         rild.libargs=-d /dev/ttyUSB2 \
         keyguard.no_require_sim=true \
         ro.telephony.ril.v3=skipnullaid,skippinpukcount,skipbrokendatacall \
@@ -135,7 +136,7 @@ $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
 
 # Should be after the full_base include, which loads languages_full
-PRODUCT_AAPT_CONFIG := normal xhdpi mdpi
+PRODUCT_AAPT_CONFIG := large hdpi mdpi
 PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 PRODUCT_NAME := full_907
