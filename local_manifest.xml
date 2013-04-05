@@ -48,6 +48,7 @@
   <remove-project name="android_kernel_samsung_smdk4412"/>
   <remove-project name="android_kernel_samsung_tuna"/>
 
+  <project remote="github" revision="suncxi-3.0" name="linux-sunxi/linux-sunxi" path="kernel/softwinner/907" />
   <project remote="github" revision="jb2" name="francescofavero/android_device_907" path="device/softwinner/907" />
   <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
 </manifest>
