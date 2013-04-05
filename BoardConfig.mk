@@ -31,6 +31,7 @@ TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+LOCAL_CFLAGS += -O3
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 #Bluetooth and Vibro stuff
@@ -93,7 +94,7 @@ BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
 BOARD_WLAN_DEVICE                := rtl8192cu
 
 WIFI_DRIVER_MODULE_NAME   := 8192cu
-WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
+#WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
 
 WIFI_DRIVER_MODULE_ARG    := ""
 WIFI_FIRMWARE_LOADER      := ""
@@ -105,7 +106,9 @@ WIFI_DRIVER_FW_PATH_PARAM := ""
 TARGET_CUSTOM_WIFI := ../../hardware/realtek/wlan/wifi_realtek.c
 
 # Beware: set only prebuilt OR source+config
-TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
+TARGET_KERNEL_SOURCE := kernel/softwinner/907/
+TARGET_KERNEL_CONFIG := a10_mid_defconfig
+#TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
 BOARD_KERNEL_BASE := 0x40000000
 BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=8
 
