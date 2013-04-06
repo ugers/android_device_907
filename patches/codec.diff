@@ -44,9 +44,9 @@ diff --git a/frameworks/av/include/media/stagefright/ACodec.h b/frameworks/av/in
      Vector<BufferInfo> mBuffers[2];
      bool mPortEOS[2];
      status_t mInputEOSResult;
-diff --git a/frameworks/core/java/android/provider/MediaStore.java b/frameworks/core/java/android/provider/MediaStore.java
---- a/frameworks/core/java/android/provider/MediaStore.java
-+++ b/frameworks/core/java/android/provider/MediaStore.java
+diff --git a/frameworks/base/core/java/android/provider/MediaStore.java b/frameworks/base/core/java/android/provider/MediaStore.java
+--- a/frameworks/base/core/java/android/provider/MediaStore.java
++++ b/frameworks/base/core/java/android/provider/MediaStore.java
 @@ -190,6 +190,11 @@
       * This is a boolean property that specifies whether or not to show action icons.
       */
