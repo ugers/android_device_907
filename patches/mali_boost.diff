@@ -106,7 +106,7 @@ index 0b1c023..c537fe6 100644
 +#include <linux/timer.h>
  #include <mach/irqs.h>
  #include <mach/clock.h>
- #include <mach/sys_config.h>
+ #include <plat/sys_config.h>
  
 +#ifdef CONFIG_MALI400_BOOST
 +#define MALI400_BOOST_RATE	1200000000	/* Hz */
@@ -248,12 +248,12 @@ index 0b1c023..c537fe6 100644
  		MALI_PRINT(("try to reset release failed!\n"));
 -	}
  
--	MALI_PRINT(("mali clock set completed, clock is  %d Mhz\n", rate));
+-	MALI_PRINT(("mali clock set completed, clock is  %d Hz\n", rate));
 +#ifdef CONFIG_MALI400_BOOST
-+	MALI_DEBUG_PRINT(3, ("Mali: clock set completed, clock is %d Mhz\n",
++	MALI_DEBUG_PRINT(3, ("Mali: clock set completed, clock is %d Hz\n",
 +			rate / 1000000));
 +#else
-+	MALI_PRINT(("clock set completed, clock is %d Mhz\n",
++	MALI_PRINT(("clock set completed, clock is %d Hz\n",
 +			rate / 1000000));
 +#endif
  

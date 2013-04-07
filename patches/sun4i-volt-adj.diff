@@ -1,9 +1,9 @@
-diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+diff --git a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
 old mode 100755
 new mode 100644
 index 7645bad..c64d0f5
---- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
-+++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+--- a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
++++ b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
 @@ -27,6 +27,7 @@
  #include <linux/cpufreq.h>
  #include "cpu-freq.h"
@@ -70,10 +70,10 @@ index 7645bad..c64d0f5
  #endif
  
  struct cpufreq_frequency_table * sunxi_cpufreq_table(void) {
-diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
+diff --git a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.c b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.c
 index 099ea80..e3c6eba 100644
---- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
-+++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
+--- a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.c
++++ b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.c
 @@ -624,6 +624,54 @@ static int sun4i_cpufreq_resume(struct cpufreq_policy *policy)
  
  #endif  /* #ifdef CONFIG_PM */
@@ -129,12 +129,12 @@ index 099ea80..e3c6eba 100644
  static struct freq_attr *sun4i_cpufreq_attr[] = {
      &cpufreq_freq_attr_scaling_available_freqs,
      NULL,
-diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+diff --git a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h
 old mode 100755
 new mode 100644
 index 77098b1..acb0461
---- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
-+++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+--- a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h
++++ b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h
 @@ -43,6 +43,10 @@
  #define SUN4I_CPUFREQ_MAX       (1008000000)    /* config the maximum frequency of sun4i core */
  #define SUN4I_CPUFREQ_MIN       (60000000)      /* config the minimum frequency of sun4i core */
@@ -217,10 +217,10 @@ index 09c5cb7..96de265
  	NULL
  };
  
-diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+diff --git a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
 index 04228bf..7645bad 100755
---- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
-+++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+--- a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
++++ b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq-table.c
 @@ -102,7 +102,7 @@
      {.freq = 960000000,  .volt = 1400}, /* core vdd is 1.40v if cpu frequency is (912Mhz, 960Mhz]   */
      {.freq = 912000000,  .volt = 1350}, /* core vdd is 1.35v if cpu frequency is (864Mhz, 912Mhz]   */
@@ -231,20 +231,15 @@ index 04228bf..7645bad 100755
      {.freq = 0,          .volt = 1000}, /* end of cpu dvfs table                                    */
  };
 
-diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
-index acb0461..810fa9b 100644
---- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
-+++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
-@@ -40,9 +40,9 @@
- #endif
+diff --git a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h
+--- a/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h	2013-04-07 02:44:33.927239714 +0200
++++ b/kernel/softwinner/907/arch/arm/plat-sunxi/cpu-freq/cpu-freq.h	2013-04-07 02:43:13.976078332 +0200
+@@ -42,7 +42,7 @@
  
- 
--#define SUN4I_CPUFREQ_MAX       (1008000000)    /* config the maximum frequency of sun4i core */
+ /* Absolute minimum and maximum */
+ #define SUN4I_CPUFREQ_MAX       (1008000000)    /* config the maximum frequency of sun4i core */
 -#define SUN4I_CPUFREQ_MIN       (60000000)      /* config the minimum frequency of sun4i core */
--#define SUN4I_FREQTRANS_LATENCY (2000000)       /* config the transition latency, based on ns */
-+#define SUN4I_CPUFREQ_MAX	(1008000000)    /* config the maximum frequency of sun4i core */
-+#define SUN4I_CPUFREQ_MIN	(96000000)      /* config the minimum frequency of sun4i core */
-+#define SUN4I_FREQTRANS_LATENCY	(2000000)       /* config the transition latency, based on ns */
- #ifdef CONFIG_CPU_FREQ_UV
- #define SUN4I_CPUMV_MAX		(1700)		/* config the maximum voltage of sun4i core in mV */
- #define SUN4I_CPUMV_MIN		(1000)		/* config the minimum voltage of sun4i core in mV */
++#define SUN4I_CPUFREQ_MIN       (96000000)      /* config the minimum frequency of sun4i core */
+ /* Defaults limits for the scaling governor */
+ #define SUN4I_SCALING_MIN	(CONFIG_SUNXI_SCALING_MIN * 1000000)
+ #define SUN4I_SCALING_MAX	(1008000000)
