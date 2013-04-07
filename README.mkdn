@@ -40,4 +40,7 @@ finally you're ready to build it
 
 --------------
 
-Patches - (if you have already modify your tree and patches can't be applied, run: repo forall -c git reset --hard)
+Patches - (if you have already modify your tree and patches can't be applied, run: 
+
+	repo forall -c git reset --hard)
+	repo forall -c git clean -xdf
