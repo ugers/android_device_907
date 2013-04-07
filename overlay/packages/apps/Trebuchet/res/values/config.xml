@@ -3,4 +3,11 @@
     <bool name="is_large_screen">true</bool>
     <bool name="allow_rotation">true</bool>
     <bool name="config_workspaceDefaultWallpaperHack">true</bool>
+    
+    <!-- Allow tablets to set grid size in settings, false disables -->
+    <bool name="config_workspaceTabletGrid">true</bool>
+    
+    <!-- Actual cell count -->
+    <integer name="target_cell_count_x">7</integer>
+    <integer name="target_cell_count_y">5</integer> 
 </resources>
