@@ -1,0 +1,250 @@
+diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+old mode 100755
+new mode 100644
+index 7645bad..c64d0f5
+--- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
++++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+@@ -27,6 +27,7 @@
+ #include <linux/cpufreq.h>
+ #include "cpu-freq.h"
+ 
++#ifndef CONFIG_CPU_FREQ_UV
+ static struct cpufreq_frequency_table sun4i_freq_tbl[] = {
+ 
+     { .frequency = 30000,   .index = SUN4I_CLK_DIV(1, 1, 1, 2), },
+@@ -86,6 +87,25 @@
+     { .frequency = CPUFREQ_TABLE_END,  .index = 0,              },
+ };
+ 
++#else
++static struct cpufreq_frequency_table sun4i_freq_tbl[] = {
++
++    { .frequency = 96000,   .index = SUN4I_CLK_DIV(1, 1, 1, 2), },
++    { .frequency = 204000,  .index = SUN4I_CLK_DIV(1, 1, 2, 2), },
++    { .frequency = 408000,  .index = SUN4I_CLK_DIV(1, 1, 2, 2), },
++    { .frequency = 696000,  .index = SUN4I_CLK_DIV(1, 2, 2, 2), },
++    { .frequency = 816000,  .index = SUN4I_CLK_DIV(1, 2, 2, 2), },
++    { .frequency = 912000,  .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1008000, .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1056000, .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1104000, .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1152000, .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1200000, .index = SUN4I_CLK_DIV(1, 3, 2, 2), },
++    { .frequency = 1248000, .index = SUN4I_CLK_DIV(1, 4, 2, 2), },
++    { .frequency = CPUFREQ_TABLE_END,  .index = 0,              },
++};
++#endif
++
+ /* div, pll (Hz) table */
+ static struct cpufreq_div_order sun4i_div_order_tbl[] = {
+     { .div = SUN4I_CLK_DIV(1, 1, 1, 2), .pll = 204000000,  },
+@@ -96,6 +116,7 @@
+ };
+ 
+ #ifdef CONFIG_CPU_FREQ_DVFS
++#ifndef CONFIG_CPU_FREQ_UV
+ static struct cpufreq_dvfs sun4i_dvfs_table[] = {
+     {.freq = 1056000000, .volt = 1500}, /* core vdd is 1.50v if cpu frequency is (1008Mhz, xxxxMhz] */
+     {.freq = 1008000000, .volt = 1400}, /* core vdd is 1.40v if cpu frequency is (960Mhz, 1008Mhz]  */
+@@ -106,6 +127,23 @@
+     {.freq = 432000000,  .volt = 1250}, /* core vdd is 1.25v if cpu frequency is (0, 432Mhz]        */
+     {.freq = 0,          .volt = 1000}, /* end of cpu dvfs table                                    */
+ };
++#else
++static struct cpufreq_dvfs sun4i_dvfs_table[] = {
++    {.freq = 1248000000, .volt = 1650},
++    {.freq = 1200000000, .volt = 1600},
++    {.freq = 1152000000, .volt = 1550},
++    {.freq = 1104000000, .volt = 1500},
++    {.freq = 1056000000, .volt = 1450},
++    {.freq = 1008000000, .volt = 1400},
++    {.freq = 912000000,  .volt = 1350},
++    {.freq = 816000000,  .volt = 1300},
++    {.freq = 696000000,  .volt = 1250},
++    {.freq = 408000000,  .volt = 1250},
++    {.freq = 204000000,  .volt = 1250},
++    {.freq = 96000000,   .volt = 1250},
++    {.freq = 0,          .volt = 1000},
++};
++#endif
+ #endif
+ 
+ struct cpufreq_frequency_table * sunxi_cpufreq_table(void) {
+diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
+index 099ea80..e3c6eba 100644
+--- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
++++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.c
+@@ -624,6 +624,54 @@ static int sun4i_cpufreq_resume(struct cpufreq_policy *policy)
+ 
+ #endif  /* #ifdef CONFIG_PM */
+ 
++#ifdef CONFIG_CPU_FREQ_UV
++ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
++{
++	struct cpufreq_dvfs *sun4i_dvfs_table = sunxi_dvfs_table();
++	int i, len = 0;
++
++	if (buf) {
++		for (i = 0; i < 12; i++) {
++			if (sun4i_dvfs_table[i].freq == 0)
++				continue;
++			len += sprintf(buf + len, "%dmhz: %d mV\n",
++				sun4i_dvfs_table[i].freq / 1000000,
++				sun4i_dvfs_table[i].volt);
++		}
++	}
++
++	return len;
++}
++
++ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
++                                      const char *buf, size_t count)
++{
++	struct cpufreq_dvfs *sun4i_dvfs_table = sunxi_dvfs_table();
++	unsigned int ret;
++	int i = 0;
++	int val[12];
++
++	ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d\n",
++			   &val[0], &val[1], &val[2], &val[3],
++			   &val[4], &val[5], &val[6], &val[7],
++			   &val[8], &val[9], &val[10], &val[11]);
++
++	if (ret != 12)
++		return -EINVAL;
++
++	for (i = 0; i < 12; i++) {
++		if (val[i] > SUN4I_CPUMV_MAX)
++			val[i] = SUN4I_CPUMV_MAX;
++		else if (val[i] < SUN4I_CPUMV_MIN)
++			val[i] = SUN4I_CPUMV_MIN;
++
++		sun4i_dvfs_table[i].volt = val[i];
++	}
++
++	return count;
++}
++#endif
++
+ static struct freq_attr *sun4i_cpufreq_attr[] = {
+     &cpufreq_freq_attr_scaling_available_freqs,
+     NULL,
+diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+old mode 100755
+new mode 100644
+index 77098b1..acb0461
+--- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
++++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+@@ -43,6 +43,10 @@
+ #define SUN4I_CPUFREQ_MAX       (1008000000)    /* config the maximum frequency of sun4i core */
+ #define SUN4I_CPUFREQ_MIN       (60000000)      /* config the minimum frequency of sun4i core */
+ #define SUN4I_FREQTRANS_LATENCY (2000000)       /* config the transition latency, based on ns */
++#ifdef CONFIG_CPU_FREQ_UV
++#define SUN4I_CPUMV_MAX		(1700)		/* config the maximum voltage of sun4i core in mV */
++#define SUN4I_CPUMV_MIN		(1000)		/* config the minimum voltage of sun4i core in mV */
++#endif
+ 
+ struct sun4i_clk_div_t {
+     __u32   cpu_div:4;      /* division of cpu clock, divide core_pll */
+@@ -80,6 +84,11 @@ struct cpufreq_div_order {
+ struct cpufreq_div_order *sunxi_div_order_table(int *length);
+ #ifdef CONFIG_CPU_FREQ_DVFS
+ struct cpufreq_dvfs *sunxi_dvfs_table(void);
++#ifdef CONFIG_CPU_FREQ_UV
++ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf);
++ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
++                                      const char *buf, size_t count);
++#endif
+ #endif
+ 
+ #endif  /* #ifndef __SUN4I_CPU_FREQ_H__ */
+diff --git a/kernel/softwinner/907/drivers/cpufreq/Kconfig b/kernel/softwinner/907/drivers/cpufreq/Kconfig
+index ed26145..4e82075 100755
+--- a/kernel/softwinner/907/drivers/cpufreq/Kconfig
++++ b/kernel/softwinner/907/drivers/cpufreq/Kconfig
+@@ -262,6 +262,14 @@ config CPU_FREQ_DVFS
+ 
+ 	  If in doubt, say N.
+ 
++config CPU_FREQ_UV
++	bool "CPU voltage adjustments"
++	select CPU_FREQ_DVFS
++	help
++	  This will enable cpu voltage adjustments.
++
++	  If in doubt, say N.
++
+ menu "x86 CPU frequency scaling drivers"
+ depends on X86
+ source "drivers/cpufreq/Kconfig.x86"
+diff --git a/kernel/softwinner/907/drivers/cpufreq/cpufreq.c b/kernel/softwinner/907/drivers/cpufreq/cpufreq.c
+old mode 100755
+new mode 100644
+index 09c5cb7..96de265
+--- a/kernel/softwinner/907/drivers/cpufreq/cpufreq.c
++++ b/kernel/softwinner/907/drivers/cpufreq/cpufreq.c
+@@ -597,6 +597,13 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
+ }
+ 
++#ifdef CONFIG_CPU_FREQ_UV
++extern ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf);
++
++extern ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
++					const char *buf, size_t count);
++#endif
++
+ cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
+ cpufreq_freq_attr_ro(cpuinfo_min_freq);
+ cpufreq_freq_attr_ro(cpuinfo_max_freq);
+@@ -615,6 +622,9 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ #ifdef CONFIG_CPU_FREQ_USR_EVNT_NOTIFY
+ cpufreq_freq_attr_ro(user_event_notify);
+ #endif
++#ifdef CONFIG_CPU_FREQ_UV
++cpufreq_freq_attr_rw(UV_mV_table);
++#endif
+ 
+ static struct attribute *default_attrs[] = {
+ 	&cpuinfo_min_freq.attr,
+@@ -632,6 +642,9 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ #ifdef CONFIG_CPU_FREQ_USR_EVNT_NOTIFY
+ 	&user_event_notify.attr,
+ #endif
++#ifdef CONFIG_CPU_FREQ_UV
++	&UV_mV_table.attr,
++#endif
+ 	NULL
+ };
+ 
+diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+index 04228bf..7645bad 100755
+--- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
++++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq-table.c
+@@ -102,7 +102,7 @@
+     {.freq = 960000000,  .volt = 1400}, /* core vdd is 1.40v if cpu frequency is (912Mhz, 960Mhz]   */
+     {.freq = 912000000,  .volt = 1350}, /* core vdd is 1.35v if cpu frequency is (864Mhz, 912Mhz]   */
+     {.freq = 864000000,  .volt = 1300}, /* core vdd is 1.30v if cpu frequency is (624Mhz, 864Mhz]   */
+-    {.freq = 624000000,  .volt = 1250}, /* core vdd is 1.25v if cpu frequency is (432Mhz, 624Mhz]   */
++    {.freq = 648000000,  .volt = 1250}, /* core vdd is 1.25v if cpu frequency is (432Mhz, 648Mhz]   */
+     {.freq = 432000000,  .volt = 1250}, /* core vdd is 1.25v if cpu frequency is (0, 432Mhz]        */
+     {.freq = 0,          .volt = 1000}, /* end of cpu dvfs table                                    */
+ };
+
+diff --git a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+index acb0461..810fa9b 100644
+--- a/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
++++ b/kernel/softwinner/907/arch/arm/mach-sun4i/cpu-freq/cpu-freq.h
+@@ -40,9 +40,9 @@
+ #endif
+ 
+ 
+-#define SUN4I_CPUFREQ_MAX       (1008000000)    /* config the maximum frequency of sun4i core */
+-#define SUN4I_CPUFREQ_MIN       (60000000)      /* config the minimum frequency of sun4i core */
+-#define SUN4I_FREQTRANS_LATENCY (2000000)       /* config the transition latency, based on ns */
++#define SUN4I_CPUFREQ_MAX	(1008000000)    /* config the maximum frequency of sun4i core */
++#define SUN4I_CPUFREQ_MIN	(96000000)      /* config the minimum frequency of sun4i core */
++#define SUN4I_FREQTRANS_LATENCY	(2000000)       /* config the transition latency, based on ns */
+ #ifdef CONFIG_CPU_FREQ_UV
+ #define SUN4I_CPUMV_MAX		(1700)		/* config the maximum voltage of sun4i core in mV */
+ #define SUN4I_CPUMV_MIN		(1000)		/* config the minimum voltage of sun4i core in mV */
