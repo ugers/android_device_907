@@ -33,6 +33,7 @@ Syncronyze the server
 finally you're ready to build it
 
 	source build/envsetup.sh
+        cp device/softwinner/907/a10_mid_defconfig into kernel/softwinner/907/arch/arm/configs/
 	brunch carbon_907-userdebug -j8
 
 --------------
