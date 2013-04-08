@@ -23,8 +23,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/bin/mkntfs:system/bin/mkntfs \
 	device/softwinner/907/prebuilt/bin/reboot-recovery.sh:system/bin/reboot-recovery.sh \
 	device/softwinner/907/prebuilt/bin/usb_modeswitch:system/bin/usb_modeswitch \
-	device/softwinner/907/prebuilt/bin/rild:system/bin/rild \
-        #device/softwinner/907/vold/vold:system/bin/vold
+	device/softwinner/907/prebuilt/bin/rild:system/bin/rild 
 
 # /system/etc
 PRODUCT_COPY_FILES += \
@@ -37,7 +36,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/etc/camera.cfg:system/etc/camera.cfg \
 	device/softwinner/907/prebuilt/etc/gps.conf:system/etc/gps.conf \
 	device/softwinner/907/prebuilt/etc/usb_modeswitch.sh:system/etc/usb_modeswitch.sh \
-	device/softwinner/907/prebuilt/etc/vold.fstab:system/etc/vold.fstab
+	device/softwinner/907/vold.fstab:system/etc/vold.fstab
 
 # Media files
 PRODUCT_COPY_FILES += \
