@@ -33,14 +33,14 @@ Syncronyze the server
 finally you're ready to build it
 
 	source build/envsetup.sh
-        cp device/softwinner/907/a10_mid_defconfig into kernel/softwinner/907/arch/arm/configs/
+	cp device/softwinner/907/a10_mid_defconfig into kernel/softwinner/907/arch/arm/configs/
 	brunch carbon_907-userdebug -j8
 
 --------------
 
 --------------
 
-Patches - (if you have already modify your tree and patches can't be applied, run: 
+* Patches - (if you have already modify your tree and patches can't be applied, run: 
 
-	repo forall -c git reset --hard)
+	repo forall -c git reset --hard
 	repo forall -c git clean -xdf
