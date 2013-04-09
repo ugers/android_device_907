@@ -47,6 +47,7 @@
   <remove-project name="android_kernel_samsung_smdk4210"/>
   <remove-project name="android_kernel_samsung_smdk4412"/>
   <remove-project name="android_kernel_samsung_tuna"/>
+  <remove-project name="android_kernel_samsung_msm8660-common"/>
 
   <project remote="github" revision="sunxi-3.0" name="linux-sunxi/linux-sunxi" path="kernel/softwinner/907" />
   <project remote="github" revision="jb2" name="francescofavero/android_device_907" path="device/softwinner/907" />
