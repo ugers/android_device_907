@@ -92,14 +92,21 @@
     
     <bool translatable="false" name="config_wifi_p2p_support">false</bool>
     
-        <!-- Minimum screen brightness setting allowed by the power manager.
+    <!-- Minimum screen brightness setting allowed by the power manager.
          The user is forbidden from setting the brightness below this level. -->
     <integer name="config_screenBrightnessSettingMinimum">30</integer>
     
-        <!-- Screen brightness used to dim the screen when the user activity
+    <!-- Maximum screen brightness allowed by the power manager.
+         The user is forbidden from setting the brightness above this level. -->
+    <integer name="config_screenBrightnessSettingMaximum">300</integer>
+    
+    <!-- Screen brightness used to dim the screen when the user activity
          timeout expires.  May be less than the minimum allowed brightness setting
          that can be set by the user. -->
     <integer name="config_screenBrightnessDim">30</integer>
+    
+    <!-- Enables SIP on WIFI only -->
+    <bool name="config_sip_wifi_only">true</bool>
     
     <integer name="db_connection_pool_size">3</integer>
     

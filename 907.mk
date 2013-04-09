@@ -99,7 +99,7 @@ PRODUCT_PACKAGES += \
         Mms
 
 PRODUCT_PACKAGES += \
-	librs_jni
+	librs_jni \
         rild_sun4i
 
 # Hardware libs
