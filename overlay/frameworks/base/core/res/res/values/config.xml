@@ -20,6 +20,8 @@
 <!-- These resources are around just to allow their values to be customized
      for different hardware and product builds. -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Software blur is too slow on this device. -->
+    <bool name="config_sf_slowBlur">true</bool>
 
     <!-- If this is true, the screen will come on when you unplug usb/power/whatever. -->  
     <bool name="config_unplugTurnsOnScreen">true</bool>

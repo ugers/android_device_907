@@ -43,15 +43,17 @@ on boot
 	insmod /system/lib/modules/goodix_touch_3F.ko
 	insmod /system/lib/modules/goodix_touch.ko
 	insmod /system/lib/modules/gt801_2plus1.ko
-  insmod /system/lib/modules/gt811_ts.ko
+        insmod /system/lib/modules/gt811_ts.ko
 	insmod /system/lib/modules/ssd253x-ts.ko
 	insmod /system/lib/modules/Novatek_TouchDriver.ko
+	insmod /system/lib/modules/gt82x_ts.ko
 	# gsensor drivers
 	insmod /system/lib/modules/bma250.ko
 	insmod /system/lib/modules/mecs.ko
 	insmod /system/lib/modules/mxc622x.ko
 	insmod /system/lib/modules/mma7660.ko
 	insmod /system/lib/modules/kxte9.ko
+	insmod /system/lib/modules/dmard06.ko
 	# camera drivers
 	insmod /system/lib/modules/videobuf-core.ko
 	insmod /system/lib/modules/videobuf-dma-contig.ko   
@@ -60,9 +62,10 @@ on boot
 	insmod /system/lib/modules/gt2005.ko
 	insmod /system/lib/modules/mt9m112.ko
 	insmod /system/lib/modules/ov5640.ko
+        insmod /system/lib/modules/gc2015.ko
+        insmod /system/lib/modules/hi704.ko
 	insmod /system/lib/modules/sun4i_csi1.ko
 	insmod /system/lib/modules/sun4i_csi0.ko
-  insmod /system/lib/modules/hi704.ko
 	# usb ethernet drivers
 	insmod /system/lib/modules/usbnet.ko
 	insmod /system/lib/modules/asix.ko
@@ -71,8 +74,7 @@ on boot
 	insmod /system/lib/modules/rtl8150.ko
 	# other
 	insmod /system/lib/modules/cp2526.ko
-  insmod /system/lib/modules/dmard06.ko
-  insmod /system/lib/modules/ssd253x_duod.ko
+        insmod /system/lib/modules/ssd253x_duod.ko
 	# misc
 	chown system system /sys/class/timed_output/sun4i-vibrator/enable
 	chown system system /sys/class/rfkill/rfkill0/state

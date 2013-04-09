@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+add_lunch_combo full_907-eng
 add_lunch_combo full_907-userdebug
+add_lunch_combo carbon_907-eng
 add_lunch_combo carbon_907-userdebug
 echo ""
 echo "Applying patches for AllwinnerA10"
