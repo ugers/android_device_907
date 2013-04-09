@@ -35,6 +35,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.com.google.locationfeatures=1 \
 	ro.kernel.android.checkjni=0 \
 	ro.vold.umsdirtyratio=20 \
+	ro.media.dec.jpeg.memcap=20000000 \
 	ro.additionalmounts=/storage/sdcard1 \
 	ro.vold.switchablepair=/storage/sdcard0,/storage/sdcard1 \
         ro.telephony.ril.v3=skipnullaid,skippinpukcount,skipbrokendatacall \
@@ -69,6 +70,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
         mobiledata.interfaces=pdp0,wlan0,ppp0 \
         keyguard.no_require_sim=true \
 	logcat.live=disable \
+	net.dns1=8.8.8.8 \
+	net.dns2=8.8.4.4 \
 
 DEVICE_PACKAGE_OVERLAYS := device/softwinner/907/overlay
 
@@ -92,10 +95,12 @@ PRODUCT_COPY_FILES += \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
 PRODUCT_PACKAGES += \
-        Tag
+        Tag \
+        Mms
 
 PRODUCT_PACKAGES += \
 	librs_jni
+        rild_sun4i
 
 # Hardware libs
 PRODUCT_PACKAGES += \
@@ -105,6 +110,7 @@ PRODUCT_PACKAGES += \
 	display.sun4i \
 	gralloc.sun4i \
 	power.sun4i \
+	camera.exDroid \
 	hwcomposer.exDroid \
 	lights.sun4i \
 	libaudioutils \

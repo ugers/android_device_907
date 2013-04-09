@@ -112,7 +112,7 @@ TARGET_CUSTOM_WIFI := ../../hardware/realtek/wlan/wifi_realtek.c
 
 # Beware: set only prebuilt OR source+config
 TARGET_KERNEL_SOURCE := kernel/softwinner/907/
-TARGET_KERNEL_CONFIG := a10_mid_defconfig
+TARGET_KERNEL_CONFIG := ../../../../../../device/softwinner/907/a10_mid_defconfig
 #TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
 BOARD_KERNEL_BASE := 0x40000000
 BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=8
