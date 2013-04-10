@@ -29,10 +29,10 @@ TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
+
 KBUILD_CFLAGS += -O3
-TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
-TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
-LOCAL_CFLAGS += -O3 -ftree-vectorize -ftree-vectorizer-verbose=3 -fdump-tree-vect -mvectorize-with-neon-quad  -ffast-math
+TARGET_GLOBAL_CFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize
+TARGET_GLOBAL_CPPFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 #Bluetooth and Vibro stuff
