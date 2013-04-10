@@ -80,9 +80,14 @@ BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/fi
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
 #BOARD_UMS_LUNFILE := "/sys/devices/platform/msm_hsusb/gadget/lun0/file
 
-#Misc stuff
-TARGET_USE_CUSTOM_LUN_FILE_PATH = "/sys/class/android_usb/android0/f_mass_storage/lun%d/file"
+# Vold stuff
+BOARD_VOLD_MAX_PARTITIONS := 20
+BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
+BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true
+TARGET_USE_CUSTOM_LUN_FILE_PATH = "/sys/class/android_usb/android0/f_mass_storage/lund%d/file"
 TARGET_USE_CUSTOM_SECOND_LUN_NUM := 1
+
+#Misc stuff
 TARGET_RECOVERY_PRE_COMMAND := "echo -n boot-recovery | busybox dd of=/dev/block/nandf count=1 conv=sync; sync"
 BOARD_USE_LEGACY_TOUCHSCREEN := true
 TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/libraries/include
