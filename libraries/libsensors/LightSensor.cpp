@@ -31,7 +31,7 @@
 //#define SENSOR_DEBUG
 
 #ifdef SENSOR_DEBUG
-#define DEBUG(format, ...) LOGD((format), ## __VA_ARGS__)
+#define DEBUG(format, ...) ALOGD((format), ## __VA_ARGS__)
 #else
 #define DEBUG(format, ...)
 #endif
@@ -114,12 +114,12 @@ int LightSensor::setIntLux()
     /* Read current lux value firstly, then change Delta value */
     strcpy(&ls_sysfs_path[ls_sysfs_path_len], "lux");
     if ((fd = fopen(ls_sysfs_path, "r")) == NULL) {
-        LOGE("Unable to open %s\n", ls_sysfs_path);
+        ALOGE("Unable to open %s\n", ls_sysfs_path);
         return -1;
     }
     memset(buf, 0, 6);
     if ((n = fread(buf, 1, 6, fd)) < 0) {
-        LOGE("Unable to read %s\n", ls_sysfs_path);
+        ALOGE("Unable to read %s\n", ls_sysfs_path);
 	return -1;
     }
     fclose(fd);
@@ -138,7 +138,7 @@ int LightSensor::setIntLux()
         n = fwrite(buf, 1, 6, fd);
         fclose(fd);
     } else
-        LOGE("Couldn't open %s file\n", ls_sysfs_path);
+        ALOGE("Couldn't open %s file\n", ls_sysfs_path);
     strcpy(&ls_sysfs_path[ls_sysfs_path_len], "int_ht_lux");
     fd = fopen(ls_sysfs_path, "r+");
     if (fd) {
@@ -147,7 +147,7 @@ int LightSensor::setIntLux()
         n = fwrite(buf, 1, 6, fd);
         fclose(fd);
     } else
-        LOGE("Couldn't open %s file\n", ls_sysfs_path);
+        ALOGE("Couldn't open %s file\n", ls_sysfs_path);
 
     return 0;
 }
@@ -190,7 +190,7 @@ int LightSensor::readEvents(sensors_event_t* data, int count)
                 mPreviousLight = mPendingEvent.light;
             }
         } else {
-            LOGE("LightSensor: unknown event (type=%d, code=%d)",
+            ALOGE("LightSensor: unknown event (type=%d, code=%d)",
                     type, event->code);
         }
         mInputReader.next();

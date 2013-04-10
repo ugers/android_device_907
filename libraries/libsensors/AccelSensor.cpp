@@ -116,7 +116,7 @@ int AccelSensor::enable(int32_t handle, int en)
         else
             err = accel_disable_sensor(sensor_type);
 
-        LOGE_IF(err, "Could not change sensor state (%s)", strerror(-err));
+        ALOGE_IF(err, "Could not change sensor state (%s)", strerror(-err));
         if (!err) {
             mEnabled &= ~(1<<what);
             mEnabled |= (uint32_t(flags)<<what);
@@ -166,7 +166,7 @@ int AccelSensor::getPollFile(const char* inputName)
                     strcpy(poll_sysfs_file,sysfs_name);
                     poll_sysfs_file_len = strlen(poll_sysfs_file);
                     fclose(fd);
-                    LOGD("Found %s\n", poll_sysfs_file);
+                    ALOGD("Found %s\n", poll_sysfs_file);
 
                     /* Get max poll delay time */
                     filename = sysfs_name + path_len;
@@ -191,7 +191,7 @@ int AccelSensor::getPollFile(const char* inputName)
                             mMinPollDelay = strtol(buf, &endptr, 10);
                         fclose(fd);
                     }
-                    LOGD("mMinPollDelay %d, mMaxPollDelay %d\n",
+                    ALOGD("mMinPollDelay %d, mMaxPollDelay %d\n",
                            mMinPollDelay, mMaxPollDelay);
 
                     return 0;
@@ -210,7 +210,7 @@ int AccelSensor::setDelay(int32_t handle, int64_t ns)
     char buf[6];
 
     ms = ns / 1000 / 1000;
-    LOGD("AccelSensor....setDelay, ms=%d\n", ms);
+    ALOGD("AccelSensor....setDelay, ms=%d\n", ms);
 
     if (poll_sysfs_file_len &&
         (ms >= mMinPollDelay) &&
@@ -224,9 +224,9 @@ int AccelSensor::setDelay(int32_t handle, int64_t ns)
            fclose(fd);
            ret = 0;
        }else
-           LOGE("file %s open failure\n", poll_sysfs_file);
+           ALOGE("file %s open failure\n", poll_sysfs_file);
     }else
-        LOGE("Error in setDelay %d ms\n", ms);
+        ALOGE("Error in setDelay %d ms\n", ms);
 
     return ret;
 }
@@ -266,7 +266,7 @@ int AccelSensor::readEvents(sensors_event_t* data, int count)
                 mInputReader.next();
             }
         } else {
-            LOGE("AccelSensor: unknown event (type=%d, code=%d)",
+            ALOGE("AccelSensor: unknown event (type=%d, code=%d)",
                     type, event->code);
             mInputReader.next();
         }

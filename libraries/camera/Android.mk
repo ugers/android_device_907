@@ -43,7 +43,7 @@ LOCAL_C_INCLUDES += \
 	external/skia/include/core \
 	frameworks/base/core/jni/android/graphics \
 	$(TARGET_HARDWARE_INCLUDE) \
-	frameworks/native/include \
+	frameworks/native/include/media/hardware
 
 LOCAL_SRC_FILES := \
 	CameraHal.cpp \
