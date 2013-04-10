@@ -111,6 +111,7 @@ PRODUCT_PACKAGES += \
 	gralloc.sun4i \
 	power.sun4i \
 	camera.exDroid \
+	sensors.exDroid \
 	hwcomposer.exDroid \
 	lights.sun4i \
 	libaudioutils \
