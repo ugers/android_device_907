@@ -1,5 +1,5 @@
 reverted:
---- b/arch/arm/plat-sunxi/include/plat/mbr.h
+--- b/kernel/softwinner/907/arch/arm/plat-sunxi/include/plat/mbr.h
 +++ /dev/null
 @@ -1,66 +0,0 @@
 -/*
@@ -69,8 +69,8 @@ reverted:
 -
 -#endif    //__MBR_H__
 reverted:
---- b/block/partition-generic.c
-+++ a/block/partition-generic.c
+--- b/kernel/softwinner/907/block/partition-generic.c
++++ a/kernel/softwinner/907/block/partition-generic.c
 @@ -325,11 +325,6 @@
  	}
  
@@ -84,8 +84,8 @@ reverted:
  		dev_set_name(pdev, "%sp%d", dname, partno);
  	else
 reverted:
---- b/block/partitions/Kconfig
-+++ a/block/partitions/Kconfig
+--- b/kernel/softwinner/907/block/partitions/Kconfig
++++ a/kernel/softwinner/907/block/partitions/Kconfig
 @@ -249,14 +249,3 @@
  	  partition table format used by Motorola Delta machines (using
  	  sysv68).
@@ -102,8 +102,8 @@ reverted:
 -	  If unsure say N.
 -
 reverted:
---- b/block/partitions/Makefile
-+++ a/block/partitions/Makefile
+--- b/kernel/softwinner/907/block/partitions/Makefile
++++ a/kernel/softwinner/907/block/partitions/Makefile
 @@ -18,4 +18,4 @@
  obj-$(CONFIG_EFI_PARTITION) += efi.o
  obj-$(CONFIG_KARMA_PARTITION) += karma.o
@@ -111,8 +111,8 @@ reverted:
 +obj-$(CONFIG_SUNXI_NAND) += sunxi_nand.o
 -obj-$(CONFIG_SUNXI_NAND_PARTITION) += sunxi_nand.o
 reverted:
---- b/block/partitions/check.c
-+++ a/block/partitions/check.c
+--- b/kernel/softwinner/907/block/partitions/check.c
++++ a/kernel/softwinner/907/block/partitions/check.c
 @@ -104,7 +104,7 @@
  #ifdef CONFIG_SYSV68_PARTITION
  	sysv68_partition,
@@ -124,7 +124,7 @@ reverted:
  	NULL
 reverted:
 --- /dev/null
-+++ a/block/partitions/sunxi_mbr.h
++++ a/kernel/softwinner/907/block/partitions/sunxi_mbr.h
 @@ -0,0 +1,107 @@
 +/*
 + * drivers/block/sunxi_nand/nfd/mbr.h
@@ -234,8 +234,8 @@ reverted:
 +
 +#endif    //__MBR_H__
 reverted:
---- b/block/partitions/sunxi_nand.c
-+++ a/block/partitions/sunxi_nand.c
+--- b/kernel/softwinner/907/block/partitions/sunxi_nand.c
++++ a/kernel/softwinner/907/block/partitions/sunxi_nand.c
 @@ -4,8 +4,10 @@
   */
  
@@ -269,8 +269,8 @@ reverted:
  			mbr->array[part_cnt].addrlo, size);
  		put_partition(state, part_cnt + 1, mbr->array[part_cnt].addrlo, size);
 reverted:
---- b/drivers/block/Kconfig
-+++ a/drivers/block/Kconfig
+--- b/kernel/softwinner/907/drivers/block/Kconfig
++++ a/kernel/softwinner/907/drivers/block/Kconfig
 @@ -570,7 +570,6 @@
  config SUNXI_NAND
  	depends on BLOCK
@@ -280,8 +280,8 @@ reverted:
  
  config SUNXI_NAND_COMPAT_DEV
 reverted:
---- b/drivers/block/sunxi_nand/nandtest/nand_test.c
-+++ a/drivers/block/sunxi_nand/nandtest/nand_test.c
+--- b/kernel/softwinner/907/drivers/block/sunxi_nand/nandtest/nand_test.c
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nandtest/nand_test.c
 @@ -50,7 +50,7 @@
  #include "../src/include/nand_simple.h"
  
@@ -292,8 +292,8 @@ reverted:
  #include "nand_test.h"
  
 reverted:
---- b/drivers/block/sunxi_nand/nfd/Makefile
-+++ a/drivers/block/sunxi_nand/nfd/Makefile
+--- b/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/Makefile
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/Makefile
 @@ -1,6 +1,6 @@
  
  obj-$(CONFIG_SUNXI_NAND)  += nand.o
@@ -304,7 +304,7 @@ reverted:
           ../src/scan/nand_scan.o ../src/scan/nand_id.o\
 reverted:
 --- /dev/null
-+++ a/drivers/block/sunxi_nand/nfd/mbr.c
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/mbr.c
 @@ -0,0 +1,154 @@
 +/*
 + * drivers/block/sunxi_nand/nfd/mbr.c
@@ -462,7 +462,7 @@ reverted:
 +
 reverted:
 --- /dev/null
-+++ a/drivers/block/sunxi_nand/nfd/mbr.h
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/mbr.h
 @@ -0,0 +1,76 @@
 +/*
 + * drivers/block/sunxi_nand/nfd/mbr.h
@@ -541,8 +541,8 @@ reverted:
 +
 +#endif    //__MBR_H__
 reverted:
---- b/drivers/block/sunxi_nand/nfd/nand_blk.c
-+++ a/drivers/block/sunxi_nand/nfd/nand_blk.c
+--- b/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_blk.c
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_blk.c
 @@ -49,12 +49,17 @@
  
  #include "nand_private.h"
@@ -760,8 +760,8 @@ reverted:
  {
  	geo->heads = dev->heads;
 reverted:
---- b/drivers/block/sunxi_nand/nfd/nand_blk.h
-+++ a/drivers/block/sunxi_nand/nfd/nand_blk.h
+--- b/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_blk.h
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_blk.h
 @@ -21,7 +21,7 @@
   */
  
@@ -798,8 +798,8 @@ reverted:
  };
  
 reverted:
---- b/drivers/block/sunxi_nand/nfd/nand_private.h
-+++ a/drivers/block/sunxi_nand/nfd/nand_private.h
+--- b/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_private.h
++++ a/kernel/softwinner/907/drivers/block/sunxi_nand/nfd/nand_private.h
 @@ -29,13 +29,6 @@
  #include	"../src/include/nand_logic.h"
  #include	"../src/include/nand_scan.h"
