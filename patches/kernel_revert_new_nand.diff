@@ -1,0 +1,816 @@
+reverted:
+--- b/arch/arm/plat-sunxi/include/plat/mbr.h
++++ /dev/null
+@@ -1,66 +0,0 @@
+-/*
+- * drivers/block/sunxi_nand/nfd/mbr.h
+- *
+- * (C) Copyright 2007-2012
+- * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation; either version 2 of
+- * the License, or (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+- * MA 02111-1307 USA
+- */
+-
+-#ifndef    __MBR_H__
+-#define    __MBR_H__
+-
+-#include <linux/kernel.h>
+-
+-#define MAX_PART_COUNT		15	 									//max part count
+-#define MBR_COPY_NUM        4    									//mbr backup count
+-
+-#define MBR_START_ADDRESS	0x0										//mbr start address
+-#define MBR_SIZE			1024									//mbr size
+-#define MBR_RESERVED        (MBR_SIZE - 20 - (MAX_PART_COUNT * 64)) //mbr reserved space
+-
+-struct nand_disk{
+-	unsigned long size;
+-	unsigned long offset;
+-	unsigned char type;
+-};
+-
+-/* part info */
+-typedef struct tag_PARTITION{
+-	__u32 addrhi;				//start address high 32 bit
+-	__u32 addrlo;				//start address low 32 bit
+-	__u32 lenhi;				//size high 32 bit
+-	__u32 lenlo;				//size low 32 bit
+-	__u8  classname[12];		//major device name
+-	__u8  name[12];				//minor device name
+-	unsigned  int       user_type;          //标志当前盘符所属于的用户
+-	unsigned  int       ro;                 //标志当前盘符的读写属性
+-	__u8  res[16];				//reserved
+-}PARTITION;
+-
+-/* mbr info */
+-typedef struct tag_MBR{
+-	__u32 crc32;					// crc, from byte 4 to mbr tail
+-	__u32 version;					// version
+-	__u8  magic[8];					// magic number
+-	__u8  copy;						// mbr backup count
+-	__u8  index;					// current part	no
+-	__u16   PartCount;				// part counter
+-	PARTITION array[MAX_PART_COUNT];// part info
+-	__u8 res[MBR_RESERVED];         // reserved space
+-}MBR;
+-
+-#endif    //__MBR_H__
+reverted:
+--- b/block/partition-generic.c
++++ a/block/partition-generic.c
+@@ -325,11 +325,6 @@
+ 	}
+ 
+ 	dname = dev_name(ddev);
+-#ifdef CONFIG_SUNXI_NAND_COMPAT_DEV
+-	if (!strcmp(dname, "nand"))
+-		dev_set_name(pdev, "%s%c", dname, 'a' - 1 + partno);
+-	else
+-#endif
+ 	if (isdigit(dname[strlen(dname) - 1]))
+ 		dev_set_name(pdev, "%sp%d", dname, partno);
+ 	else
+reverted:
+--- b/block/partitions/Kconfig
++++ a/block/partitions/Kconfig
+@@ -249,14 +249,3 @@
+ 	  partition table format used by Motorola Delta machines (using
+ 	  sysv68).
+ 	  Otherwise, say N.
+-
+-config SUNXI_NAND_PARTITION
+-	bool "sunxi nand partition table support" if PARTITION_ADVANCED
+-	default y if VME
+-	select CRC32
+-	---help---
+-	  This partition scheme is used on Allwinner sunxi nand chips connected
+-	  directly to SoC.
+-
+-	  If unsure say N.
+-
+reverted:
+--- b/block/partitions/Makefile
++++ a/block/partitions/Makefile
+@@ -18,4 +18,4 @@
+ obj-$(CONFIG_EFI_PARTITION) += efi.o
+ obj-$(CONFIG_KARMA_PARTITION) += karma.o
+ obj-$(CONFIG_SYSV68_PARTITION) += sysv68.o
++obj-$(CONFIG_SUNXI_NAND) += sunxi_nand.o
+-obj-$(CONFIG_SUNXI_NAND_PARTITION) += sunxi_nand.o
+reverted:
+--- b/block/partitions/check.c
++++ a/block/partitions/check.c
+@@ -104,7 +104,7 @@
+ #ifdef CONFIG_SYSV68_PARTITION
+ 	sysv68_partition,
+ #endif
++#ifdef CONFIG_SUNXI_NAND
+-#ifdef CONFIG_SUNXI_NAND_PARTITION
+ 	sunxi_nand_partition,
+ #endif
+ 	NULL
+reverted:
+--- /dev/null
++++ a/block/partitions/sunxi_mbr.h
+@@ -0,0 +1,107 @@
++/*
++ * drivers/block/sunxi_nand/nfd/mbr.h
++ *
++ * (C) Copyright 2007-2012
++ * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef    __MBR_H__
++#define    __MBR_H__
++
++/*
++ * drivers/block/sunxi_nand/include/type_def.h
++ *
++ * (C) Copyright 2007-2012
++ * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef TYPE_DEF_H
++#define TYPE_DEF_H
++
++#include <linux/kernel.h>
++
++  typedef unsigned int __hdle;
++
++#define EPDK_OK 0
++#define EPDK_FAIL -1
++#endif
++
++#define MAX_PART_COUNT		15	 									//max part count
++#define MBR_COPY_NUM        4    									//mbr backup count
++
++#define MBR_START_ADDRESS	0x0										//mbr start address
++#define MBR_SIZE			1024									//mbr size
++#define MBR_RESERVED        (MBR_SIZE - 20 - (MAX_PART_COUNT * 64)) //mbr reserved space
++
++extern struct __NandDriverGlobal_t NandDriverInfo;
++
++extern struct __NandStorageInfo_t  NandStorageInfo;
++
++#define DiskSize  (SECTOR_CNT_OF_SINGLE_PAGE * PAGE_CNT_OF_PHY_BLK * BLOCK_CNT_OF_DIE * \
++            DIE_CNT_OF_CHIP * NandStorageInfo.ChipCnt  / 1024 * DATA_BLK_CNT_OF_ZONE)
++
++
++struct nand_disk{
++	unsigned long size;
++	unsigned long offset;
++	unsigned char type;
++};
++
++/* part info */
++typedef struct tag_PARTITION{
++	__u32 addrhi;				//start address high 32 bit
++	__u32 addrlo;				//start address low 32 bit
++	__u32 lenhi;				//size high 32 bit
++	__u32 lenlo;				//size low 32 bit
++	__u8  classname[12];		//major device name
++	__u8  name[12];				//minor device name
++	unsigned  int       user_type;          //标志当前盘符所属于的用户
++	unsigned  int       ro;                 //标志当前盘符的读写属性
++	__u8  res[16];				//reserved
++}PARTITION;
++
++/* mbr info */
++typedef struct tag_MBR{
++	__u32 crc32;					// crc, from byte 4 to mbr tail
++	__u32 version;					// version
++	__u8  magic[8];					// magic number
++	__u8  copy;						// mbr backup count
++	__u8  index;					// current part	no
++	__u16   PartCount;				// part counter
++	PARTITION array[MAX_PART_COUNT];// part info
++	__u8 res[MBR_RESERVED];         // reserved space
++}MBR;
++
++int mbr2disks(struct nand_disk* disk_array);
++
++#endif    //__MBR_H__
+reverted:
+--- b/block/partitions/sunxi_nand.c
++++ a/block/partitions/sunxi_nand.c
+@@ -4,8 +4,10 @@
+  */
+ 
+ #include "check.h"
++#include "sunxi_mbr.h"
++
++extern struct nand_disk disk_array[];
++extern __u32 calc_crc32(void * buffer, __u32 length);
+-#include <plat/mbr.h>
+-#include <linux/crc32.h>
+ 
+ int sunxi_nand_partition(struct parsed_partitions *state)
+ {
+@@ -23,8 +25,7 @@
+ 	bdevname(state->bdev, b);
+ 
+ 	for(i = 0; i < MBR_COPY_NUM; i++, mbr++) {
++		if(*(__u32 *)mbr == calc_crc32((__u32 *)mbr + 1,MBR_SIZE - 4))
+-		__u32 iv=0xffffffff;
+-		if(*(__u32 *)mbr == (crc32_le(iv,(__u8 *)mbr + 4,MBR_SIZE - 4) ^ iv))
+ 			break;
+ 		printk(KERN_WARNING "Dev Sunxi %s header: CRC bad for MBR %d\n", b, i);
+ 	}
+@@ -39,7 +40,7 @@
+ 		/* special case: last partition uses up rest of NAND space */
+ 		__u32 size = mbr->array[part_cnt].lenlo;
+ 		if (part_cnt == mbr->PartCount - 1)
++			size = disk_array[0].size - mbr->array[part_cnt].addrlo;
+-			size = get_capacity(state->bdev->bd_disk) - mbr->array[part_cnt].addrlo;
+ 		printk(KERN_WARNING "Dev %s: part %d, start %d, size %d\n", b, part_cnt + 1,
+ 			mbr->array[part_cnt].addrlo, size);
+ 		put_partition(state, part_cnt + 1, mbr->array[part_cnt].addrlo, size);
+reverted:
+--- b/drivers/block/Kconfig
++++ a/drivers/block/Kconfig
+@@ -570,7 +570,6 @@
+ config SUNXI_NAND
+ 	depends on BLOCK
+ 	depends on ARCH_SUN4I || ARCH_SUN5I
+-	select SUNXI_NAND_PARTITION
+ 	tristate "SUNXI Nandflash Driver"
+ 
+ config SUNXI_NAND_COMPAT_DEV
+reverted:
+--- b/drivers/block/sunxi_nand/nandtest/nand_test.c
++++ a/drivers/block/sunxi_nand/nandtest/nand_test.c
+@@ -50,7 +50,7 @@
+ #include "../src/include/nand_simple.h"
+ 
+ #include "../nfd/nand_blk.h"
++#include "../nfd/mbr.h"
+-#include <plat/mbr.h>
+ 
+ #include "nand_test.h"
+ 
+reverted:
+--- b/drivers/block/sunxi_nand/nfd/Makefile
++++ a/drivers/block/sunxi_nand/nfd/Makefile
+@@ -1,6 +1,6 @@
+ 
+ obj-$(CONFIG_SUNXI_NAND)  += nand.o
++nand-y := nand_blk.o  dma_for_nand.o int_for_nand.o mbr.o \
+-nand-y := nand_blk.o  dma_for_nand.o int_for_nand.o \
+          ../src/format/nand_format.o \
+          ../src/logic/bad_manage.o ../src/logic/logic_ctl.o ../src/logic/mapping.o ../src/logic/mapping_base.o ../src/logic/merge.o ../src/logic/read_reclaim.o ../src/logic/wear_levelling.o ../src/logic/logic_cache.o \
+          ../src/scan/nand_scan.o ../src/scan/nand_id.o\
+reverted:
+--- /dev/null
++++ a/drivers/block/sunxi_nand/nfd/mbr.c
+@@ -0,0 +1,154 @@
++/*
++ * drivers/block/sunxi_nand/nfd/mbr.c
++ *
++ * (C) Copyright 2007-2012
++ * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include "mbr.h"
++#include "../src/include/nand_oal.h"
++#include "nand_private.h"
++
++MBR *mbr;
++
++
++typedef struct tag_CRC32_DATA
++{
++	__u32 CRC;				//int的大小是32位
++	__u32 CRC_32_Tbl[256];	//用来保存码表
++}CRC32_DATA_t;
++
++__u32 calc_crc32(void * buffer, __u32 length)
++{
++	__u32 i, j;
++	CRC32_DATA_t crc32;		//
++	__u32 CRC32 = 0xffffffff; //设置初始值
++	crc32.CRC = 0;
++
++	for( i = 0; i < 256; ++i)//用++i以提高效率
++	{
++		crc32.CRC = i;
++		for( j = 0; j < 8 ; ++j)
++		{
++			//这个循环实际上就是用"计算法"来求取CRC的校验码
++			if(crc32.CRC & 1)
++				crc32.CRC = (crc32.CRC >> 1) ^ 0xEDB88320;
++			else //0xEDB88320就是CRC-32多项表达式的值
++				crc32.CRC >>= 1;
++		}
++		crc32.CRC_32_Tbl[i] = crc32.CRC;
++	}
++
++	CRC32 = 0xffffffff; //设置初始值
++    for( i = 0; i < length; ++i)
++    {
++        CRC32 = crc32.CRC_32_Tbl[(CRC32^((unsigned char*)buffer)[i]) & 0xff] ^ (CRC32>>8);
++    }
++    //return CRC32;
++	return CRC32^0xffffffff;
++}
++
++__s32 _get_mbr(void)
++{
++	__u32 	i;
++	__s32  mbr_get_sucess = 0;
++
++	/*request mbr space*/
++	mbr = MALLOC(sizeof(MBR));
++	if(mbr == NULL)
++	{
++		PRINT("%s : request memory fail\n",__FUNCTION__);
++		return -ENOMEM;
++	}
++
++	/*get mbr from nand device*/
++	for(i = 0; i < MBR_COPY_NUM; i++)
++	{
++		if(LML_Read((MBR_START_ADDRESS + MBR_SIZE*i)/512,MBR_SIZE/512,mbr) == 0)
++		{
++			/*checksum*/
++			if(*(__u32 *)mbr == calc_crc32((__u32 *)mbr + 1,MBR_SIZE - 4))
++			{
++				mbr_get_sucess = 1;
++				break;
++			}
++		}
++	}
++
++	if(mbr_get_sucess)
++		return 0;
++	else
++		return -1;
++
++}
++
++__s32 _free_mbr(void)
++{
++	if(mbr)
++	{
++		FREE(mbr,sizeof(MBR));
++		mbr = 0;
++	}
++
++	return 0;
++}
++
++int mbr2disks(struct nand_disk* disk_array)
++{
++	int part_cnt = 0;
++	int part_index = 0;
++
++	PRINT("The %d disk name = %s, class name = %s, disk start = 0, disk size = %d\n",
++		part_index, "DEVICE", "NAND", DiskSize);
++
++	/*
++	 * for nand recovery in case it's trashed during formatting always
++	 * make the nand device before possibly failing on a bad mbr
++	 */
++	disk_array[part_index].offset = 0;
++	disk_array[part_index].size = DiskSize;
++	part_index++;
++
++#ifdef CONFIG_SUNXI_NAND_COMPAT_DEV
++	if(_get_mbr()){
++		printk("get mbr error\n" );
++		return part_index;
++	}
++
++	//查找出所有的LINUX盘符
++	for(part_cnt = 0; part_cnt < mbr->PartCount && part_cnt < MAX_PART_COUNT; part_cnt++)
++	{
++	    if((mbr->array[part_cnt].user_type == 2) || (mbr->array[part_cnt].user_type == 0))
++	    {
++			PRINT("The %d disk name = %s, class name = %s, disk size = %d\n", part_index, mbr->array[part_cnt].name,
++						mbr->array[part_cnt].classname, mbr->array[part_cnt].lenlo);
++
++	        disk_array[part_index].offset = mbr->array[part_cnt].addrlo;
++			disk_array[part_index].size = mbr->array[part_cnt].lenlo;
++			part_index ++;
++	    }
++	}
++	disk_array[part_index - 1].size = DiskSize - mbr->array[mbr->PartCount - 1].addrlo;
++	_free_mbr();
++	PRINT("The %d disk size = %lu\n", part_index - 1, disk_array[part_index - 1].size);
++	PRINT("part total count = %d\n", part_index);
++#endif
++
++	return part_index;
++}
++
+reverted:
+--- /dev/null
++++ a/drivers/block/sunxi_nand/nfd/mbr.h
+@@ -0,0 +1,76 @@
++/*
++ * drivers/block/sunxi_nand/nfd/mbr.h
++ *
++ * (C) Copyright 2007-2012
++ * Allwinner Technology Co., Ltd. <www.allwinnertech.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#ifndef    __MBR_H__
++#define    __MBR_H__
++
++#include "../include/type_def.h"
++
++#define MAX_PART_COUNT		15	 									//max part count
++#define MBR_COPY_NUM        4    									//mbr backup count
++
++#define MBR_START_ADDRESS	0x0										//mbr start address
++#define MBR_SIZE			1024									//mbr size
++#define MBR_RESERVED        (MBR_SIZE - 20 - (MAX_PART_COUNT * 64)) //mbr reserved space
++
++extern struct __NandDriverGlobal_t NandDriverInfo;
++
++extern struct __NandStorageInfo_t  NandStorageInfo;
++
++#define DiskSize  (SECTOR_CNT_OF_SINGLE_PAGE * PAGE_CNT_OF_PHY_BLK * BLOCK_CNT_OF_DIE * \
++            DIE_CNT_OF_CHIP * NandStorageInfo.ChipCnt  / 1024 * DATA_BLK_CNT_OF_ZONE)
++
++
++struct nand_disk{
++	unsigned long size;
++	unsigned long offset;
++	unsigned char type;
++};
++
++/* part info */
++typedef struct tag_PARTITION{
++	__u32 addrhi;				//start address high 32 bit
++	__u32 addrlo;				//start address low 32 bit
++	__u32 lenhi;				//size high 32 bit
++	__u32 lenlo;				//size low 32 bit
++	__u8  classname[12];		//major device name
++	__u8  name[12];				//minor device name
++	unsigned  int       user_type;          //标志当前盘符所属于的用户
++	unsigned  int       ro;                 //标志当前盘符的读写属性
++	__u8  res[16];				//reserved
++}PARTITION;
++
++/* mbr info */
++typedef struct tag_MBR{
++	__u32 crc32;					// crc, from byte 4 to mbr tail
++	__u32 version;					// version
++	__u8  magic[8];					// magic number
++	__u8  copy;						// mbr backup count
++	__u8  index;					// current part	no
++	__u16   PartCount;				// part counter
++	PARTITION array[MAX_PART_COUNT];// part info
++	__u8 res[MBR_RESERVED];         // reserved space
++}MBR;
++
++int mbr2disks(struct nand_disk* disk_array);
++
++#endif    //__MBR_H__
+reverted:
+--- b/drivers/block/sunxi_nand/nfd/nand_blk.c
++++ a/drivers/block/sunxi_nand/nfd/nand_blk.c
+@@ -49,12 +49,17 @@
+ 
+ #include "nand_private.h"
+ #include "../include/type_def.h"
++#include "mbr.h"
+-#include <plat/mbr.h>
+ #include "../nandtest/nand_test.h"
+ 
+ #include "nand_private.h"
+ #include <linux/wait.h>
+ #include <linux/sched.h>
++extern struct __NandStorageInfo_t  NandStorageInfo;
++extern struct __NandDriverGlobal_t NandDriverInfo;
++
++/* +1 for whole nand device /dev/nand file */
++struct nand_disk disk_array[MAX_PART_COUNT+1];
+ 
+ #define BLK_ERR_MSG_ON
+ #ifdef  BLK_ERR_MSG_ON
+@@ -725,26 +730,25 @@
+ 	filp->f_dentry->d_inode->i_bdev->bd_disk->fops->ioctl(filp->f_dentry->d_inode->i_bdev, 0, cmd, 0);
+ 	filp_close(filp, current->files);
+ }
++static int nand_add_dev(struct nand_blk_ops *nandr, struct nand_disk *part)
+-static int nand_add_dev(struct nand_blk_ops *nandr)
+ {
+ 	struct nand_blk_dev *dev;
++	struct list_head *this;
+ 	struct gendisk *gd;
+ 	unsigned long temp;
+ 
++	int last_devnum = -1;
++
++	dev = kmalloc(sizeof(struct nand_blk_dev), GFP_KERNEL);
++	if (!dev) {
++		dbg_err("dev: out of memory for data structures\n");
++		return -1;
+-	if (!down_trylock(&nand_mutex)) {
+-		up(&nand_mutex);
+-		BUG();
+ 	}
+-
+-	dev = &nandr->dev;
+-	if (dev->blkcore_priv)
+-		return -EBUSY;
+-
+ 	memset(dev, 0, sizeof(*dev));
+ 	dev->nandr = nandr;
++	dev->size = part->size;
++	dev->off_size = part->offset;
++	dev->devnum = -1;
+-	dev->size = DiskSize;
+-	dev->off_size = 0;
+-	dev->devnum = 0;
+ 
+ 	dev->cylinders = 1024;
+ 	dev->heads = 16;
+@@ -763,17 +767,60 @@
+ 		}
+ 	}
+ 
++	if (!down_trylock(&nand_mutex)) {
++		up(&nand_mutex);
++		BUG();
++	}
++
++	list_for_each(this, &nandr->devs) {
++		struct nand_blk_dev *tmpdev = list_entry(this, struct nand_blk_dev, list);
++		if (dev->devnum == -1) {
++			/* Use first free number */
++			if (tmpdev->devnum != last_devnum+1) {
++				/* Found a free devnum. Plug it in here */
++				dev->devnum = last_devnum+1;
++				list_add_tail(&dev->list, &tmpdev->list);
++				goto added;
++			}
++		} else if (tmpdev->devnum == dev->devnum) {
++			/* Required number taken */
++			return -EBUSY;
++		} else if (tmpdev->devnum > dev->devnum) {
++			/* Required number was free */
++			list_add_tail(&dev->list, &tmpdev->list);
++			goto added;
++		}
++		last_devnum = tmpdev->devnum;
++	}
++	if (dev->devnum == -1)
++		dev->devnum = last_devnum+1;
++
++	if ((dev->devnum <<nandr->minorbits) > 256) {
++		return -EBUSY;
++	}
++
++	//init_MUTEX(&dev->sem);
++	list_add_tail(&dev->list, &nandr->devs);
++
++ added:
++
+ 	gd = alloc_disk(1 << nandr->minorbits);
+ 	if (!gd) {
++		list_del(&dev->list);
+ 		return -ENOMEM;
+ 	}
+ 	gd->major = nandr->major;
+ 	gd->first_minor = (dev->devnum) << nandr->minorbits;
+ 	gd->fops = &nand_blktrans_ops;
+ 
++	if (dev->devnum)
++		/* /dev/nand[a-o] */
++		snprintf(gd->disk_name, sizeof(gd->disk_name),
++			 "%s%c", nandr->name, (nandr->minorbits?'a':'0') + dev->devnum-1);
++	else
++		/* /dev/nand */
++		snprintf(gd->disk_name, sizeof(gd->disk_name),
++			 "%s", nandr->name);
+-	/* /dev/nand */
+-	snprintf(gd->disk_name, sizeof(gd->disk_name),
+-		 "%s", nandr->name);
+ 
+ 	/* 2.5 has capacity in units of 512 bytes while still
+ 	   having BLOCK_SIZE_BITS set to 10. Just to keep us amused. */
+@@ -783,6 +830,16 @@
+ 	dev->blkcore_priv = gd;
+ 	gd->queue = nandr->rq;
+ 
++	/*set rw partition*/
++	if(part->type == PART_NO_ACCESS)
++		dev->disable_access = 1;
++
++	if(part->type == PART_READONLY)
++		dev->readonly = 1;
++
++	if(part->type == PART_WRITEONLY)
++		dev->writeonly = 1;
++
+ 	if (dev->readonly)
+ 		set_disk_ro(gd, 1);
+ 	add_disk(gd);
+@@ -792,13 +849,13 @@
+ static int nand_remove_dev(struct nand_blk_dev *dev)
+ {
+ 	struct gendisk *gd;
++	gd = dev->blkcore_priv;
+ 
+ 	if (!down_trylock(&nand_mutex)) {
+ 		up(&nand_mutex);
+ 		BUG();
+ 	}
++	list_del(&dev->list);
+-	gd = dev->blkcore_priv;
+-	dev->blkcore_priv = NULL;
+ 	gd->queue = NULL;
+ 	del_gendisk(gd);
+ 	put_disk(gd);
+@@ -849,7 +906,8 @@
+ 
+ int nand_blk_register(struct nand_blk_ops *nandr)
+ {
++	int i,ret;
++	__u32 part_cnt;
+-	int ret;
+ 
+ 	down(&nand_mutex);
+ 
+@@ -908,9 +966,12 @@
+ 	#endif
+ 
+ 	//devfs_mk_dir(nandr->name);
++	INIT_LIST_HEAD(&nandr->devs);
+-	memset(&nandr->dev,0,sizeof(nandr->dev));
+ 
++	part_cnt = mbr2disks(disk_array);
++	for(i = 0 ; i < part_cnt ; i++){
++		nandr->add_dev(nandr,&(disk_array[i]));
++	}
+-	nandr->add_dev(nandr);
+ 
+ 	up(&nand_mutex);
+ 
+@@ -920,6 +981,7 @@
+ 
+ void nand_blk_unregister(struct nand_blk_ops *nandr)
+ {
++	struct list_head *this, *next;
+ 	down(&nand_mutex);
+ 	/* Clean up the kernel thread */
+ 	nandr->quit = 1;
+@@ -932,7 +994,12 @@
+ 	wait_for_completion(&collect_arg.thread_exit);
+ #endif
+ 	/* Remove it from the list of active majors */
++
++
++	list_for_each_safe(this, next, &nandr->devs) {
++		struct nand_blk_dev *dev = list_entry(this, struct nand_blk_dev, list);
++		nandr->remove_dev(dev);
++	}
+-	nandr->remove_dev(&nandr->dev);
+ 
+ 	//devfs_remove(nandr->name);
+ 	blk_cleanup_queue(nandr->rq);
+@@ -940,8 +1007,14 @@
+ 	unregister_blkdev(nandr->major, nandr->name);
+ 
+ 	up(&nand_mutex);
++
++	if (!list_empty(&nandr->devs))
++		BUG();
+ }
+ 
++
++
++
+ static int nand_getgeo(struct nand_blk_dev *dev,  struct hd_geometry *geo)
+ {
+ 	geo->heads = dev->heads;
+reverted:
+--- b/drivers/block/sunxi_nand/nfd/nand_blk.h
++++ a/drivers/block/sunxi_nand/nfd/nand_blk.h
+@@ -21,7 +21,7 @@
+  */
+ 
+ #include <linux/semaphore.h>
++#include "mbr.h"
+-#include <plat/mbr.h>
+ 
+ struct nand_blk_ops;
+ struct list_head;
+@@ -30,6 +30,7 @@
+ 
+ struct nand_blk_dev{
+ 	struct nand_blk_ops *nandr;
++	struct list_head list;
+ 
+ 	unsigned char heads;
+ 	unsigned char sectors;
+@@ -50,7 +51,7 @@
+ 	int minorbits;
+ 
+ 	/* add/remove nandflash devparts,use gendisk */
++	int (*add_dev)(struct nand_blk_ops *nandr, struct nand_disk *part);
+-	int (*add_dev)(struct nand_blk_ops *nandr);
+ 	int (*remove_dev)(struct nand_blk_dev *dev);
+ 
+ 	/* Block layer ioctls */
+@@ -69,7 +70,7 @@
+ 	spinlock_t queue_lock;
+ 	struct semaphore nand_ops_mutex;
+ 
++	struct list_head devs;
+-	struct nand_blk_dev dev;
+ 	struct module *owner;
+ };
+ 
+reverted:
+--- b/drivers/block/sunxi_nand/nfd/nand_private.h
++++ a/drivers/block/sunxi_nand/nfd/nand_private.h
+@@ -29,13 +29,6 @@
+ #include	"../src/include/nand_logic.h"
+ #include	"../src/include/nand_scan.h"
+ 
+-extern struct __NandDriverGlobal_t NandDriverInfo;
+-
+-extern struct __NandStorageInfo_t  NandStorageInfo;
+-
+-#define DiskSize  (SECTOR_CNT_OF_SINGLE_PAGE * PAGE_CNT_OF_PHY_BLK * BLOCK_CNT_OF_DIE * \
+-            DIE_CNT_OF_CHIP * NandStorageInfo.ChipCnt  / 1024 * DATA_BLK_CNT_OF_ZONE)
+-
+ /*
+ typedef struct
+ {
