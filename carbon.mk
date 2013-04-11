@@ -15,11 +15,13 @@
 #
 
 $(call inherit-product, device/softwinner/907/full_907.mk)
-
-# Inherit some common CyanogenMod stuff.
-$(call inherit-product, vendor/carbon/config/common_tablet.mk)
-$(call inherit-product, vendor/carbon/config/common_gsm.mk)
 $(call inherit-product, device/softwinner/907/907-blobs.mk)
+
+# Inherit some common CarbonDev stuff.
+$(call inherit-product, vendor/carbon/config/common_tablet.mk)
+
+# Inherit GSM common stuff
+$(call inherit-product, vendor/carbon/config/common_gsm.mk)
 
 ## Device identifier. This must come after all inclusions
 PRODUCT_NAME := carbon_907
