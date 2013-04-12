@@ -15,6 +15,7 @@
 
 # /system/bin
 PRODUCT_COPY_FILES += \
+	device/softwinner/907/prebuilt/lib/hw/sensors.exDroid.so:system/lib/hw/sensors.exDroid.so \
 	device/softwinner/907/prebuilt/bin/fsck.exfat:system/bin/fsck.exfat \
 	device/softwinner/907/prebuilt/bin/mkfs.exfat:system/bin/mkfs.exfat \
 	device/softwinner/907/prebuilt/bin/mount.exfat:system/bin/mount.exfat \
@@ -37,7 +38,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/etc/camera.cfg:system/etc/camera.cfg \
 	device/softwinner/907/prebuilt/etc/gps.conf:system/etc/gps.conf \
 	device/softwinner/907/prebuilt/etc/usb_modeswitch.sh:system/etc/usb_modeswitch.sh \
-	device/softwinner/907/prebuilt/etc/vold.fstab:system/etc/vold.fstab
+	device/softwinner/907/vold.fstab:system/etc/vold.fstab
 
 # Media files
 PRODUCT_COPY_FILES += \
@@ -60,8 +61,6 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/egl/libGLESv1_CM_mali.so:system/lib/egl/libGLESv1_CM_mali.so \
 	device/softwinner/907/prebuilt/lib/egl/libGLESv2_mali.so:system/lib/egl/libGLESv2_mali.so \
 	device/softwinner/907/prebuilt/lib/liballwinner-ril.so:system/lib/liballwinner-ril.so \
-	device/softwinner/907/prebuilt/lib/hw/camera.exDroid.so:system/lib/hw/camera.exDroid.so \
-	device/softwinner/907/prebuilt/lib/hw/sensors.exDroid.so:system/lib/hw/sensors.exDroid.so \
 	device/softwinner/907/prebuilt/lib/libMali.so:system/lib/libMali.so \
 	device/softwinner/907/prebuilt/lib/libUMP.so:system/lib/libUMP.so \
 	device/softwinner/907/prebuilt/lib/libMali.so:obj/lib/libMali.so \
@@ -87,8 +86,8 @@ PRODUCT_COPY_FILES += \
 #PRODUCT_COPY_FILES += \
 #	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/vendor/modules,system/vendor/modules)
 
-PRODUCT_COPY_FILES += \
-	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/lib/modules,system/lib/modules)
+#PRODUCT_COPY_FILES += \
+#	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/lib/modules,system/lib/modules)
 
 # HACK by turl: Create some intermediate files to link with libMali/libUMP
 $(shell mkdir -p out/target/product/907/obj/SHARED_LIBRARIES/libMali_intermediates)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ifneq ($(findstring $(SW_BOARD_USES_GSENSOR_TYPE),mma7660 mma8451), )
+ifneq ($(findstring mma7660,$(SW_BOARD_USES_GSENSOR_TYPE))$(findstring mma8451,$(SW_BOARD_USES_GSENSOR_TYPE)), )
 
 
 LOCAL_PATH := $(call my-dir)
@@ -22,35 +22,35 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-ifeq ($(SW_BOARD_USES_GSENSOR_TYPE), mma7660)
+ifneq ($(findstring mma7660,$(SW_BOARD_USES_GSENSOR_TYPE)), )
 LOCAL_CPPFLAGS += -DACCELEROMETER_SENSOR_MMA7660
 endif
 
-ifeq ($(SW_BOARD_USES_GSENSOR_TYPE), mma8451)
+ifneq ($(findstring mma8451,$(SW_BOARD_USES_GSENSOR_TYPE)), )
 LOCAL_CPPFLAGS += -DACCELEROMETER_SENSOR_MMA8451
 endif
 
 
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_X), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_X),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_X
 endif
 
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_Y), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_Y),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_Y
 endif
 
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_Z), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_Z),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_Z
 endif
 
-ifeq ($(SW_BOARD_GSENSOR_XY_REVERT), true)
+ifeq ($(SW_BOARD_GSENSOR_XY_REVERT),true)
 LOCAL_CPPFLAGS += -DGSENSOR_XY_REVERT
 endif
 
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE := sensors.$(TARGET_BOARD_PLATFORM)
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 LOCAL_CFLAGS := -DLOG_TAG=\"Sensors\"
 
 LOCAL_SRC_FILES := 						\

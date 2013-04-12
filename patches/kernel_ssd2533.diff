@@ -1,0 +1,1232 @@
+diff -uprN -X a/kernel/softwinner/907/Documentation/dontdiff orig/kernel/softwinner/907/drivers/input/touchscreen/Kconfig a/kernel/softwinner/907/drivers/input/touchscreen/Kconfig
+--- orig/kernel/softwinner/907/drivers/input/touchscreen/Kconfig	2013-01-21 21:39:57.810809081 +1100
++++ a/kernel/softwinner/907/drivers/input/touchscreen/Kconfig	2013-01-15 23:53:43.822415318 +1100
+@@ -760,6 +760,11 @@ config TOUCHSCREEN_FT5X_TS
+        help
+          byd0x7ets touchscreen driver
+ 
++config TOUCHSCREEN_SSD253X_TS
++       tristate  "ssd253x touchscreen driver"
++       help
++         ssd253x touchscreen driver for AllWinner Sun4i
++
+ config  TOUCHSCREEN_ZT8031
+        tristate  "ZT8031 touchscreen driver"
+        help
+diff -uprN -X a/kernel/softwinner/907/Documentation/dontdiff orig/kernel/softwinner/907/drivers/input/touchscreen/Makefile a/kernel/softwinner/907/drivers/input/touchscreen/Makefile
+--- orig/kernel/softwinner/907/drivers/input/touchscreen/Makefile	2013-01-21 21:39:57.810809081 +1100
++++ a/kernel/softwinner/907/drivers/input/touchscreen/Makefile	2013-01-20 22:07:55.566510682 +1100
+@@ -62,6 +62,7 @@ obj-$(CONFIG_TOUCHSCREEN_WM97XX_ZYLONITE
+ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
+ obj-$(CONFIG_TOUCHSCREEN_FT5X_TS) += ft5x_ts.o
++obj-$(CONFIG_TOUCHSCREEN_SSD253X_TS) 	+= ssd253x-ts.o
+ obj-$(CONFIG_TOUCHSCREEN_GT801)         += goodix_touch.o
+ obj-$(CONFIG_TOUCHSCREEN_GT811)         += gt811_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_GT818)         += gt818_ts.o
+diff -uprN -X a/kernel/softwinner/907/Documentation/dontdiff orig/kernel/softwinner/907/drivers/input/touchscreen/ssd253x-ts.c a/kernel/softwinner/907/drivers/input/touchscreen/ssd253x-ts.c
+--- orig/kernel/softwinner/907/drivers/input/touchscreen/ssd253x-ts.c	1970-01-01 10:00:00.000000000 +1000
++++ a/kernel/softwinner/907/drivers/input/touchscreen/ssd253x-ts.c	2013-01-21 22:24:14.044937304 +1100
+@@ -0,0 +1,1202 @@
++/* 
++ * drivers/input/touchscreen/ssd2533.c
++ *
++ * Solomon-Systech ssd2533 TouchScreen driver. 
++ *
++ * Copyright (c) 2013  Andrew Tarabaras.
++ * 
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/kernel.h> 
++#include <linux/fs.h>
++#include <linux/i2c.h>
++#include <linux/delay.h>
++#include <linux/input.h>
++#include <asm/irq.h>
++#include <linux/irq.h>
++#include <asm/io.h>
++#include <linux/interrupt.h>
++#include <linux/timer.h>
++
++#include <mach/irqs.h>
++#include <mach/system.h>
++#include <mach/hardware.h>
++#include <plat/sys_config.h>
++#include "ctp_platform_ops.h"
++
++#ifdef CONFIG_HAS_EARLYSUSPEND
++    #include <linux/pm.h>
++    #include <linux/earlysuspend.h>
++#endif
++
++#define SCREEN_MAX_X    800
++#define SCREEN_MAX_Y    480
++#define MAX_FINGERS 2
++
++#ifdef PRINT_INT_INFO
++#define print_int_info(fmt, args...)     \
++        do{                              \
++                printk(fmt, ##args);     \
++        }while(0)
++#else
++#define print_int_info(fmt, args...)   //
++#endif
++///////////////////////////////////////////////
++//specific tp related macro: need be configured for specific tp
++#define CTP_IRQ_NO                     (gpio_int_info[0].port_num)
++#define CTP_IRQ_MODE			(NEGATIVE_EDGE)
++#define SSD2533_I2C_NAME 		"ssd253x-ts"
++#define CTP_NAME			SSD2533_I2C_NAME
++#define TS_RESET_LOW_PERIOD		(15)
++#define TS_INITIAL_HIGH_PERIOD		(15)
++#define TS_WAKEUP_LOW_PERIOD		(100)
++#define TS_WAKEUP_HIGH_PERIOD		(100)
++#define TS_POLL_DELAY			(10)	/* ms delay between samples */
++#define TS_POLL_PERIOD			(10)	/* ms delay between samples */
++#define SCREEN_MAX_HEIGHT		(screen_max_x)
++#define SCREEN_MAX_WIDTH		(screen_max_y)
++#define PRESS_MAX			(255)
++
++
++struct ssd2533_ts
++{
++	struct input_dev * dev;
++	char phys[32];
++	struct i2c_client *client;
++	uint8_t use_irq;
++	uint8_t use_shutdown;
++	uint32_t gpio_shutdown;
++	uint32_t gpio_irq;
++	struct workqueue_struct *ts_workqueue;
++	struct work_struct ts_work;
++	int (*power)(struct ssd2533_ts * ts, int on);
++#ifdef CONFIG_HAS_EARLYSUSPEND
++    	struct early_suspend early_suspend;
++#endif
++};
++
++struct mt_info
++{
++	unsigned event_no:4;
++	unsigned finger_flag:4;
++	unsigned xl:8;
++	unsigned yl:8;
++	unsigned yh:4;
++	unsigned xh:4;
++	unsigned speed:4;	
++	unsigned weight:4;
++};
++
++static const char *ts_name ="ssd253x-ts";
++
++#ifdef CONFIG_HAS_EARLYSUSPEND
++static void ssd2533_suspend(struct early_suspend *handler);
++static void ssd2533_resume(struct early_suspend *handler);
++#endif
++
++static void* __iomem gpio_addr = NULL;
++static int gpio_int_hdle = 0;
++static int gpio_wakeup_hdle = 0;
++static int gpio_reset_hdle = 0;
++static int gpio_wakeup_enable = 1;
++static int gpio_reset_enable = 1;
++static user_gpio_set_t gpio_int_info[1];
++
++static unsigned long int touch_size_x = 600;
++static unsigned long int touch_size_y = 1100;
++
++module_param(touch_size_x, ulong, 0764);
++MODULE_PARM_DESC(touch_size_x, "Touch screen x size in pixels, used for scaling");
++module_param(touch_size_y, ulong, 0764);
++MODULE_PARM_DESC(touch_size_y, "Touch screen y size in pixels, used for scaling");
++
++static int screen_max_x = 0;
++static int screen_max_y = 0;
++static int revert_x_flag = 0;
++static int revert_y_flag = 0;
++static int exchange_x_y_flag = 0;
++static __u32 twi_addr = 0;
++static __u32 twi_id = 0;
++static int	int_cfg_addr[]={PIO_INT_CFG0_OFFSET,PIO_INT_CFG1_OFFSET,
++			PIO_INT_CFG2_OFFSET, PIO_INT_CFG3_OFFSET};
++			
++/* Addresses to scan */
++union{
++	unsigned short dirty_addr_buf[2];
++	const unsigned short normal_i2c[2];
++}u_i2c_addr = {{0x00},};
++
++/*
++ * ctp_get_pendown_state  : get the int_line data state,
++ *
++ * return value:
++ *             return PRESS_DOWN: if down
++ *             return FREE_UP: if up,
++ *             return 0: do not need process, equal free up.
++ */
++static int ctp_get_pendown_state(void)
++{
++	unsigned int reg_val;
++	static int state = FREE_UP;
++
++	//get the input port state
++	reg_val = readl(gpio_addr + PIOH_DATA);
++	if(!(reg_val & (1<<CTP_IRQ_NO))){
++		state = PRESS_DOWN;
++		print_int_info("pen down. \n");
++	}else{ //touch panel is free up
++		state = FREE_UP;
++		print_int_info("free up. \n");
++	}
++	return state;
++}
++
++/**
++ * ctp_clear_penirq - clear int pending
++ *
++ */
++static void ctp_clear_penirq(void)
++{
++	int reg_val;
++
++	reg_val = readl(gpio_addr + PIO_INT_STAT_OFFSET);
++	if((reg_val = (reg_val&(1<<(CTP_IRQ_NO))))){
++		print_int_info("==CTP_IRQ_NO=\n");
++		writel(reg_val,gpio_addr + PIO_INT_STAT_OFFSET);
++	}
++	return;
++}
++
++/**
++ * ctp_set_irq_mode - according sysconfig's subkey "ctp_int_port" to config int port.
++ *
++ * return value:
++ *              0:      success;
++ *              others: fail;
++ */
++static int ctp_set_irq_mode(char *major_key , char *subkey, ext_int_mode int_mode)
++{
++	int ret = 0;
++	__u32 reg_num = 0;
++	__u32 reg_addr = 0;
++	__u32 reg_val = 0;
++	//config gpio to int mode
++	pr_info("%s: config gpio to int mode. \n", __func__);
++#ifndef SYSCONFIG_GPIO_ENABLE
++#else
++	if(gpio_int_hdle){
++		gpio_release(gpio_int_hdle, 2);
++	}
++	gpio_int_hdle = gpio_request_ex(major_key, subkey);
++	if(!gpio_int_hdle){
++		pr_err("request tp_int_port failed. \n");
++		ret = -1;
++		goto request_tp_int_port_failed;
++	}
++	gpio_get_one_pin_status(gpio_int_hdle, gpio_int_info, subkey, 1);
++	pr_info("%s, %d: gpio_int_info, port = %d, port_num = %d. \n", __func__, __LINE__, \
++               gpio_int_info[0].port, gpio_int_info[0].port_num);
++
++#endif
++
++#ifdef AW_GPIO_INT_API_ENABLE
++#else
++	pr_info(" INTERRUPT CONFIG\n");
++	reg_num = (gpio_int_info[0].port_num)%8;
++	reg_addr = (gpio_int_info[0].port_num)/8;
++	reg_val = readl(gpio_addr + int_cfg_addr[reg_addr]);
++	reg_val &= (~(7 << (reg_num * 4)));
++	reg_val |= (int_mode << (reg_num * 4));
++	writel(reg_val,gpio_addr+int_cfg_addr[reg_addr]);
++
++	ctp_clear_penirq();
++
++	reg_val = readl(gpio_addr+PIO_INT_CTRL_OFFSET);
++	reg_val |= (1 << (gpio_int_info[0].port_num));
++	writel(reg_val,gpio_addr+PIO_INT_CTRL_OFFSET);
++
++	udelay(1);
++#endif
++
++request_tp_int_port_failed:
++	return ret;
++}
++
++/**
++ * ctp_set_gpio_mode - according sysconfig's subkey "ctp_io_port" to config io port.
++ *
++ * return value:
++ *              0:      success;
++ *              others: fail;
++ */
++static int ctp_set_gpio_mode(void)
++{
++	//int reg_val;
++	int ret = 0;
++	//config gpio to io mode
++	pr_info("%s: config gpio to io mode. \n", __func__);
++#ifndef SYSCONFIG_GPIO_ENABLE
++#else
++	if(gpio_int_hdle){
++		gpio_release(gpio_int_hdle, 2);
++	}
++	gpio_int_hdle = gpio_request_ex("ctp_para", "ctp_io_port");
++	if(!gpio_int_hdle){
++		pr_err("request ctp_io_port failed. \n");
++		ret = -1;
++		goto request_tp_io_port_failed;
++	}
++#endif
++	return ret;
++
++request_tp_io_port_failed:
++	return ret;
++}
++
++/**
++ * ctp_judge_int_occur - whether interrupt occur.
++ *
++ * return value:
++ *              0:      int occur;
++ *              others: no int occur;
++ */
++static int ctp_judge_int_occur(void)
++{
++	int reg_val;
++	int ret = -1;
++
++	reg_val = readl(gpio_addr + PIO_INT_STAT_OFFSET);
++	if(reg_val&(1<<(CTP_IRQ_NO))){
++		ret = 0;
++	}
++	return ret;
++}
++
++/**
++ * ctp_free_platform_resource - corresponding with ctp_init_platform_resource
++ *
++ */
++static void ctp_free_platform_resource(void)
++{
++	pr_info("=======%s=========.\n", __func__);
++	if(gpio_addr){
++		iounmap(gpio_addr);
++	}
++
++	if(gpio_int_hdle){
++		gpio_release(gpio_int_hdle, 2);
++	}
++
++	if(gpio_wakeup_hdle){
++		gpio_release(gpio_wakeup_hdle, 2);
++	}
++
++	if(gpio_reset_hdle){
++		gpio_release(gpio_reset_hdle, 2);
++	}
++
++	return;
++}
++
++
++/**
++ * ctp_init_platform_resource - initialize platform related resource
++ * return value: 0 : success
++ *               -EIO :  i/o err.
++ *
++ */
++static int ctp_init_platform_resource(void)
++{
++	int ret = 0;
++
++	gpio_addr = ioremap(PIO_BASE_ADDRESS, PIO_RANGE_SIZE);
++	if(!gpio_addr) {
++		ret = -EIO;
++		goto exit_ioremap_failed;
++	}
++	gpio_wakeup_hdle = gpio_request_ex("ctp_para", "ctp_wakeup");
++	if(!gpio_wakeup_hdle) {
++		pr_warning("%s: tp_wakeup request gpio fail!\n", __func__);
++		gpio_wakeup_enable = 0;
++	}
++
++	gpio_reset_hdle = gpio_request_ex("ctp_para", "ctp_reset");
++	if(!gpio_reset_hdle) {
++		pr_warning("%s: tp_reset request gpio fail!\n", __func__);
++		gpio_reset_enable = 0;
++	}
++
++	return ret;
++
++exit_ioremap_failed:
++	ctp_free_platform_resource();
++	return ret;
++}
++
++
++/**
++ * ctp_fetch_sysconfig_para - get config info from sysconfig.fex file.
++ * return value:
++ *                    = 0; success;
++ *                    < 0; err
++ */
++static int ctp_fetch_sysconfig_para(void)
++{
++	int ret = -1;
++	int ctp_used = -1;
++	char name[I2C_NAME_SIZE];
++	script_parser_value_type_t type = SCRIPT_PARSER_VALUE_TYPE_STRING;
++
++	pr_info("%s. \n", __func__);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp7_used", &ctp_used, 1)){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	if(1 != ctp_used){
++		pr_err("%s: ctp_unused. \n",  __func__);
++		//ret = 1;
++		return ret;
++	}
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch_ex("ctp_para", "ctp7_name", (int *)(&name), &type, sizeof(name)/sizeof(int))){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	if(strcmp(CTP_NAME, name)){
++		pr_err("%s: name %s does not match CTP_NAME. \n", __func__, name);
++		pr_err(CTP_NAME);
++		return ret;
++	}
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp7_twi_addr", &twi_addr, sizeof(twi_addr)/sizeof(__u32))){
++		pr_err("%s: script_parser_fetch err. \n", name);
++		goto script_parser_fetch_err;
++	}
++	u_i2c_addr.dirty_addr_buf[0] = twi_addr;
++	u_i2c_addr.dirty_addr_buf[1] = I2C_CLIENT_END;
++	printk("%s: after: ctp_twi_addr is 0x%x, dirty_addr_buf: 0x%hx. dirty_addr_buf[1]: 0x%hx \n", __func__, twi_addr, u_i2c_addr.dirty_addr_buf[0], u_i2c_addr.dirty_addr_buf[1]);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_twi_id", &twi_id, sizeof(twi_id)/sizeof(__u32))){
++		pr_err("%s: script_parser_fetch err. \n", name);
++		goto script_parser_fetch_err;
++	}
++	printk("%s: ctp_twi_id is %d. \n", __func__, twi_id);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_screen_max_x", &screen_max_x, 1)){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	pr_info("%s: screen_max_x = %d. \n", __func__, screen_max_x);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_screen_max_y", &screen_max_y, 1)){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	pr_info("%s: screen_max_y = %d. \n", __func__, screen_max_y);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_revert_x_flag", &revert_x_flag, 1)){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	pr_info("%s: revert_x_flag = %d. \n", __func__, revert_x_flag);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_revert_y_flag", &revert_y_flag, 1)){
++		pr_err("%s: script_parser_fetch err. \n", __func__);
++		goto script_parser_fetch_err;
++	}
++	pr_info("%s: revert_y_flag = %d. \n", __func__, revert_y_flag);
++
++	if(SCRIPT_PARSER_OK != script_parser_fetch("ctp_para", "ctp_exchange_x_y_flag", &exchange_x_y_flag, 1)){
++		pr_err("ft5x_ts: script_parser_fetch err. \n");
++		goto script_parser_fetch_err;
++	}
++	pr_info("%s: exchange_x_y_flag = %d. \n", __func__, exchange_x_y_flag);
++
++	return 0;
++
++script_parser_fetch_err:
++	pr_notice("=========script_parser_fetch_err============\n");
++	return ret;
++}
++
++/**
++ * ctp_reset - function
++ *
++ */
++static void ctp_reset(void)
++{
++	printk("%s. \n", __func__);
++	if(gpio_reset_enable){
++		if(EGPIO_SUCCESS != gpio_write_one_pin_value(gpio_reset_hdle, 0, "ctp_reset")){
++			pr_err("%s: err when operate gpio. \n", __func__);
++		}
++		mdelay(TS_RESET_LOW_PERIOD);
++		if(EGPIO_SUCCESS != gpio_write_one_pin_value(gpio_reset_hdle, 1, "ctp_reset")){
++			pr_err("%s: err when operate gpio. \n", __func__);
++		}
++		mdelay(TS_INITIAL_HIGH_PERIOD);
++	}
++}
++
++/**
++ * ctp_wakeup - function
++ *
++ */
++static void ctp_wakeup(void)
++{
++	pr_info("%s. \n", __func__);
++	if(1 == gpio_wakeup_enable){
++		if(EGPIO_SUCCESS != gpio_write_one_pin_value(gpio_wakeup_hdle, 0, "ctp_wakeup")){
++			pr_info("%s: err when operate gpio. \n", __func__);
++		}
++		mdelay(TS_WAKEUP_LOW_PERIOD);
++		if(EGPIO_SUCCESS != gpio_write_one_pin_value(gpio_wakeup_hdle, 1, "ctp_wakeup")){
++			pr_info("%s: err when operate gpio. \n", __func__);
++		}
++		mdelay(TS_WAKEUP_HIGH_PERIOD);
++
++	}
++	return;
++}
++/**
++ * ctp_detect - Device detection callback for automatic device creation
++ * return value:
++ *                    = 0; success;
++ *                    < 0; err
++ */
++static int ctp_detect(struct i2c_client *client, struct i2c_board_info *info)
++{
++	struct i2c_adapter *adapter = client->adapter;
++
++	if(twi_id == adapter->nr)
++	{
++		pr_info("%s: Detected chip %s at adapter %d, address 0x%02x\n",
++			 __func__, CTP_NAME, i2c_adapter_id(adapter), client->addr);
++
++		strlcpy(info->type, CTP_NAME, I2C_NAME_SIZE);
++		return 0;
++	}else{
++		return -ENODEV;
++	}
++}
++///////////////////////////////////////////////////////////////
++
++static struct ctp_platform_ops ctp_ops = {
++	.get_pendown_state = ctp_get_pendown_state,
++	.clear_penirq	   = ctp_clear_penirq,
++	.set_irq_mode      = ctp_set_irq_mode,
++	.set_gpio_mode     = ctp_set_gpio_mode,
++	.judge_int_occur   = ctp_judge_int_occur,
++	.init_platform_resource = ctp_init_platform_resource,
++	.free_platform_resource = ctp_free_platform_resource,
++	.fetch_sysconfig_para = ctp_fetch_sysconfig_para,
++	.ts_reset =          ctp_reset,
++	.ts_wakeup =         ctp_wakeup,
++	.ts_detect = ctp_detect,
++};
++
++
++static int ssd2533_ts_power(struct ssd2533_ts * ts, int on)
++{
++	int ret = 0;
++
++	switch(on)
++	{
++		case 0:
++			gpio_write_one_pin_value(gpio_wakeup_hdle, 0, "ctp_wakeup");
++			ret = 1;
++			break;
++		case 1:
++			gpio_write_one_pin_value(gpio_wakeup_hdle, 1, "ctp_wakeup");
++			ret = 1;
++			break;
++	}
++	dev_dbg(&ts->client->dev, "Set ssd2533 Shutdown %s. Ret:%d.\n", on?"LOW":"HIGH", ret);
++	return ret;
++}
++
++static u8 tp_ssd2533_write_reg(struct i2c_client *client,const char *buf ,int count)
++{
++	struct i2c_msg msg;
++	u16 flags = 0;
++
++	msg.addr = client->addr;
++	msg.flags = 0 | flags;
++	msg.len = count;
++	msg.buf = (char *)buf;
++
++	if (i2c_transfer(client->adapter, &msg, 1) < 0)
++	{
++		pr_err("tp_ssd2533_write_reg, Address %.2x, Name %s, Adapter %.2x \n", client->addr, client->name, client->adapter->nr);
++		pr_err("write the address (0x%x) of the ssd2533 fail.\n",buf[0]);
++		return -1;
++	}
++	mdelay(5); //note: must be long enough
++	return 0;
++}
++
++static int tp_ssd2533_read_reg(struct i2c_client *client,u8 addr,u8 *buf,u8 len)
++{
++	u16 flags = 0;
++	u8 msgbuf[2] = { addr, 0};
++	//struct i2c_client *client = ts->client;
++
++
++	struct i2c_msg msgs[] = {
++		{
++			.addr	= client->addr,
++			.flags	= 0 | flags,
++			.len	= 1,
++			.buf	= msgbuf,
++		},
++		{
++			.addr	= client->addr,
++			.flags	= I2C_M_RD | flags,
++			.len	= len,
++			.buf	= buf,
++		},
++	};
++	if (i2c_transfer(client->adapter, msgs, 2) < 0)
++	{
++		pr_err("read the address (0x%x) of the ssd2533 fail.\n",addr);
++		return -1;
++	}
++	return 0;
++}
++
++/*
++static void ssd2533_send_keyevent(u8 btn_status, int downup)
++{
++	switch(btn_status & 0x0f)
++	{
++		case 0x01:
++			input_report_key(ts->dev, KEY_SEARCH, downup);
++			break;
++		case 0x02:
++			input_report_key(ts->dev, KEY_BACK, downup);
++			break;
++		case 0x04:
++			input_report_key(ts->dev, KEY_HOME, downup);
++			break;
++		case 0x08:
++			input_report_key(ts->dev, KEY_MENU, downup);
++			break;
++		default:
++			break;
++	}
++}
++*/
++
++static void i2c_access_work(struct work_struct *work)
++{
++	u8 event_status[2];
++	unsigned short int status;
++	u8 val[4],i;
++	unsigned int x,y,z;
++	struct mt_info data;
++	unsigned char *cdata =(unsigned char *)&data;
++	u16 xx, yy;
++	
++	struct ssd2533_ts *ts = container_of(work, struct ssd2533_ts, ts_work);
++	
++	while(1)
++	{
++		tp_ssd2533_read_reg(ts->client,0x79,event_status,2);
++		status = (unsigned short int)(event_status[0] << 8 | event_status[1]);
++		status &= 0x3fff;
++		if(status == 0)
++		{
++			/* Nothing to do */
++			break;
++		}
++		/* We dont use the event stack but read it so it doesnt overflow */
++		tp_ssd2533_read_reg(ts->client,0x86,cdata,5);
++		xx =  cdata[1] | ((cdata[3] & 0xf0) << 4);
++		yy = cdata[2] | ((cdata[3] & 0x0f) << 8);
++		
++		for(i = 0; i < MAX_FINGERS; i++)
++		{
++			/* Check to see if the event is an actual finger event */
++			if(((status >> 4) & (1 << i)) != 0)
++			{
++				tp_ssd2533_read_reg(ts->client,0x7C + i, val, 4);
++				x = val[0] | ((val[2] & 0xF0) << 4);
++				y = val[1] | ((val[2] & 0x0F) << 8);
++				z = (val[3] & 0xF0) >> 4;
++			
++				x =  x*SCREEN_MAX_WIDTH/touch_size_x;//y
++                		y =  y*SCREEN_MAX_HEIGHT/touch_size_y ;         
++
++				input_report_abs(ts->dev, ABS_MT_TOUCH_MAJOR, z);
++				input_report_abs(ts->dev, ABS_MT_WIDTH_MAJOR, z);
++				input_report_abs(ts->dev, ABS_MT_POSITION_X,  x);
++				input_report_abs(ts->dev, ABS_MT_POSITION_Y,  y);
++				input_report_abs(ts->dev,ABS_MT_TRACKING_ID, i);
++				input_report_abs(ts->dev,ABS_MT_PRESSURE, 1);
++				input_mt_sync(ts->dev);
++					
++				
++			}
++		}
++		input_sync(ts->dev);
++	}
++
++	input_report_abs(ts->dev,ABS_MT_TOUCH_MAJOR, 0);
++	input_sync(ts->dev);
++	enable_irq(ts->gpio_irq);
++}
++
++static irqreturn_t stylus_action(int irqno, void *param)
++{
++  
++  	struct ssd2533_ts *ts = param;
++	int reg_val;
++	disable_irq_nosync(ts->gpio_irq);
++	pr_info("==========------TS Interrupt-----============\n");
++
++	//clear the IRQ_EINT21 interrupt pending
++	reg_val = readl(gpio_addr + PIO_INT_STAT_OFFSET);
++
++	if (reg_val&(1<<(CTP_IRQ_NO))) {
++		writel(reg_val&(1<<(CTP_IRQ_NO)),gpio_addr + PIO_INT_STAT_OFFSET);
++		queue_work(ts->ts_workqueue, &ts->ts_work);
++	}
++	else
++	{
++	    print_int_info("Other Interrupt\n");
++	    return IRQ_NONE;
++	}
++	return IRQ_HANDLED;
++}
++
++static int tp_ssd2533_init_setting(struct i2c_client *client)
++{
++	u8 tx_buff[4];
++	int err = 0;
++
++	printk("Touch Panel Setting & Calibrate \n");
++	
++	tx_buff[0]=0x04;
++	err |= tp_ssd2533_write_reg(client,tx_buff,1);//exit sleep mode
++	mdelay(100);
++	tx_buff[0]=0xa4;
++	tx_buff[1]=0x00;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2); // MCU prescaler default=01
++	mdelay(100);
++	tx_buff[0]=0xd4;
++	tx_buff[1]=0x08;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set osc frequency
++	mdelay(20);
++	tx_buff[0]=0x06;
++	tx_buff[1]=0x0e;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set drive line
++	tx_buff[0]=0x07;
++	tx_buff[1]=0x09;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set sense line
++	tx_buff[0]=0x08;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x26;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x09;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x07;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0a;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x08;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0b;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x09;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0c;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0a;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0d;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0b;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0e;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0c;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x0f;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0d;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x10;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0e;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x11;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x0f;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x12;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x10;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x13;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x11;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x14;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x12;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x15;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x13;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x16;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x14;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0xd5;
++	tx_buff[1]=0x05;//03 07
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set driving voltage
++	tx_buff[0]=0x2a;
++	tx_buff[1]=0x07;//0x02 07
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set sub-frame 
++	tx_buff[0]=0x2e;
++	tx_buff[1]=0x0b;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//sub-frame drive pulse number
++	tx_buff[0]=0x2f;
++	tx_buff[1]=0x01;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x30;
++	tx_buff[1]=0x03;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//start integrate 125ns/div
++	tx_buff[0]=0x31;
++	tx_buff[1]=0x06;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//stop integrate 125ns/div
++	tx_buff[0]=0xd7;
++	tx_buff[1]=0x04; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//ADC range
++	tx_buff[0]=0xdb;
++	tx_buff[1]=0x02;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set integratin cap
++	tx_buff[0]=0x33;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x01;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//set min finger area
++	tx_buff[0]=0x34;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x30;//30
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//set min finger level
++	tx_buff[0]=0x35;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x00;//00
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//set min finger weight
++	tx_buff[0]=0x36;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x1F;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//set max finger weight
++	tx_buff[0]=0x37;
++	tx_buff[1]=0x00;
++   	err |= tp_ssd2533_write_reg(client,tx_buff,2);//segmentation depth
++	tx_buff[0]=0x39;//new
++	tx_buff[1]=0x02;
++   	err |= tp_ssd2533_write_reg(client,tx_buff,2);// Hybrid mode
++	tx_buff[0]=0x53;
++	tx_buff[1]=0x16; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//event move tolerance
++	tx_buff[0]=0x54;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x50;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//x tracking
++	tx_buff[0]=0x55;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x50;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);//y tracking
++	tx_buff[0]=0x56;
++	tx_buff[1]=0x02;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//moving average filter
++	tx_buff[0]=0x58;	
++	tx_buff[1]=0x00;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//finger weight scaling, NOT FOUND IN Datasheet or driver regs
++	//tx_buff[0]=0x59;
++	//tx_buff[1]=0x01;
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);//enable random walk, NOT FOUND IN Datasheet or driver regs
++	//tx_buff[0]=0x5a;
++	//tx_buff[1]=0x00;
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);//Disable Missing frame, NOT FOUND IN Datasheet or driver regs
++	tx_buff[0]=0x5b;
++	tx_buff[1]=0x20; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set random walk window
++	tx_buff[0]=0x65;
++	tx_buff[1]=0x05; // was 0x06 which is inverted
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//x,y mapping
++	tx_buff[0]=0x66;
++	tx_buff[1]=0xff;
++	tx_buff[2]=0xf0;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);// y Scaling in controller, 0xfff0 = no scaling
++	tx_buff[0]=0x67;
++	tx_buff[1]=0xff;
++	tx_buff[2]=0xf0;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);// x Scaling in controller, 0xfff0 = no scaling
++	tx_buff[0]=0x68;
++	tx_buff[1]=0;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);// y Starting offset
++	tx_buff[0]=0x69;
++	tx_buff[1]=0;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);// x Starting offset
++	tx_buff[0]=0x8a;
++	tx_buff[1]=0x05;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x2c;
++	tx_buff[1]=0x01;
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x3d;
++	tx_buff[1]=0x02; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x7a;
++	tx_buff[1]=0xff;	
++	tx_buff[2]=0xff;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3); // mask all events but finger leave
++	tx_buff[0]=0x7b;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x00;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);	 // mask IRQ: fifo overflow, large object.
++	tx_buff[0]=0xad;//new
++	tx_buff[1]=0x03; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);	// NOT FOUND IN Datasheet or driver regs, scan rate, found in app note
++	//tx_buff[0]=0xb0;//new
++	//tx_buff[1]=0x01;
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);// resistor pair, every two bit for four key(xx.xx.xx.xx) , NOT FOUND IN Datasheet or driver regs
++	//tx_buff[0]=0xba;
++	//tx_buff[1]=0x00; 
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);// enable touch key IRQ 0-3
++	//tx_buff[0]=0xbb;//new
++	//tx_buff[1]=0x00; 
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);//clear event stack
++	//tx_buff[0]=0xbc;
++	//tx_buff[1]=0x01; 
++	//err |= tp_ssd2533_write_reg(client,tx_buff,2);//touch key enable , NOT FOUND IN Datasheet or driver regs
++	tx_buff[0]=0x25;
++	tx_buff[1]=0x02; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);//set scan mode in ms + 3, lower = faster
++	tx_buff[0]=0x1f;
++	tx_buff[1]=0x00; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0xd8;
++	tx_buff[1]=0x01; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x5e;
++	tx_buff[1]=0x00;
++	tx_buff[2]=0x40;
++	err |= tp_ssd2533_write_reg(client,tx_buff,3);
++	tx_buff[0]=0x40;
++	tx_buff[1]=0xf0; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x44;
++	tx_buff[1]=0x01; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);
++	tx_buff[0]=0x8b;
++	tx_buff[1]=0x10; 
++	err |= tp_ssd2533_write_reg(client,tx_buff,2);	// 1.5x mode ?
++	tx_buff[0]=0x8C;
++        tx_buff[1]=0xB0; 
++        err |= tp_ssd2533_write_reg(client,tx_buff,2);  // Edge compensation
++
++
++	if(err != 0)
++	{
++		pr_err("error : init the SSD2533!\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++static int tp_ssd2533_probe(struct i2c_client *client, const struct i2c_device_id *id)
++{
++	int err = 0;
++	
++	struct ssd2533_ts *ts;
++	
++	pr_info("tp_ssd2533_probe, Address %.2x, Name %s, Adapter %.2x ", client->addr, client->name, client->adapter->nr);
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
++	{
++		pr_info("System need I2C function.\n");
++		goto exit_check_functionality_failed;
++	}
++	
++	ts = kzalloc(sizeof(*ts), GFP_KERNEL);
++	if (!ts)
++	{
++		err = -ENOMEM;
++		goto exit_alloc_ts_failed;
++	}
++	
++	INIT_WORK(&ts->ts_work, i2c_access_work);
++	ts->gpio_irq = SW_INT_IRQNO_PIO;
++	ts->client = client;
++	i2c_set_clientdata(client, ts);
++	ts->dev = input_allocate_device();
++	ts->power = ssd2533_ts_power;
++	
++	ts->ts_workqueue = create_singlethread_workqueue(dev_name(&client->dev));
++	if (!ts->ts_workqueue)
++	{
++		err = -ESRCH;
++		printk("create workqueue error!\n");
++		goto exit_create_workqueue_failed;
++	}
++	
++	if(!ts->dev)
++	{
++		err = -ENOMEM;
++		printk("error: input_allocate_device in tp_ssd2533_detect\n");
++		goto exit_input_dev_alloc_failed;
++	}
++	
++//	ts->dev->keybit [BIT_WORD (BTN_TOUCH)] = BIT_MASK (BTN_TOUCH);//single touch
++	ts->dev->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);//mult touch
++	input_set_abs_params(ts->dev, ABS_MT_WIDTH_MAJOR, 0, 255, 0, 0);
++	input_set_abs_params(ts->dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);
++	input_set_abs_params(ts->dev, ABS_MT_POSITION_X, 0, SCREEN_MAX_HEIGHT, 0, 0);
++	input_set_abs_params(ts->dev, ABS_MT_POSITION_Y, 0, SCREEN_MAX_WIDTH, 0, 0);
++	input_set_abs_params(ts->dev, ABS_MT_TRACKING_ID, 0, MAX_FINGERS, 0, 0);
++
++	sprintf(ts->phys, "ts0");
++	ts->dev->name = ts_name;
++	ts->dev->phys = ts->phys;
++	ts->dev->id.bustype = BUS_I2C;
++	ts->dev->id.vendor = 0xABCD;
++	ts->dev->id.product = 0xBEEE;
++	#define MT_TS_VERSION	0x0001
++	ts->dev->id.version = MT_TS_VERSION;
++
++#ifdef CONFIG_HAS_EARLYSUSPEND
++	printk("==register_early_suspend =\n");
++	ts->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
++	ts->early_suspend.suspend = ssd2533_suspend;
++	ts->early_suspend.resume = ssd2533_resume;
++	register_early_suspend(&ts->early_suspend);
++#endif
++	
++	if(tp_ssd2533_init_setting(client) < 0)
++	{
++		err = -EIO;
++		goto exit_ssd2533_init_failed;
++	}
++
++	err = ctp_ops.set_irq_mode("ctp_para", "ctp_int_port", CTP_IRQ_MODE);
++	if(0 != err){
++		printk("%s:ctp_ops.set_irq_mode err. \n", __func__);
++		goto exit_set_irq_mode;
++	}
++
++	err =  request_irq(SW_INT_IRQNO_PIO, stylus_action, IRQF_TRIGGER_RISING | IRQF_SHARED, client->name, ts);
++	if (err < 0) {
++		pr_info( "ssd2533_probe: request irq failed\n");
++		goto exit_irq_request_failed;
++	}
++	
++	disable_irq(SW_INT_IRQNO_PIO);
++
++	if (input_register_device(ts->dev))
++	{
++		printk("error: register input device!\n");
++		goto exit_input_register_device_failed;
++	}
++
++	enable_irq(SW_INT_IRQNO_PIO);
++	printk("ssd2533 probe success\n");
++	return 0;
++
++exit_input_register_device_failed:
++	free_irq(SW_INT_IRQNO_PIO, ts);
++exit_set_irq_mode:
++exit_irq_request_failed:
++exit_ssd2533_init_failed:
++	input_free_device(ts->dev);
++exit_input_dev_alloc_failed:
++	destroy_workqueue(ts->ts_workqueue);
++exit_create_workqueue_failed:
++	kfree(ts);
++exit_alloc_ts_failed:
++exit_check_functionality_failed:
++	return err;
++}
++
++static int tp_ssd2533_remove(struct i2c_client *client)
++{
++  
++	struct ssd2533_ts *ts = i2c_get_clientdata(client);
++	free_irq(SW_INT_IRQNO_PIO, ts);	
++#ifdef CONFIG_HAS_EARLYSUSPEND
++	unregister_early_suspend(&ts->early_suspend);
++#endif
++	flush_work(&ts->ts_work);
++	if(ts->ts_workqueue)
++		destroy_workqueue(ts->ts_workqueue);
++	mdelay(10);
++	cancel_work_sync (&ts->ts_work);
++	input_unregister_device(ts->dev);
++	input_free_device(ts->dev);
++	i2c_set_clientdata(ts->client, NULL);
++	kfree(ts);
++
++	return 0;
++}
++
++static void  in_sleep_ssd2533(struct i2c_client *client)
++{
++	struct ssd2533_ts *ts = i2c_get_clientdata(client);
++	u8 tx_buff[2];
++
++	if(cancel_work_sync(&ts->ts_work))
++		enable_irq(client->irq);
++	flush_workqueue(ts->ts_workqueue);
++
++	tx_buff[0]=0x25;
++	tx_buff[1]=0x00;
++	tp_ssd2533_write_reg(client,tx_buff,2);
++	mdelay(300);
++	do
++	{
++		if(tp_ssd2533_read_reg(ts->client,0x26,tx_buff,1)!=0)
++		{
++			pr_warning("error: MT sleep\n");
++			return;
++		}
++	} while (tx_buff[0] != 0);
++
++	tx_buff[0]=0x24;//05???
++	tx_buff[1]=0x00;
++	tp_ssd2533_write_reg(client,tx_buff,2);
++#ifdef PRINT_SUSPEND_INFO
++	pr_info("SSD2533 in sleep\n");
++#endif
++	
++}
++
++static void  out_sleep_ssd2533(struct i2c_client *client)
++{
++	u8 tx_buff[2];
++	
++	mdelay(100);
++	tx_buff[0]=0x23;
++	tx_buff[1]=0x00;
++	tp_ssd2533_write_reg(client,tx_buff,2);
++	mdelay(100);
++
++	tx_buff[0]=0x25;
++	tx_buff[1]=0x02;
++	tp_ssd2533_write_reg(client,tx_buff,2);
++	mdelay(300);
++
++#ifdef PRINT_SUSPEND_INFO
++	pr_info("SSD2533 out sleep\n");
++#endif
++}
++
++#ifdef CONFIG_HAS_EARLYSUSPEND
++static void ssd2533_suspend(struct early_suspend *handler)
++{
++	struct ssd2533_ts *ts = container_of(handler, struct ssd2533_ts, early_suspend);
++	struct i2c_client * client = ts->client;
++	in_sleep_ssd2533(client);
++}
++
++static void ssd2533_resume(struct early_suspend *handler)
++{
++	struct ssd2533_ts *ts = container_of(handler, struct ssd2533_ts, early_suspend);
++	struct i2c_client * client = ts->client;
++	out_sleep_ssd2533(client);
++}
++#else 
++#ifdef CONFIG_PM
++static int ssd2533_suspend(struct i2c_client *client, pm_message_t mesg)
++{
++	struct ssd2533_ts *ts = i2c_get_clientdata(client);
++	in_sleep_ssd2533(client);
++	return 0;
++}
++
++static int ssd2533_resume(struct i2c_client *client)
++{
++	struct ssd2533_ts *ts = i2c_get_clientdata(client);
++	out_sleep_ssd2533(client);
++	return 0;
++}
++#endif
++#endif
++
++static const struct i2c_device_id ssd2533_ts_id[] = {
++	{SSD2533_I2C_NAME, 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, ssd2533_ts_id);
++
++static struct i2c_driver ssd2533_ts_driver = {
++  	.class 		= I2C_CLASS_HWMON,
++	.probe		= tp_ssd2533_probe,
++	.remove		= __devexit_p(tp_ssd2533_remove),
++#ifdef CONFIG_HAS_EARLYSUSPEND
++#else
++#ifdef CONFIG_PM
++	.suspend	= ssd2533_suspend,
++	.resume		= ssd2533_resume,
++#endif
++#endif
++	.id_table	= ssd2533_ts_id,
++	.driver	= {
++		.name	= SSD2533_I2C_NAME,
++		.owner	= THIS_MODULE,
++	},
++	.address_list	= u_i2c_addr.normal_i2c,
++};
++
++static int __init ssd2533_init(void)
++{
++	int err = -1;
++
++	pr_info("===========================%s=====================\n", __func__);
++
++	if (ctp_ops.fetch_sysconfig_para)
++	{
++		if(ctp_ops.fetch_sysconfig_para()){
++			printk("%s: err.\n", __func__);
++			return -1;
++		}
++	}
++	pr_info("%s: after fetch_sysconfig_para:  normal_i2c: 0x%hx. normal_i2c[1]: 0x%hx \n", \
++	__func__, u_i2c_addr.normal_i2c[0], u_i2c_addr.normal_i2c[1]);
++
++	err = ctp_ops.init_platform_resource();
++	if(0 != err){
++		pr_err("%s:ctp_ops.init_platform_resource err. \n", __func__);
++	}
++
++	//reset
++	ctp_ops.ts_reset();
++	//wakeup
++	ctp_ops.ts_wakeup();
++	ssd2533_ts_driver.detect = ctp_ops.ts_detect;
++	
++	return i2c_add_driver(&ssd2533_ts_driver);
++}
++
++static void __exit ssd2533_exit(void) 
++{
++	i2c_del_driver(&ssd2533_ts_driver);
++}
++
++late_initcall(ssd2533_init);
++module_exit(ssd2533_exit);
++
++MODULE_AUTHOR("Andrew Tarabaras");
++MODULE_DESCRIPTION("SUNXI SSD2533 Driver");
++MODULE_LICENSE("GPL");

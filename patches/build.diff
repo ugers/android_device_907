@@ -1,0 +1,11 @@
+diff --git a/build/core/Makefile b/build/core/Makefile
+--- a/build/core/Makefile	2013-04-01 00:13:21.026412279 +0200
++++ b/build/core/Makefile	2013-04-02 03:08:10.240805615 +0200
+@@ -1325,7 +1325,6 @@
+ 	$(OTA_FROM_TARGET_SCRIPT) -v \
+ 	   -p $(HOST_OUT) \
+ 	   -k $(KEY_CERT_PAIR) \
+-	   --no_assert=$(skip_assert) \
+ 	   --override_device=$(override_device) \
+ 	   --backup=$(backuptool) \
+ 	   $(BUILT_TARGET_FILES_PACKAGE) $@

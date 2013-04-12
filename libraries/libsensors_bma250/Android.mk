@@ -12,33 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ifneq ($(findstring $(SW_BOARD_USES_GSENSOR_TYPE),bma250), )
+ifneq ($(findstring bma250, $(SW_BOARD_USES_GSENSOR_TYPE)), )
 
 LOCAL_PATH := $(call my-dir)
 
 ifneq ($(TARGET_SIMULATOR),true)
 
+
 # HAL module implemenation, not prelinked, and stored in
 # hw/<SENSORS_HARDWARE_MODULE_ID>.<ro.product.board>.so
 include $(CLEAR_VARS)
 
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_X), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_X),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_X
 endif
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_Y), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_Y),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_Y
 endif
-ifeq ($(SW_BOARD_GSENSOR_DIRECT_Z), true)
+ifeq ($(SW_BOARD_GSENSOR_DIRECT_Z),true)
 LOCAL_CPPFLAGS += -DGSENSOR_DIRECT_Z
 endif
-ifeq ($(SW_BOARD_GSENSOR_XY_REVERT), true)
+ifeq ($(SW_BOARD_GSENSOR_XY_REVERT),true)
 LOCAL_CPPFLAGS += -DGSENSOR_XY_REVERT
 endif
 
 
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE := sensors.$(TARGET_BOARD_PLATFORM)
-LOCAL_MODULE_TAGS := eng
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_CFLAGS := -DLOG_TAG=\"Sensors\"
 LOCAL_SRC_FILES := 						\

@@ -29,8 +29,10 @@ TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
-TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
-TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+
+KBUILD_CFLAGS += -O3
+TARGET_GLOBAL_CFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+TARGET_GLOBAL_CPPFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 #Bluetooth and Vibro stuff
@@ -78,9 +80,14 @@ BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/fi
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
 #BOARD_UMS_LUNFILE := "/sys/devices/platform/msm_hsusb/gadget/lun0/file
 
-#Misc stuff
-TARGET_USE_CUSTOM_LUN_FILE_PATH = "/sys/class/android_usb/android0/f_mass_storage/lun%d/file"
+# Vold stuff
+BOARD_VOLD_MAX_PARTITIONS := 20
+BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
+BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := true
+TARGET_USE_CUSTOM_LUN_FILE_PATH = "/sys/class/android_usb/android0/f_mass_storage/lund%d/file"
 TARGET_USE_CUSTOM_SECOND_LUN_NUM := 1
+
+#Misc stuff
 TARGET_RECOVERY_PRE_COMMAND := "echo -n boot-recovery | busybox dd of=/dev/block/nandf count=1 conv=sync; sync"
 BOARD_USE_LEGACY_TOUCHSCREEN := true
 TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/libraries/include
@@ -109,7 +116,9 @@ WIFI_DRIVER_FW_PATH_PARAM := ""
 TARGET_CUSTOM_WIFI := ../../hardware/realtek/wlan/wifi_realtek.c
 
 # Beware: set only prebuilt OR source+config
-TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
+TARGET_KERNEL_SOURCE := kernel/softwinner/907/
+TARGET_KERNEL_CONFIG := ../../../../../../device/softwinner/907/a10_mid_defconfig
+#TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
 BOARD_KERNEL_BASE := 0x40000000
 BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=8
 
@@ -118,6 +127,6 @@ SW_BOARD_USES_GSENSOR_TYPE := "bma250"
 SW_BOARD_GSENSOR_DIRECT_X := "true"
 SW_BOARD_GSENSOR_DIRECT_Y := "true"
 SW_BOARD_GSENSOR_DIRECT_Z := "true"
-SW_BOARD_GSENSOR_XY_REVERT := "true"
+SW_BOARD_GSENSOR_XY_REVERT := "false"
 
 COMMON_GLOBAL_CFLAGS += "-DICS_CAMERA_BLOB -DICS_AUDIO_BLOB"

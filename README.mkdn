@@ -1,0 +1,46 @@
+CarbonDev sun4i
+===============
+This is an attempt to port CarbonRom to the allwinner A10 (crane sun4i) tablets
+Compilation Notes
+-----------------
+
+* Build from Sources
+
+Create a directory
+
+	mkdir carbon
+
+Change to the created directory
+
+	cd carbon
+
+Init the CarbonDev repository
+
+	repo init -u git://github.com/CarbonDev/android.git -b jb2
+
+create a directory .repo/local_manifests.xml
+
+	mkdir .repo/local_manifests
+
+copy local_manifest.xml into the directory .repo/local_manifests/local_manifest.xml
+
+	cp local_manifest.xml .repo/local_manifests/local_manifest.xml
+
+Syncronyze the server
+
+	repo sync -f -j16
+
+finally you're ready to build it
+
+	source build/envsetup.sh
+	cp device/softwinner/907/a10_mid_defconfig into kernel/softwinner/907/arch/arm/configs/
+	brunch carbon_907-userdebug -j8
+
+--------------
+
+--------------
+
+* Patches - (if you have already modify your tree and patches can't be applied, run: 
+
+	repo forall -c git reset --hard
+	repo forall -c git clean -xdf
