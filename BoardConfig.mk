@@ -31,8 +31,8 @@ TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 
 KBUILD_CFLAGS += -O3
-TARGET_GLOBAL_CFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize
-TARGET_GLOBAL_CPPFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize
+TARGET_GLOBAL_CFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+TARGET_GLOBAL_CPPFLAGS += -O3 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 ARCH_ARM_HAVE_TLS_REGISTER := true
 
 #Bluetooth and Vibro stuff
