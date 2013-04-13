@@ -1,0 +1,58 @@
+From 8e1968f86e15e442a9ae5944535ac8000356d2e1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Emilio=20L=C3=B3pez?= <turl@tuxfamily.org>
+Date: Sat, 26 May 2012 01:36:48 +0000
+Subject: [PATCH] [HACK] Implement missing symbol for GT801NI touchscreen
+
+This lets us load a binary only module, after editing it to
+match vermagic and disabling MODVERSIONS on the kernel.
+---
+ drivers/input/touchscreen/Kconfig       |    8 ++++++++
+ drivers/input/touchscreen/Makefile      |    1 +
+ drivers/input/touchscreen/goodix_hack.c |    5 +++++
+ 3 files changed, 14 insertions(+)
+ create mode 100644 drivers/input/touchscreen/goodix_hack.c
+
+diff --git a/kernel/softwinner/907/drivers/input/touchscreen/Kconfig b/kernel/softwinner/907/drivers/input/touchscreen/Kconfig
+index 42439a9..31f64c7 100755
+--- a/kernel/softwinner/907/drivers/input/touchscreen/Kconfig
++++ b/kernel/softwinner/907/drivers/input/touchscreen/Kconfig
+@@ -737,6 +737,14 @@ config  TOUCHSCREEN_GT801
+        depends on I2C
+        help
+           GT801 touchscreen driver
++
++config	TOUCHSCREEN_GT801NI
++	tristate "hack to load binary module for GT801NI"
++	depends on I2C
++	help
++	  This implements a symbol to be able to load a
++	  binary module for GT801NI touchscreen
++
+ config  TOUCHSCREEN_SUN4I_TS
+        tristate  "sun4i-ts touchscreen driver"
+        help
+diff --git a/kernel/softwinner/907/drivers/input/touchscreen/Makefile b/kernel/softwinner/907/drivers/input/touchscreen/Makefile
+index 484ebbe..e2f156c 100755
+--- a/kernel/softwinner/907/drivers/input/touchscreen/Makefile
++++ b/kernel/softwinner/907/drivers/input/touchscreen/Makefile
+@@ -63,6 +63,7 @@ obj-$(CONFIG_TOUCHSCREEN_W90X900)	+= w90p910_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_TPS6507X)	+= tps6507x-ts.o
+ obj-$(CONFIG_TOUCHSCREEN_FT5X_TS) += ft5x_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_GT801)         += goodix_touch.o
++obj-$(CONFIG_TOUCHSCREEN_GT801NI)	+= goodix_hack.o
+ obj-$(CONFIG_TOUCHSCREEN_ZT8031)         += zt8031.o
+ obj-$(CONFIG_TOUCHSCREEN_COASIA)         += coasia_i2c.o
+ obj-$(CONFIG_TOUCHSCREEN_SUN4I_TS)         += sun4i-ts.o
+diff --git a/kernel/softwinner/907/drivers/input/touchscreen/goodix_hack.c b/kernel/softwinner/907/drivers/input/touchscreen/goodix_hack.c
+new file mode 100644
+index 0000000..149d93d
+--- /dev/null
++++ b/kernel/softwinner/907/drivers/input/touchscreen/goodix_hack.c
+@@ -0,0 +1,5 @@
++#include <linux/module.h>
++
++int m_inet_ctpState = 0;
++
++EXPORT_SYMBOL(m_inet_ctpState);
+-- 
+1.7.10
