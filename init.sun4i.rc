@@ -90,6 +90,28 @@ on post-fs-data
 	mkdir /data/misc/sensors 0777 system system
 	setprop vold.post_fs_data_done 1
 
+# bluetooth
+    # UART device
+    chmod 0660 /dev/ttyS1
+    chown bluetooth net_bt_stack /dev/ttyS1
+    chmod 0777 /system/bin/hciattach
+
+    # power up/down interface
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chmod 0660 /sys/class/rfkill/rfkill0/type
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+
+    write /sys/class/rfkill/rfkill0/state 0
+    setprop rw.bluetooth.status "0"
+
+# --- used for rda module's bluetooth attach
+service hciattach /system/bin/hciattach -n -s 115200 /dev/ttyS1 rda 1500000 
+    user root
+    group bluetooth net_bt_admin
+    disabled
+    oneshot
+
 # wifi related service
 service wpa_supplicant /system/bin/wpa_supplicant -D wext -i wlan0 \
 	-c /data/misc/wifi/wpa_supplicant.conf -e /data/misc/wifi/entropy.bin
