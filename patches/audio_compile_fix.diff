@@ -1,28 +1,26 @@
---- a/device/softwinner/907/libraries/audio/audio_hw.c.orig 2013-04-13 23:08:28.000000000 +0100
-+++ b/device/softwinner/907/libraries/audio/audio_hw.c 2013-04-14 08:31:52.000000000 +0100
+--- a/device/softwinner/907/libraries/audio/audio_hw.c	2013-04-02 01:11:13.000000000 +0200
++++ b/device/softwinner/907/libraries/audio/audio_hw.c	2013-04-14 20:22:42.000000000 +0200
 @@ -1878,15 +1878,17 @@
-static int set_preprocessor_echo_delay(effect_handle_t handle,
-int32_t delay_us)
-{
-- uint32_t buf[sizeof(effect_param_t) / sizeof(uint32_t) + 2];
-- effect_param_t *param = (effect_param_t *)buf;
-+ union {
-+ uint32_t buf[sizeof(effect_param_t) / sizeof(uint32_t) + 2];
-+ effect_param_t *param;
-+ } u;
-
-- param->psize = sizeof(uint32_t);
-- param->vsize = sizeof(uint32_t);
-- *(uint32_t *)param->data = AEC_PARAM_ECHO_DELAY;
-- *((int32_t *)param->data + 1) = delay_us;
-+ u.param->psize = sizeof(uint32_t);
-+ u.param->vsize = sizeof(uint32_t);
-+ memcpy(u.param->data, (uint32_t *) AEC_PARAM_ECHO_DELAY, sizeof(uint32_t));
-+ memcpy(u.param->data+u.param->psize, &delay_us, u.param->vsize);
-
-- return set_preprocessor_param(handle, param);
-+ return set_preprocessor_param(handle, u.param);
-}
-
-static void push_echo_reference(struct tuna_stream_in *in, size_t frames)
-
+ static int set_preprocessor_echo_delay(effect_handle_t handle,
+                                      int32_t delay_us)
+ {
++    union {
+     uint32_t buf[sizeof(effect_param_t) / sizeof(uint32_t) + 2];
+-    effect_param_t *param = (effect_param_t *)buf;
++    effect_param_t *param;
++    }u;
+ 
+-    param->psize = sizeof(uint32_t);
+-    param->vsize = sizeof(uint32_t);
+-    *(uint32_t *)param->data = AEC_PARAM_ECHO_DELAY;
+-    *((int32_t *)param->data + 1) = delay_us;
++    u.param->psize = sizeof(uint32_t);
++    u.param->vsize = sizeof(uint32_t);
++    memcpy(u.param->data, (uint32_t *) AEC_PARAM_ECHO_DELAY, sizeof(uint32_t));
++    memcpy(u.param->data+u.param->psize, &delay_us, u.param->vsize);
+ 
+-    return set_preprocessor_param(handle, param);
++    return set_preprocessor_param(handle, u.param);
+ }
+ 
+ static void push_echo_reference(struct tuna_stream_in *in, size_t frames)
