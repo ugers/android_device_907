@@ -96,7 +96,8 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_PACKAGES += \
         Tag \
-        Mms
+        Mms \
+        CMFileManager
 
 PRODUCT_PACKAGES += \
 	librs_jni \
