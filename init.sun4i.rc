@@ -69,6 +69,7 @@ on boot
 	# usb ethernet drivers
 	insmod /system/lib/modules/usbnet.ko
 	insmod /system/lib/modules/asix.ko
+	insmod /system/lib/modules/sr9600.ko
 	insmod /system/lib/modules/qf9700.ko
 	insmod /system/lib/modules/mcs7830.ko
 	insmod /system/lib/modules/rtl8150.ko
