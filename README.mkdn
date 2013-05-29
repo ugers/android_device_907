@@ -13,8 +13,7 @@ and paste these lines inside new file .repo/local_manifest.xml
 	<manifest>
 	  <!-- remote  name="github" fetch="git://github.com/" /-->
 	  <remove-project name="CyanogenMod/android_system_vold"/>
-	  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
-	  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
+	  <project remote="github" revision="ubuntu-touch-preview" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
 now type this command
