@@ -3,7 +3,7 @@ Compilation Notes
 Sources
 * Github repository
 
-repo init -u git://github.com/CyanogenMod/android.git -b cm-10.1
+	repo init -u git://github.com/CyanogenMod/android.git -b ubuntu-touch-previev
 
 paste these lines inside new file .repo/manifests/local_manifest.xml
 and paste these lines inside new file .repo/local_manifest.xml
@@ -18,15 +18,17 @@ and paste these lines inside new file .repo/local_manifest.xml
 
 now type this command
 
-repo sync -j16
+	repo sync -j16
 
 finally you're ready to build it
 
-source build/envsetup.sh
-brunch cm_907-userdebug
+	source build/envsetup.sh
+	brunch cm_907-userdebug
 
 Prerequisites:
 Prebuilts
+
 	cd into vendor/cm and do
 	./get-prebuilts
+	
 Patches - (if you have already modify your tree and patches can't be applied, run: repo forall -c git reset --hard)
