@@ -1,20 +1,22 @@
+Ubuntu Touch Preview sun4i
+===============
 Compilation Notes
-
+-----------------
 Sources
-* Github repository
+Information about compilation you must find there:
 
-	repo init -u git://github.com/CyanogenMod/android.git -b ubuntu-touch-previev
+	https://wiki.ubuntu.com/Touch/Porting
 
 paste these lines inside new file .repo/manifests/local_manifest.xml
 and paste these lines inside new file .repo/local_manifest.xml
 
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <!-- remote  name="github" fetch="git://github.com/" /-->
-  <remove-project name="CyanogenMod/android_system_vold"/>
-  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
-  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
-</manifest>
+	<?xml version="1.0" encoding="UTF-8"?>
+	<manifest>
+	  <!-- remote  name="github" fetch="git://github.com/" /-->
+	  <remove-project name="CyanogenMod/android_system_vold"/>
+	  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
+	  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
+	</manifest>
 
 now type this command
 
