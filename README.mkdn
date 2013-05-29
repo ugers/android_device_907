@@ -2,7 +2,6 @@ Ubuntu Touch Preview sun4i
 ===============
 Compilation Notes
 -----------------
-Sources
 Information about compilation you must find there:
 
 	https://wiki.ubuntu.com/Touch/Porting
