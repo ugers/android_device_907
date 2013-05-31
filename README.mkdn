@@ -12,7 +12,6 @@ and paste these lines inside new file .repo/local_manifest.xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
 	  <!-- remote  name="github" fetch="git://github.com/" /-->
-	  <remove-project name="CyanogenMod/android_system_vold"/>
 	  <project remote="github" revision="ubuntu-touch-preview" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
