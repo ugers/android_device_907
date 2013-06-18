@@ -11,8 +11,13 @@ persist.sys.root_access=3
 ro.sf.lcd_density=160
 hwui.render_dirty_regions=false
 
-wifi.interface = wlan0
-wifi.supplicant_scan_interval = 60
+persist.sys.timezone=Europe/London \
+persist.sys.language=en \
+persist.sys.country=GB \
+
+wifi.interface=wlan0
+wifi.supplicant_scan_interval=60
+debug.egl.hw=1
 
 #Disable StrictMode
 persist.sys.strictmode.visual=0
@@ -20,14 +25,21 @@ persist.sys.strictmode.disable=1
 
 #Default USB Config (Do not change this)
 persist.sys.usb.config=mass_storage,adb
-
+persist.sys.use_dithering=0 \
+persist.sys.purgeable_assets=0 \
+windowsmgr.max_events_per_sec=240 \
+view.minimum_fling_velocity=25 \
+view.touch_slop=2 \
+dalvik.vm.verify-bytecode=false \
+dalvik.vm.dexopt-flags=v=n,o=v \
+dalvik.vm.execution-mode=int:jit \
 ro.display.switch = 1
 
 #RIL config
 rild.libpath=/system/lib/liballwinner-ril.so
 rild.libargs=-d /dev/ttyUSB2
 
-# hardware info
+# Hardware info
 ro.device.cpu=1.0 GHz AllWinner A10
 ro.device.gpu=ARM Mali 400
 ro.device.rear_cam=2 MP
