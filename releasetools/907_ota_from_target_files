@@ -105,7 +105,7 @@ OPTIONS.modelidcfg = True
 OPTIONS.override_device = 'auto'
 
 LOCAL_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-DEV_OUT_DIR = os.path.abspath(os.path.join(LOCAL_DIR, '../../../out/target/product/tf101/'))
+DEV_OUT_DIR = os.path.abspath(os.path.join(LOCAL_DIR, '../../../out/target/product/907/'))
 
 
 
@@ -444,9 +444,6 @@ def WriteFullOTAPackage(input_zip, output_zip):
   if OPTIONS.backuptool:
     script.ShowProgress(0.2, 10)
     script.RunBackup("restore")
-
-#  if OPTIONS.modelidcfg:
-    #script.RunConfig("")
 
   script.ShowProgress(0.2, 10)
   script.WriteRawImage("/boot", "boot.img")

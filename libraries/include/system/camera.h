@@ -160,7 +160,7 @@ enum {
      * Stop the face detection.
      */
     CAMERA_CMD_STOP_FACE_DETECTION = 7,
-
+    
 #if defined(QCOM_ICS_COMPAT) && defined(QCOM_HARDWARE)
     CAMERA_CMD_HISTOGRAM_ON     = 8,
     CAMERA_CMD_HISTOGRAM_OFF     = 9,
@@ -168,7 +168,6 @@ enum {
     /* Unused by the older blobs, but referenced */
     CAMERA_CMD_ENABLE_FOCUS_MOVE_MSG = 11,
     CAMERA_CMD_PING = 12,
-    CAMERA_CMD_SET_VIDEO_BUFFER_COUNT = 13,
 #else
     /**
      * Enable/disable focus move callback (CAMERA_MSG_FOCUS_MOVE). Passing
@@ -186,9 +185,7 @@ enum {
      * can silently finish itself or show a dialog.
      */
     CAMERA_CMD_PING = 9,
-	CAMERA_CMD_SET_SCREEN_ID = 0xFF000000,
-	CAMERA_CMD_SET_CEDARX_RECORDER = 0xFF000001,
- 
+    
     /**
      * Configure the number of video buffers used for recording. The intended
      * video buffer count for recording is passed as arg1, which must be
@@ -199,8 +196,23 @@ enum {
      * count is non-positive or too big to be realized.
      */
     CAMERA_CMD_SET_VIDEO_BUFFER_COUNT = 10,
+ 
+#ifdef QCOM_HARDWARE
+    CAMERA_CMD_HISTOGRAM_ON     = 10,
+    CAMERA_CMD_HISTOGRAM_OFF     = 11,
+    CAMERA_CMD_HISTOGRAM_SEND_DATA  = 12,
+#endif
 #endif
 
+    /**
+     * Set screen ID (Allwinner)
+     */
+    CAMERA_CMD_SET_SCREEN_ID = 0xFF000000,
+
+    /**
+     * Set CedarX recorder (Allwinner)
+     */
+    CAMERA_CMD_SET_CEDARX_RECORDER = 0xFF000001,
 };
 
 /** camera fatal errors */

@@ -22,9 +22,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/bin/ntfs-3g.probe:system/bin/ntfs-3g.probe \
 	device/softwinner/907/prebuilt/bin/mkntfs:system/bin/mkntfs \
 	device/softwinner/907/prebuilt/bin/reboot-recovery.sh:system/bin/reboot-recovery.sh \
-	device/softwinner/907/prebuilt/bin/usb_modeswitch:system/bin/usb_modeswitch \
-	device/softwinner/907/prebuilt/bin/rild:system/bin/rild \
-        #device/softwinner/907/vold/vold:system/bin/vold
+	device/softwinner/907/prebuilt/bin/usb_modeswitch:system/bin/usb_modeswitch
 
 # /system/etc
 PRODUCT_COPY_FILES += \
@@ -46,7 +44,7 @@ PRODUCT_COPY_FILES += \
     device/softwinner/907/prebuilt/etc/audio_effects.conf:system/etc/audio_effects.conf
 
 # NAND tends to be slow, lets preload some things
-PRODUCT_COPY_FILES += device/softwinner/907/prebuilt/etc/01preload:system/etc/init.d/01preload
+PRODUCT_COPY_FILES += device/softwinner/907/prebuilt/etc/init.d/01preload:system/etc/init.d/01preload
 
 PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/etc/init.d,system/etc/init.d)
@@ -60,7 +58,6 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/egl/libGLESv1_CM_mali.so:system/lib/egl/libGLESv1_CM_mali.so \
 	device/softwinner/907/prebuilt/lib/egl/libGLESv2_mali.so:system/lib/egl/libGLESv2_mali.so \
 	device/softwinner/907/prebuilt/lib/liballwinner-ril.so:system/lib/liballwinner-ril.so \
-	device/softwinner/907/prebuilt/lib/hw/camera.exDroid.so:system/lib/hw/camera.exDroid.so \
 	device/softwinner/907/prebuilt/lib/hw/sensors.exDroid.so:system/lib/hw/sensors.exDroid.so \
 	device/softwinner/907/prebuilt/lib/libMali.so:system/lib/libMali.so \
 	device/softwinner/907/prebuilt/lib/libUMP.so:system/lib/libUMP.so \
@@ -74,6 +71,11 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/usr/idc/gt811_ts.idc:system/usr/idc/gt811_ts.idc \
 	device/softwinner/907/prebuilt/usr/idc/ssd253x.idc:system/usr/idc/ssd253x.idc \
 	device/softwinner/907/prebuilt/usr/idc/Goodix-TS-board-3.idc:system/usr/idc/Goodix-TS-board-3.idc \
+	device/softwinner/907/prebuilt/usr/idc/Goodix-TS.idc:system/usr/idc/Goodix-TS.idc \
+	device/softwinner/907/prebuilt/usr/idc/gt82x.idc:system/usr/idc/gt82x.idc \
+	device/softwinner/907/prebuilt/usr/idc/novatek-ts.idc:system/usr/idc/novatek-ts.idc \
+	device/softwinner/907/prebuilt/usr/idc/pixcir_cxx.idc:system/usr/idc/pixcir_cxx.idc \
+	device/softwinner/907/prebuilt/usr/idc/sun4i-ts.idc:system/usr/idc/sun4i-ts.idc \
 	device/softwinner/907/prebuilt/usr/keylayout/axp20-supplyer.kl:system/usr/keylayout/axp20-supplyer.kl \
 	device/softwinner/907/prebuilt/usr/keylayout/sun4i-keyboard.kl:system/usr/keylayout/sun4i-keyboard.kl \
 	device/softwinner/907/prebuilt/usr/keylayout/hv_keypad.kl:system/usr/keylayout/hv_keypad.kl \

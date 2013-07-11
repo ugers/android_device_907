@@ -1,0 +1,21 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">Настройки Allwinner A10</string>
+    
+    <string name="title_display">Экран</string>
+    <string name="title_wifi">Wifi</string>
+    <string name="title_system">Система</string>
+    
+    <string name="title_dpi">Изменение DPI</string>
+    <string name="summary_dpi">Для применения изменений необходима перезагрузка</string>
+
+    <string name="title_wlan_mac">Изменение MAC-адреса</string>
+    <string name="summary_wlan_mac">Задание пользовательского wifi МАС-адреса</string>
+
+    <string name="title_ext_internal">Поменять местами внутреннюю и внешнюю память</string>
+    <string name="summary_ext_internal">Для применения изменений необходима перезагрузка (использовать на свой страх и риск!)</string>
+	
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+
+</resources>

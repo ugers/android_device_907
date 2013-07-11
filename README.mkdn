@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Ubuntu Touch Preview sun4i
 ===============
 Compilation Notes
@@ -8,10 +9,34 @@ Information about compilation you must find there:
 
 paste these lines inside new file .repo/manifests/local_manifest.xml
 and paste these lines inside new file .repo/local_manifest.xml
+=======
+CyanogenMod sun4i
+===============
+Compilation Notes
+-----------------
+
+* Build from Sources
+
+1)Create a directory
+
+	mkdir cyanogen
+
+2)Change to the created directory
+
+	cd cyanogen
+
+3)Init the CyanogenMod repository
+
+	repo init -u git://github.com/CyanogenMod/android.git -b cm-10.1
+
+4)Paste this lines inside new file .repo/manifests/local_manifest.xml
+and paste this lines inside new file .repo/local_manifest.xml
+>>>>>>> 9e87c92f6039f3df6a4e2340959c18344ec3ef3f
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
 	  <!-- remote  name="github" fetch="git://github.com/" /-->
+<<<<<<< HEAD
 	  <project remote="github" revision="ubuntu-touch-preview" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
@@ -20,14 +45,36 @@ now type this command
 	repo sync -j16
 
 finally you're ready to build it
+=======
+	  <remove-project name="CyanogenMod/android_bootable_recovery"/>
+	  <remove-project name="CyanogenMod/android_system_vold"/>
+	  <project remote="github" revision="cm-10.1" name="ugers/android_device_907" path="device/softwinner/907" />
+	  <project remote="github" revision="cm-10.1" name="ugers/android_system_vold" path="system/vold" />
+	  <project remote="github" revision="twrp2.5" name="TeamWin/Team-Win-Recovery-Project" path="bootable/recovery" />
+	</manifest>
+
+5)Now type this command:
+
+	repo sync -j16
+
+6)Prebuilts:
+
+	cd vendor/cm
+	./get-prebuilts
+
+7)Finally you're ready to build it:
+>>>>>>> 9e87c92f6039f3df6a4e2340959c18344ec3ef3f
 
 	source build/envsetup.sh
 	brunch cm_907-userdebug
 
+<<<<<<< HEAD
 Prerequisites:
 Prebuilts
 
 	cd into vendor/cm and do
 	./get-prebuilts
 	
+=======
+>>>>>>> 9e87c92f6039f3df6a4e2340959c18344ec3ef3f
 Patches - (if you have already modify your tree and patches can't be applied, run: repo forall -c git reset --hard)

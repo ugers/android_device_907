@@ -1,0 +1,8 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string-array name="dpi_names">
+        <item>Стандартное разрешение</item>
+        <item>Высокое разрешение</item>
+    </string-array>
+
+</resources>

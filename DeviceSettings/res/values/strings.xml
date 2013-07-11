@@ -1,0 +1,21 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">Allwinner A10 settings</string>
+    
+    <string name="title_display">Display</string>
+    <string name="title_wifi">Wifi</string>
+    <string name="title_system">System tweak</string>
+    
+    <string name="title_dpi">DPI Changer</string>
+    <string name="summary_dpi">Reboot is required for changes to take effect</string>
+
+    <string name="title_wlan_mac">Custom MAC</string>
+    <string name="summary_wlan_mac">Custom wifi mac address</string>
+
+    <string name="title_ext_internal">Swap internal and external storages</string>
+    <string name="summary_ext_internal">Reboot is required for changes to take effect (use it on your own risk!)</string>
+
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+</resources>

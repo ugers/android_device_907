@@ -17,7 +17,6 @@
 
 #include <linux/wireless.h>
 #include "android_drv.h"
-
 #include "common.h"
 #include "driver.h"
 #include "eloop.h"

@@ -18,6 +18,14 @@
 #ifndef _BDROID_BUILDCFG_H
 #define _BDROID_BUILDCFG_H
 
-#define BTM_DEF_LOCAL_NAME   "Allwinner"
+#define BTM_DEF_LOCAL_NAME   "AllwinnerA10"
+
+// Networking, Capturing, Object Transfer
+// MAJOR CLASS: COMPUTER
+// MINOR CLASS: LAPTOP
+#define BTA_DM_COD {0x1A, 0x01, 0x0C}
+
+#define BTA_DISABLE_DELAY 1000 /* in milliseconds */
+#define PAN_NAP_DISABLED TRUE
 
 #endif 

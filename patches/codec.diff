@@ -9,6 +9,18 @@ diff --git a/frameworks/av/media/libstagefright/codecs/g711/dec/SoftG711.h b/fra
      bool mSignalledError;
 
      void initPorts();
+diff --git a/frameworks/av/media/libstagefright/chromium_http/support.h b/frameworks/av/media/libstagefright/chromium_http/support.h
+--- a/frameworks/av/media/libstagefright/chromium_http/support.h
++++ b/frameworks/av/media/libstagefright/chromium_http/support.h
+@@ -96,6 +96,8 @@ struct SfDelegate : public net::URLRequest::Delegate {
+ 
+     void setUID(uid_t uid);
+ 
++    void setUA(int ua);
++
+     virtual void OnReceivedRedirect(
+             net::URLRequest *request, const GURL &new_url, bool *defer_redirect);
+
 diff --git a/frameworks/av/media/libstagefright/include/MPEG4Extractor.h b/frameworks/av/media/libstagefright/include/MPEG4Extractor.h
 --- a/frameworks/av/media/libstagefright/include/MPEG4Extractor.h
 +++ b/frameworks/av/media/libstagefright/include/MPEG4Extractor.h
@@ -44,9 +56,46 @@ diff --git a/frameworks/av/include/media/stagefright/ACodec.h b/frameworks/av/in
      Vector<BufferInfo> mBuffers[2];
      bool mPortEOS[2];
      status_t mInputEOSResult;
-diff --git a/frameworks/core/java/android/provider/MediaStore.java b/frameworks/core/java/android/provider/MediaStore.java
---- a/frameworks/core/java/android/provider/MediaStore.java
-+++ b/frameworks/core/java/android/provider/MediaStore.java
+diff --git a/frameworks/av/include/media/stagefright/MediaSource.h b/frameworks/av/include/media/stagefright/MediaSource.h
+--- a/frameworks/av/include/media/stagefright/MediaSource.h
++++ b/frameworks/av/include/media/stagefright/MediaSource.h
+@@ -68,6 +68,7 @@ struct MediaSource : public virtual RefBase {
+             SEEK_NEXT_SYNC,
+             SEEK_CLOSEST_SYNC,
+             SEEK_CLOSEST,
++            SEEK_VENDOR_OPT = 100,
+         };
+ 
+         ReadOptions();
+diff --git a/frameworks/av/include/media/stagefright/MediaExtractor.h b/frameworks/av/include/media/stagefright/MediaExtractor.h
+--- a/frameworks/av/include/media/stagefright/MediaExtractor.h
++++ b/frameworks/av/include/media/stagefright/MediaExtractor.h
+@@ -36,8 +36,9 @@ class MediaExtractor : public RefBase {
+     virtual sp<MediaSource> getTrack(size_t index) = 0;
+ 
+     enum GetTrackMetaDataFlags {
+-        kIncludeExtensiveMetaData = 1
+-    };
++        kIncludeExtensiveMetaData = 1,
++        kIncludeExtensiveMetaDataBitrate = 256
++};
+     virtual sp<MetaData> getTrackMetaData(
+             size_t index, uint32_t flags = 0) = 0;
+
+diff --git a/frameworks/av/include/media/stagefright/MediaErrors.h b/frameworks/av/include/media/stagefright/MediaErrors.h
+--- a/frameworks/av/include/media/stagefright/MediaErrors.h
++++ b/frameworks/av/include/media/stagefright/MediaErrors.h
+@@ -41,6 +41,7 @@ enum {
+     INFO_FORMAT_CHANGED    = MEDIA_ERROR_BASE - 12,
+     INFO_DISCONTINUITY     = MEDIA_ERROR_BASE - 13,
+     INFO_OUTPUT_BUFFERS_CHANGED = MEDIA_ERROR_BASE - 14,
++    INFO_VENDOR_LEAF_ATOM  = -1500,
+
+     // The following constant values should be in sync with
+     // drm/drm_framework_common.h
+diff --git a/frameworks/base/core/java/android/provider/MediaStore.java b/frameworks/base/core/java/android/provider/MediaStore.java
+--- a/frameworks/base/core/java/android/provider/MediaStore.java
++++ b/frameworks/base/core/java/android/provider/MediaStore.java
 @@ -190,6 +190,11 @@
       * This is a boolean property that specifies whether or not to show action icons.
       */
@@ -58,4 +107,76 @@ diff --git a/frameworks/core/java/android/provider/MediaStore.java b/frameworks/
 +    public static final String PLAYLIST_TYPE_MEDIA_PROVIDER = "mediaProvider";
 
      /**
-      * The name of the Intent-extra used to control the onCompletion behavior of a MovieView.
+      * The name of the Intent-extra used to control the onCompletion behavior of a MovieView.     
+diff --git a/system/core/include/system/window.h b/system/core/include/system/window.h
+--- a/system/core/include/system/window.h
++++ b/system/core/include/system/window.h
+@@ -236,6 +236,33 @@ enum {
+      */
+     NATIVE_WINDOW_CONSUMER_RUNNING_BEHIND = 9
+ };
++#if 0
++enum
++{
++    NATIVE_WINDOW_CMD_SETFRAMEPARA          = HWC_LAYER_SETFRAMEPARA,
++    NATIVE_WINDOW_CMD_SETVIDEOPARA          = HWC_LAYER_SETVIDEOPARA,
++    NATIVE_WINDOW_CMD_GETCURFRAMEPARA       = HWC_LAYER_GETCURFRAMEPARA,
++    NATIVE_WINDOW_CMD_SETSCREEN             = HWC_LAYER_SETSCREEN,
++    NATIVE_WINDOW_CMD_SHOW                  = HWC_LAYER_SHOW,
++    NATIVE_WINDOW_CMD_SET3DMODE             = HWC_LAYER_SET3DMODE,    
++    NATIVE_WINDOW_CMD_SETFORMAT             = HWC_LAYER_SETFORMAT,    
++    NATIVE_WINDOW_CMD_VPPON                 = HWC_LAYER_VPPON,    
++    NATIVE_WINDOW_CMD_VPPGETON              = HWC_LAYER_VPPGETON,    
++    NATIVE_WINDOW_CMD_SETLUMASHARP          = HWC_LAYER_SETLUMASHARP,    
++    NATIVE_WINDOW_CMD_GETLUMASHARP          = HWC_LAYER_GETLUMASHARP,    
++    NATIVE_WINDOW_CMD_SETCHROMASHARP        = HWC_LAYER_SETCHROMASHARP,    
++    NATIVE_WINDOW_CMD_GETCHROMASHARP        = HWC_LAYER_GETCHROMASHARP,    
++    NATIVE_WINDOW_CMD_SETWHITEEXTEN         = HWC_LAYER_SETWHITEEXTEN,    
++    NATIVE_WINDOW_CMD_GETWHITEEXTEN         = HWC_LAYER_GETWHITEEXTEN,    
++    NATIVE_WINDOW_CMD_SETBLACKEXTEN         = HWC_LAYER_SETBLACKEXTEN,    
++    NATIVE_WINDOW_CMD_GETBLACKEXTEN         = HWC_LAYER_GETBLACKEXTEN
++};
++#endif
++
++enum
++{
++    NATIVE_WINDOW_CMD_GET_SURFACE_TEXTURE_TYPE = 0,
++};
+ 
+ /* Valid operations for the (*perform)() hook.
+  *
+@@ -251,6 +278,8 @@ enum {
+     NATIVE_WINDOW_SET_USAGE                 =  0,
+     NATIVE_WINDOW_CONNECT                   =  1,   /* deprecated */
+     NATIVE_WINDOW_DISCONNECT                =  2,   /* deprecated */
++    NATIVE_WINDOW_SETPARAMETER              = 50,
++    NATIVE_WINDOW_GETPARAMETER              = 51
+     NATIVE_WINDOW_SET_CROP                  =  3,   /* private */
+     NATIVE_WINDOW_SET_BUFFER_COUNT          =  4,
+     NATIVE_WINDOW_SET_BUFFERS_GEOMETRY      =  5,   /* deprecated */
+@@ -290,6 +319,10 @@ enum {
+     /* Buffers will be queued by the the camera HAL.
+      */
+     NATIVE_WINDOW_API_CAMERA = 4,
++    
++    NATIVE_WINDOW_API_MEDIA_HW = 5,
++
++    NATIVE_WINDOW_API_CAMERA_HW = 6,
+ };
+ 
+ /* parameter for NATIVE_WINDOW_SET_BUFFERS_TRANSFORM */
+@@ -698,6 +731,14 @@ static inline int native_window_set_buffers_geometry(
+             w, h, format);
+ }
+ 
++static inline int native_window_set_buffers_geometryex(
++        struct ANativeWindow* window,
++        int w, int h, int format,int screenid)
++{
++    return window->perform(window, NATIVE_WINDOW_SET_BUFFERS_GEOMETRY,
++            w, h, format,screenid);
++}
++
+ /*
+  * native_window_set_buffers_dimensions(..., int w, int h)
+  * All buffers dequeued after this call will have the dimensions specified.

@@ -1,6 +1,6 @@
 on early-init
     start ueventd
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor fantasy
 
 on init
     export PATH /sbin
@@ -55,6 +55,14 @@ service adbd /sbin/adbd recovery
 # Always start adbd on userdebug and eng builds
  on property:ro.debuggable=1
     setprop adb.recovery 1
+
+# In recovery, enable ums
+    chown system system /sys/class/android_usb/android0/f_mass_storage/lun/file
+    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun/file
+    chown system system /sys/class/android_usb/android0/f_mass_storage/lun1/file
+    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun1/file
+    chown system system /sys/class/android_usb/android0/f_rndis/ethaddr
+    chmod 0660 /sys/class/android_usb/android0/f_rndis/ethaddr
 
 # In recovery, always run adbd as root.
 on property:ro.debuggable=1

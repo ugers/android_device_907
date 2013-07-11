@@ -14,4 +14,57 @@ diff --git a/system/bluetooth/bluedroid/bluetooth.c b/system/bluetooth/bluedroid
          snprintf(path, sizeof(path), "/sys/class/rfkill/rfkill%d/type", id);
          fd = open(path, O_RDONLY);
          if (fd < 0) {
-
+diff --git a/build/core/pathmap.mk b/build/core/pathmap.mk
+--- a/build/core/pathmap.mk
++++ b/build/core/pathmap.mk
+@@ -27,6 +27,9 @@
+ # A mapping from shorthand names to include directories.
+ #
+ pathmap_INCL := \
++    bluedroid:system/bluetooth/bluedroid/include \
++    bluez:external/bluetooth/bluez \
++    glib:external/bluetooth/glib \
+     bootloader:bootable/bootloader/legacy/include \
+     camera:system/media/camera/include \
+     corecg:external/skia/include/core \
+diff --git a/system/core/include/private/android_filesystem_config.h b/system/core/include/private/android_filesystem_config.h
+--- a/system/core/include/private/android_filesystem_config.h
++++ b/system/core/include/private/android_filesystem_config.h
+@@ -229,6 +229,12 @@ struct fs_path_config {
+     { 00550, AID_ROOT,      AID_SHELL,     "system/etc/init.testmenu" },
+     { 00550, AID_DHCP,      AID_SHELL,     "system/etc/dhcpcd/dhcpcd-run-hooks" },
+     { 00440, AID_BLUETOOTH, AID_BLUETOOTH, "system/etc/dbus.conf" },
++    { 00440, AID_BLUETOOTH, AID_BLUETOOTH, "system/etc/bluetooth/main.conf" },
++    { 00440, AID_BLUETOOTH, AID_BLUETOOTH, "system/etc/bluetooth/input.conf" },
++    { 00440, AID_BLUETOOTH, AID_BLUETOOTH, "system/etc/bluetooth/audio.conf" },
++    { 00440, AID_BLUETOOTH, AID_BLUETOOTH, "system/etc/bluetooth/network.conf" },
++    { 00444, AID_NET_BT,    AID_NET_BT,    "system/etc/bluetooth/blacklist.conf" },
++    { 00640, AID_SYSTEM,    AID_SYSTEM,    "system/etc/bluetooth/auto_pairing.conf" },
+     { 00444, AID_RADIO,     AID_AUDIO,     "system/etc/AudioPara4.csv" },
+     { 00555, AID_ROOT,      AID_ROOT,      "system/etc/ppp/*" },
+     { 00555, AID_ROOT,      AID_ROOT,      "system/etc/rc.*" },
+diff --git a/system/core/rootdir/ueventd.rc b/system/core/rootdir/ueventd.rc
+--- a/system/core/rootdir/ueventd.rc
++++ b/system/core/rootdir/ueventd.rc
+@@ -29,8 +29,7 @@
+ /dev/android_adb          0660   adb        adb
+ /dev/android_adb_enable   0660   adb        adb
+ /dev/ttyMSM0              0600   bluetooth  bluetooth
+-/dev/uhid                 0660   system     net_bt_stack
+-/dev/uinput               0660   system     net_bt_stack
++/dev/uinput               0660   system     bluetooth
+ /dev/alarm                0664   system     radio
+ /dev/tty0                 0660   root       system
+ /dev/graphics/*           0660   root       graphics
+diff --git a/system/core/init/property_service.c b/system/core/init/property_service.c
+--- a/system/core/init/property_service.c
++++ b/system/core/init/property_service.c
+@@ -88,7 +88,7 @@ struct {
+     { "service.",         AID_SYSTEM,   0 },
+     { "service.",         AID_RADIO,    0 },
+     { "wlan.",            AID_SYSTEM,   0 },
+-    { "bluetooth.",       AID_BLUETOOTH,   0 },
++    { "bluetooth.",       AID_SYSTEM,   0 },
+     { "dhcp.",            AID_SYSTEM,   0 },
+     { "dhcp.",            AID_DHCP,     0 },
+     { "debug.",           AID_SYSTEM,   0 },

@@ -1,31 +1,62 @@
-# disp driver
+/dev/null                 0666   root       root
+/dev/zero                 0666   root       root
+/dev/full                 0666   root       root
+/dev/ptmx                 0666   root       root
+/dev/random               0666   root       root
+/dev/urandom              0666   root       root
+/dev/ashmem               0666   root       root
+/dev/binder               0666   root       root
+/dev/log/*                0662   root       log
+/dev/bus/usb/*            0660   root       usb
+/dev/usb_accessory        0660   root       usb
+/dev/mtp_usb              0660   root       mtp
+/dev/snd/dsp              0660   system     audio
+/dev/snd/dsp1             0660   system     audio
+/dev/snd/mixer            0660   system     audio
+/dev/snd/*                0660   system     audio
+/dev/input/*              0660   root       input
+/dev/android_adb          0660   adb        adb
+/dev/ppp                  0660   radio      vpn
 /dev/disp                 0777   system     system 
 /dev/g2d             	  0777   system     system 
 /dev/cedar_dev            0666   system     system 
 /dev/ace_dev              0666   system     system 
-/dev/ump				  0777   system		graphics
-/dev/mali				  0777   system		graphics
-/dev/ump				  0777   system 	graphics
-/dev/video0				  0777   system		system
-/dev/video1				  0777   system		system
+/dev/ump  	  0777   system	    graphics
+/dev/mali		  0777   system	    graphics
+/dev/ump		  0777   system     graphics
+/dev/graphics/*           0660   root       graphics
+/dev/video0  	  0777   system	    system
+/dev/video1		  0777   system	    system
 /dev/snd/pcmC0D0c 		  0777   system     system
 /dev/snd/pcmC0D0p		  0777   system     system
 /dev/block/nandf		  0666	 system		system
+/dev/ttyS1    0660    bluetooth  bluetooth
+/dev/ttyHS2     0660    bluetooth  bluetooth
 /dev/ttyUSB0			  0777   system     system
 /dev/ttyUSB1			  0777   system     system
 /dev/ttyUSB2			  0777   system     system
 /dev/ttyUSB3			  0777   system     system
 /dev/gps                  0777   system     system
+/dev/pa_dev  		  	  0777	 system	    system
+/dev/dmard06            0777 system     system
+/dev/ttyACM0  		  0777   system     system
+/dev/ttyACM1  		  0777   system     system
 
-#mma7660
-/sys/devices/virtual/input/input* name 0660 root input
-/sys/devices/virtual/input/input* max 0660 root input
-/sys/devices/virtual/input/input* min 0660 root input
-/sys/devices/virtual/input/input* poll 0666 root input
+# sysfs properties, for mma7660 gsensor
+/sys/devices/virtual/input/input*   name        0660  root   input
+/sys/devices/virtual/input/input*   max         0660  root   input
+/sys/devices/virtual/input/input*   min         0660  root   input
+/sys/devices/virtual/input/input*   poll        0666  root   input
 
 #mxc622x
 /dev/mxc622x			  0777   system     system
 /dev/ecompass_ctrl		  0777   system     system
+
+# dvb-usb
+/dev/dvb*   0666  system    system
+/dev/dvb    0777  system    system
+/dev/dvb/adapter0   0777  system  system
+/dev/dvb/adapter0/* 0666  system  system
 
 #ChristianTroy
 #/sys/devices/platform/sw-ehci.1/usb2/2-1/2-1.1/2-1.1:1.0/bluetooth/hci0/rfkill* state  0777 system system

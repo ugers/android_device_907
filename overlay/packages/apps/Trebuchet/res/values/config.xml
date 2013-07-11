@@ -2,5 +2,18 @@
     <bool name="config_largeHeap">true</bool>
     <bool name="is_large_screen">true</bool>
     <bool name="allow_rotation">true</bool>
+    
+    <!-- Whether or not to use the wallpaper hack by default -->
     <bool name="config_workspaceDefaultWallpaperHack">true</bool>
+    
+    <!-- Workspace grid size -->
+    <integer name="config_maxWorkspaceRows">9</integer>
+    <integer name="config_maxWorkspaceColumns">9</integer>
+    
+    <!-- Allow tablets to set grid size in settings, false disables -->
+    <bool name="config_workspaceTabletGrid">true</bool>
+    
+    <!-- Actual cell count -->
+    <integer name="target_cell_count_x">7</integer>
+    <integer name="target_cell_count_y">5</integer> 
 </resources>

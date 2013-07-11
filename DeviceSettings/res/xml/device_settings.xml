@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <PreferenceCategory android:title="@string/title_display">
+    
+    <ListPreference
+                        android:title="@string/title_dpi"
+                        android:key="pref_dpi_list"
+                        android:defaultValue="160"
+                        android:summary="@string/summary_dpi"
+                        android:entries="@array/dpi_names"
+                        android:entryValues="@array/dpi_values"/>
+                  
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/title_wifi">
+        
+    <Preference
+            android:key="wlan_mac"
+            android:title="@string/title_wlan_mac"
+            android:summary="@string/summary_wlan_mac"
+            />
+
+    </PreferenceCategory>
+        
+    <PreferenceCategory android:title="@string/title_system">
+
+    <CheckBoxPreference
+             android:key="ext_internal"
+             android:title="@string/title_ext_internal"
+             android:persistent="false"
+             android:defaultValue="true"
+             android:summary="@string/summary_ext_internal"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

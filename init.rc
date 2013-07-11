@@ -4,6 +4,7 @@
 # This is a common source of Android security bugs.
 #
 
+import /init.trace.rc
 import /init.sun4i.rc
 import /init.sun4i.usb.rc
 import /init.trace.rc
@@ -32,18 +33,16 @@ loglevel 3
     export PATH /sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin
     export LD_LIBRARY_PATH /vendor/lib:/system/lib
     export ANDROID_BOOTLOGO 1
-    export ANDROID_CACHE /cache
     export ANDROID_ROOT /system
     export ANDROID_ASSETS /system/app
     export ANDROID_DATA /data
     export ANDROID_STORAGE /storage
     export ASEC_MOUNTPOINT /mnt/asec
     export LOOP_MOUNTPOINT /mnt/obb
-    export BOOTCLASSPATH /system/framework/core.jar:/system/framework/core-junit.jar:/system/framework/bouncycastle.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/framework2.jar:/system/framework/android.policy.jar:/system/framework/services.jar:/system/framework/apache-xml.jar
-    export TERMINFO /system/etc/terminfo
- 	  export TERM linux
+    export BOOTCLASSPATH /system/framework/core.jar:/system/framework/core-junit.jar:/system/framework/bouncycastle.jar:/system/framework/ext.jar:/system/framework/framework.jar:/system/framework/telephony-common.jar:/system/framework/mms-common.jar:/system/framework/android.policy.jar:/system/framework/services.jar:/system/framework/apache-xml.jar
 
 # Backward compatibility
+    insmod /system/lib/modules/nand.ko
     symlink /system/etc /etc
     symlink /sys/kernel/debug /d
 
@@ -85,10 +84,6 @@ loglevel 3
     # Filesystem image public mount points.
     mkdir /mnt/obb 0700 root system
     mount tmpfs tmpfs /mnt/obb mode=0755,gid=1000
-
-    # Fuse public mount points.
-    mkdir /mnt/fuse 0700 root system
-    mount tmpfs tmpfs /mnt/fuse mode=0775,gid=1000
 
     write /proc/sys/kernel/panic_on_oops 1
     write /proc/sys/kernel/hung_task_timeout_secs 0
@@ -143,7 +138,7 @@ loglevel 3
 
 on post-fs
     # once everything is setup, no need to modify /
-    mount rootfs rootfs / ro remount
+    #mount rootfs rootfs / ro remount
     # mount shared so changes propagate into child namespaces
     mount rootfs rootfs / shared rec
     mount tmpfs tmpfs /mnt/secure private rec
@@ -157,8 +152,6 @@ on post-fs
     # This may have been created by the recovery system with odd permissions
     chown system cache /cache/recovery
     chmod 0770 /cache/recovery
-    # This may have been created by the recovery system with the wrong context.
-    restorecon /cache/recovery
 
     #change permissions on vmallocinfo so we can grab it from bugreports
     chown root log /proc/vmallocinfo
@@ -204,10 +197,11 @@ on post-fs-data
     # create basic filesystem structure
     mkdir /data/misc 01771 system misc
     mkdir /data/misc/adb 02750 system shell
-    mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
+    mkdir /data/misc/bluetoothd 0770 bluetooth bluetooth
     mkdir /data/misc/bluetooth 0770 system system
     mkdir /data/misc/keystore 0700 keystore keystore
     mkdir /data/misc/keychain 0771 system system
+    mkdir /data/misc/sms 0770 system radio
     mkdir /data/misc/vpn 0770 system vpn
     mkdir /data/misc/systemkeys 0700 system system
     # give system access to wpa_supplicant.conf for backup and restore
@@ -216,31 +210,37 @@ on post-fs-data
     chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
-    mkdir /data/misc/radio 0777 system radio
-    mkdir /data/camera 0777 root root
     mkdir /data/local 0751 root root
+    
+    # star add for camera recorder
+    mkdir /data/camera 0777 root root
+    
+    # radio related, such as imei.conf
+    mkdir /data/misc/radio 0777 system radio
+    # radio related, 3G Data Card
+    chmod 0751 /system/etc/usb_modeswitch.sh
+    chmod 0751 /system/etc/ppp/call-pppd
+    chmod 0751 /system/etc/ppp/ip-up
+    chmod 0751 /system/etc/ppp/ip-down
+    chown radio system /system/etc/usb_modeswitch.sh
+    chown radio system /system/etc/ppp/call-pppd
+    chown radio system /system/etc/ppp/ip-up
+    chown radio system /system/etc/ppp/ip-down
 
     # For security reasons, /data/local/tmp should always be empty.
     # Do not place files or directories in /data/local/tmp
     mkdir /data/local/tmp 0771 shell shell
     mkdir /data/data 0771 system system
     mkdir /data/app-private 0771 system system
-    mkdir /data/app-lib 0771 system system
     mkdir /data/app-asec 0700 root root
+    mkdir /data/app-lib 0771 system system
     mkdir /data/app 0771 system system
     mkdir /data/property 0700 root root
     mkdir /data/ssh 0750 root shell
     mkdir /data/ssh/empty 0700 root root
-    mkdir /data/radio 0770 radio radio
 
-    # create dalvik-cache and double-check the perms, so as to enforce our permissions
+    # create dalvik-cache, so as to enforce our permissions
     mkdir /data/dalvik-cache 0771 system system
-    chown system system /data/dalvik-cache
-    chmod 0771 /data/dalvik-cache
-
-    mkdir /cache/dalvik-cache 0771 system system
-    chown system system /cache/dalvik-cache
-    chmod 0771 /cache/dalvik-cache
 
     # create resource-cache and double-check the perms
     mkdir /data/resource-cache 0771 system system
@@ -327,8 +327,8 @@ on boot
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
     chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 
-    chown system system /sys/block/mmcblk0/queue/scheduler
-    chmod 0664 /sys/block/mmcblk0/queue/scheduler
+    chown system system /sys/block/nand/queue/scheduler
+    chmod 0664 /sys/block/nand/queue/scheduler
 
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/class/leds/keyboard-backlight/brightness
@@ -381,9 +381,6 @@ on boot
 # Set this property so surfaceflinger is not started by system_init
     setprop system_init.startsurfaceflinger 0
 
-# Run sysinit
-    exec /system/bin/sysinit
-
     class_start core
     class_start main
 
@@ -424,12 +421,16 @@ on property:selinux.reload_policy=1
     restart ueventd
     restart installd
 
-service console /system/bin/sh
+#service console /system/bin/sh
+#    class core
+#    console
+#    disabled
+#    user shell
+#    group log
+
+service console /system/bin/sh /dev/ttyS0
     class core
     console
-    disabled
-    user shell
-    group log
 
 on property:ro.debuggable=1
     start console
@@ -466,9 +467,6 @@ service netd /system/bin/netd
     socket dnsproxyd stream 0660 root inet
     socket mdns stream 0660 root system
 
-service debuggerd /system/bin/debuggerd
-    class main
-
 service ril-daemon /system/bin/rild -l liballwinner-ril.so -- -d /dev/ttyUSB2
     class main
     socket rild stream 660 root radio
@@ -493,7 +491,11 @@ service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-sys
 service drm /system/bin/drmserver
     class main
     user drm
-    group drm system inet drmrpc
+    group drm system inet drmrpc sdcard_r
+
+service sysinit /system/bin/logwrapper /system/xbin/busybox run-parts /system/etc/init.d
+    disabled
+    oneshot
 
 service media /system/bin/mediaserver
     class main
@@ -514,7 +516,7 @@ service dbus /system/bin/dbus-daemon --system --nofork
     user bluetooth
     group bluetooth net_bt_admin
 
-service bluetoothd /system/bin/bluetoothd -n
+service bluetoothd /system/bin/logwrapper /system/bin/bluetoothd -n -d
     class main
     socket bluetooth stream 660 bluetooth bluetooth
     socket dbus_bluetooth stream 660 bluetooth bluetooth
@@ -581,11 +583,3 @@ service ubuntu_chroot /system/bin/ubuntu_chroot
 
 on property:sys.boot_completed=1
     class_start troy
-
-# adb over network
-on property:service.adb.tcp.port=5555
-    stop adbd
-    start adbd
-on property:service.adb.tcp.port=-1
-    stop adbd
-    start adbd

@@ -1,0 +1,13 @@
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    
+    <string-array name="dpi_names">
+        <item>Default density</item>
+        <item>High density</item>
+    </string-array>
+        
+    <string-array name="dpi_values" translatable="false">
+        <item>213</item>
+        <item>160</item>
+    </string-array>
+    
+</resources>
