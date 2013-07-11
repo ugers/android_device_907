@@ -22,7 +22,6 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/bin/ntfs-3g.probe:system/bin/ntfs-3g.probe \
 	device/softwinner/907/prebuilt/bin/mkntfs:system/bin/mkntfs \
 	device/softwinner/907/prebuilt/bin/reboot-recovery.sh:system/bin/reboot-recovery.sh \
-	device/softwinner/907/prebuilt/bin/usb_modeswitch:system/bin/usb_modeswitch
 
 # /system/etc
 PRODUCT_COPY_FILES += \
@@ -34,7 +33,6 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/etc/3g_dongle.cfg:system/etc/3g_dongle.cfg \
 	device/softwinner/907/prebuilt/etc/camera.cfg:system/etc/camera.cfg \
 	device/softwinner/907/prebuilt/etc/gps.conf:system/etc/gps.conf \
-	device/softwinner/907/prebuilt/etc/usb_modeswitch.sh:system/etc/usb_modeswitch.sh \
 	device/softwinner/907/prebuilt/etc/vold.fstab:system/etc/vold.fstab
 
 # Media files
@@ -59,6 +57,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/egl/libGLESv2_mali.so:system/lib/egl/libGLESv2_mali.so \
 	device/softwinner/907/prebuilt/lib/liballwinner-ril.so:system/lib/liballwinner-ril.so \
 	device/softwinner/907/prebuilt/lib/hw/sensors.exDroid.so:system/lib/hw/sensors.exDroid.so \
+	device/softwinner/907/prebuilt/lib/hw/gralloc.exDroid.so:system/lib/hw/gralloc.exDroid.so \
 	device/softwinner/907/prebuilt/lib/libMali.so:system/lib/libMali.so \
 	device/softwinner/907/prebuilt/lib/libUMP.so:system/lib/libUMP.so \
 	device/softwinner/907/prebuilt/lib/libMali.so:obj/lib/libMali.so \
