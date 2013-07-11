@@ -4,5 +4,5 @@
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
 /dev/block/nandd       /system     ext4        ro                                                                 wait
-/dev/block/nande       /data       ext4        noatime,nosuid,nodev,barrier=0,journal_checksum,noauto_da_alloc    wait
+/dev/block/nande       /data       ext4        noatime,nodev,barrier=0,journal_checksum,noauto_da_alloc           wait
 /dev/block/nandh       /cache      ext4        noatime,nosuid,nodev,barrier=0,journal_checksum,noauto_da_alloc    wait
