@@ -9,14 +9,8 @@ on init
 	symlink /storage/sdcard1 /mnt/extsd
 
 on fs
-<<<<<<< HEAD
-    mount ext4 /dev/block/nandd /system wait ro
-    mount ext4 /dev/block/nande /data wait noatime nodev
-    mount ext4 /dev/block/nandh /cache wait noatime nosuid nodev
-=======
 	setprop ro.crypto.umount_sd false
 	mount_all /fstab.sun4i
->>>>>>> 9e87c92f6039f3df6a4e2340959c18344ec3ef3f
 
 on boot	
         # Enable interactive governor
