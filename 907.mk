@@ -74,14 +74,14 @@ PRODUCT_COPY_FILES += \
         frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
-PRODUCT_COPY_FILES += \
+#PRODUCT_COPY_FILES += \
 	system/bluetooth/data/audio.conf:system/etc/bluetooth/audio.conf \
 	system/bluetooth/data/auto_pairing.conf:system/etc/bluetooth/auto_pairing.conf \
 	system/bluetooth/data/blacklist.conf:system/etc/bluetooth/blacklist.conf \
 	system/bluetooth/data/input.conf:system/etc/bluetooth/input.conf \
 	system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
 
-PRODUCT_COPY_FILES += \
+#PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/cedarx/libaw_audio.so:system/lib/libaw_audio.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libaw_audioa.so:system/lib/libaw_audioa.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libCedarA.so:system/lib/libCedarA.so \
@@ -106,7 +106,7 @@ PRODUCT_PACKAGES += \
 	libnetcmdiface
 
 # Device specific settings
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	AllwinnerA10Settings
 
 PRODUCT_PACKAGES += \
@@ -114,7 +114,7 @@ PRODUCT_PACKAGES += \
         rild_sun4i
 
 # Bluetooth
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	bluetoothd \
 	hciconfig \
 	hcitool
@@ -137,7 +137,7 @@ PRODUCT_PACKAGES += \
 	devlistener
 
 # CedarX libraries
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libCedarA \
 	libCedarX \
 	libcedarv \
