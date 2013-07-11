@@ -19,7 +19,6 @@ TARGET_BOARD_PLATFORM := exDroid
 TARGET_BOOTLOADER_BOARD_NAME := crane
 
 USE_CAMERA_STUB := true
-CAMERA_USES_SURFACEFLINGER_CLIENT_STUB := true
 HAVE_HTC_AUDIO_DRIVER := true
 BOARD_USES_GENERIC_AUDIO := true
 BOARD_USES_GPS_TYPE := simulator
@@ -66,23 +65,23 @@ TARGET_BOOTANIMATION_USE_RGB565 := true
 
 #CWM Recovery
 #BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery_keys.c
-#BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
-#BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
+BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
+BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
 #TARGET_RECOVERY_INITRC := device/softwinner/907/init.recovery.sun4i.rc
 
 #TWRP recovery
-BOARD_HAS_SDCARD_INTERNAL := true
-TARGET_RECOVERY_INITRC := device/softwinner/907/init.recovery.sun4i.rc
-TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
-DEVICE_RESOLUTION := 1024x768
-TW_FLASH_FROM_STORAGE := true
-TW_NO_REBOOT_BOOTLOADER := true
+#BOARD_HAS_SDCARD_INTERNAL := true
+#TARGET_RECOVERY_INITRC := device/softwinner/907/init.recovery.sun4i.rc
+#TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
+#DEVICE_RESOLUTION := 1024x768
+#TW_FLASH_FROM_STORAGE := true
+#TW_NO_REBOOT_BOOTLOADER := true
 #TWRP_EVENT_LOGGING := true
-TW_INTERNAL_STORAGE_PATH := "/emmc"
-TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
-TW_EXTERNAL_STORAGE_PATH := "/sdcard"
-TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
-BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
+#TW_INTERNAL_STORAGE_PATH := "/emmc"
+#TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
+#TW_EXTERNAL_STORAGE_PATH := "/sdcard"
+#TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
+#BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 #BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
 
 # Vold stuff
