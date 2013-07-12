@@ -22,6 +22,7 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/bin/ntfs-3g.probe:system/bin/ntfs-3g.probe \
 	device/softwinner/907/prebuilt/bin/mkntfs:system/bin/mkntfs \
 	device/softwinner/907/prebuilt/bin/reboot-recovery.sh:system/bin/reboot-recovery.sh \
+	device/softwinner/907/prebuilt/bin/rild:system/bin/rild \
 
 # /system/etc
 PRODUCT_COPY_FILES += \
@@ -41,14 +42,8 @@ PRODUCT_COPY_FILES += \
     device/softwinner/907/prebuilt/etc/media_profiles.xml:system/etc/media_profiles.xml \
     device/softwinner/907/prebuilt/etc/audio_effects.conf:system/etc/audio_effects.conf
 
-# NAND tends to be slow, lets preload some things
-PRODUCT_COPY_FILES += device/softwinner/907/prebuilt/etc/init.d/01preload:system/etc/init.d/01preload
-
 PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/etc/init.d,system/etc/init.d)
-
-PRODUCT_COPY_FILES += \
-	$(call find-copy-subdir-files,*,device/softwinner/907/prebuilt/etc/usb_modeswitch.d,system/etc/usb_modeswitch.d)
 
 # /system/lib
 PRODUCT_COPY_FILES += \
