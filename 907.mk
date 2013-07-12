@@ -78,20 +78,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	libnetcmdiface
 
-# Device specific settings
-#PRODUCT_PACKAGES += \
-	AllwinnerA10Settings
-
 PRODUCT_PACKAGES += \
 	librs_jni \
         rild_sun4i
-
-# Bluetooth
-#PRODUCT_PACKAGES += \
-	bluetoothd \
-	hciconfig \
-	hcitool
-
 
 # Hardware libs
 PRODUCT_PACKAGES += \
