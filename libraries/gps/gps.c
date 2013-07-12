@@ -41,8 +41,10 @@
 
 #define  GPS_DEBUG  0
 
+#define LOGE  ALOGE
+
 #if GPS_DEBUG
-#  define  D(...)   ALOGD(__VA_ARGS__)
+#  define  D(...)   LOGD(__VA_ARGS__)
 #else
 #  define  D(...)   ((void)0)
 #endif
@@ -686,13 +688,13 @@ gps_state_thread( void*  arg )
         nevents = epoll_wait( epoll_fd, events, 2, -1 );
         if (nevents < 0) {
             if (errno != EINTR)
-                ALOGE("epoll_wait() unexpected error: %s", strerror(errno));
+                LOGE("epoll_wait() unexpected error: %s", strerror(errno));
             continue;
         }
         D("gps thread received %d events", nevents);
         for (ne = 0; ne < nevents; ne++) {
             if ((events[ne].events & (EPOLLERR|EPOLLHUP)) != 0) {
-                ALOGE("EPOLLERR or EPOLLHUP after epoll_wait() !?");
+                LOGE("EPOLLERR or EPOLLHUP after epoll_wait() !?");
                 goto Exit;
             }
             if ((events[ne].events & EPOLLIN) != 0) {
@@ -738,7 +740,7 @@ gps_state_thread( void*  arg )
                             if (errno == EINTR)
                                 continue;
                             if (errno != EWOULDBLOCK)
-                                ALOGE("error while reading from gps daemon socket: %s:", strerror(errno));
+                                LOGE("error while reading from gps daemon socket: %s:", strerror(errno));
                             break;
                         }
                         D("received %d bytes: %.*s", ret, ret, buff);
@@ -749,7 +751,7 @@ gps_state_thread( void*  arg )
                 }
                 else
                 {
-                    ALOGE("epoll_wait() returned unkown fd %d ?", fd);
+                    LOGE("epoll_wait() returned unkown fd %d ?", fd);
                 }
             }
         }
@@ -777,12 +779,12 @@ gps_state_init( GpsState*  state )
     D("gps emulation will read from '%s' qemud channel", QEMU_CHANNEL_NAME );
 
     if ( socketpair( AF_LOCAL, SOCK_STREAM, 0, state->control ) < 0 ) {
-        ALOGE("could not create thread control socket pair: %s", strerror(errno));
+        LOGE("could not create thread control socket pair: %s", strerror(errno));
         goto Fail;
     }
 
     if ( pthread_create( &state->thread, NULL, gps_state_thread, state ) != 0 ) {
-        ALOGE("could not create gps thread: %s", strerror(errno));
+        LOGE("could not create gps thread: %s", strerror(errno));
         goto Fail;
     }
 
@@ -930,7 +932,7 @@ static struct hw_module_methods_t gps_module_methods = {
     .open = open_gps
 };
 
-const struct hw_module_t HAL_MODULE_INFO_SYM = {
+struct hw_module_t HAL_MODULE_INFO_SYM = {
     .tag = HARDWARE_MODULE_TAG,
     .version_major = 1,
     .version_minor = 0,

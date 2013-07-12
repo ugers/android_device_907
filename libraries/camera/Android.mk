@@ -42,6 +42,7 @@ LOCAL_C_INCLUDES += \
 	external/jpeg \
 	external/skia/include/core \
 	frameworks/base/core/jni/android/graphics \
+        device/softwinner/907/libraries/camera/include_camera \
 	$(TARGET_HARDWARE_INCLUDE) \
 	frameworks/native/include/media/hardware
 

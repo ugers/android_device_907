@@ -33,6 +33,7 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.sys.bootfast=true \
+	ro.eventproc.start=0 \
         ro.debuggable=1 \
 	ro.com.google.locationfeatures=1 \
 	ro.kernel.android.checkjni=0 \
@@ -42,6 +43,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vold.switchablepair=/storage/sdcard0,/storage/sdcard1 \
 	ro.config.nocheckin=1 \
 	debug.sf.hw=1 \
+	drm.service.enabled=true
 	dalvik.vm.lockprof.threshold=500 \
 	dalvik.vm.checkjni=false \
 	dalvik.vm.dexopt-data-only=1 \
@@ -158,7 +160,8 @@ PRODUCT_PACKAGES += \
 # EXT4 Support
 PRODUCT_PACKAGES += \
 	make_ext4fs \
-	e2fsck
+	e2fsck \
+	cpueater
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)

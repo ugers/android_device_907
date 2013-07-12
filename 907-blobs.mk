@@ -71,6 +71,11 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/usr/idc/gt811_ts.idc:system/usr/idc/gt811_ts.idc \
 	device/softwinner/907/prebuilt/usr/idc/ssd253x.idc:system/usr/idc/ssd253x.idc \
 	device/softwinner/907/prebuilt/usr/idc/Goodix-TS-board-3.idc:system/usr/idc/Goodix-TS-board-3.idc \
+	device/softwinner/907/prebuilt/usr/idc/Goodix-TS.idc:system/usr/idc/Goodix-TS.idc \
+	device/softwinner/907/prebuilt/usr/idc/gt82x.idc:system/usr/idc/gt82x.idc \
+	device/softwinner/907/prebuilt/usr/idc/novatek-ts.idc:system/usr/idc/novatek-ts.idc \
+	device/softwinner/907/prebuilt/usr/idc/pixcir_cxx.idc:system/usr/idc/pixcir_cxx.idc \
+	device/softwinner/907/prebuilt/usr/idc/sun4i-ts.idc:system/usr/idc/sun4i-ts.idc \
 	device/softwinner/907/prebuilt/usr/keylayout/axp20-supplyer.kl:system/usr/keylayout/axp20-supplyer.kl \
 	device/softwinner/907/prebuilt/usr/keylayout/sun4i-keyboard.kl:system/usr/keylayout/sun4i-keyboard.kl \
 	device/softwinner/907/prebuilt/usr/keylayout/hv_keypad.kl:system/usr/keylayout/hv_keypad.kl \

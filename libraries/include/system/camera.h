@@ -160,7 +160,7 @@ enum {
      * Stop the face detection.
      */
     CAMERA_CMD_STOP_FACE_DETECTION = 7,
-
+    
 #if defined(QCOM_ICS_COMPAT) && defined(QCOM_HARDWARE)
     CAMERA_CMD_HISTOGRAM_ON     = 8,
     CAMERA_CMD_HISTOGRAM_OFF     = 9,
@@ -185,6 +185,17 @@ enum {
      * can silently finish itself or show a dialog.
      */
     CAMERA_CMD_PING = 9,
+    
+    /**
+     * Configure the number of video buffers used for recording. The intended
+     * video buffer count for recording is passed as arg1, which must be
+     * greater than 0. This command must be sent before recording is started.
+     * This command returns INVALID_OPERATION error if it is sent after video
+     * recording is started, or the command is not supported at all. This
+     * command also returns a BAD_VALUE error if the intended video buffer
+     * count is non-positive or too big to be realized.
+     */
+    CAMERA_CMD_SET_VIDEO_BUFFER_COUNT = 10,
  
 #ifdef QCOM_HARDWARE
     CAMERA_CMD_HISTOGRAM_ON     = 10,
