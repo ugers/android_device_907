@@ -456,11 +456,6 @@ service servicemanager /system/bin/servicemanager
     onrestart restart surfaceflinger
     onrestart restart drm
 
-service vold /system/bin/vold
-    class core
-    socket vold stream 0660 root mount
-    ioprio be 2
-
 service netd /system/bin/netd
     class main
     socket netd stream 0660 root system
@@ -570,14 +565,14 @@ service mdnsd /system/bin/mdnsd
     oneshot
 
 service sensorservice /system/bin/sensorservice
-    class main
+    class late_start
     user system
-    group graphics audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
+    group graphics audio camera inet net_bt net_bt_admin net_bw_acct drmrpc input
 
 service ubuntuappmanager /system/bin/ubuntuappmanager
     class main
 
-service ubuntu_chroot /system/bin/ubuntu_chroot
+service ubuntu_chroot /system/bin/ubuntu_chroot init
     class main
     oneshot
 
