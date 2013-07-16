@@ -170,6 +170,7 @@ PRODUCT_COPY_FILES += \
 	system/bluetooth/data/input.conf:system/etc/bluetooth/input.conf \
 	system/bluetooth/data/network.conf:system/etc/bluetooth/network.conf \
 
+#Cedarx prebuild lib's from 4.1
 PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/cedarx/libaw_audio.so:system/lib/libaw_audio.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libaw_audioa.so:system/lib/libaw_audioa.so \
@@ -185,6 +186,9 @@ PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/cedarx/libstagefright_soft_cedar_h264dec.so:system/lib/libstagefright_soft_cedar_h264dec.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libswdrm.so:system/lib/libswdrm.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libve.so:system/lib/libve.so \
+	
+#Cedarx-Crack
+PRODUCT_COPY_FILES += \
 	device/softwinner/907/prebuilt/lib/cedarx/libdemux_rmvb.so:system/lib/libdemux_rmvb.so \
 	device/softwinner/907/prebuilt/lib/cedarx/librm.so:system/lib/librm.so \
 	device/softwinner/907/prebuilt/lib/cedarx/libswa1.so:system/lib/libswa1.so \
@@ -225,6 +229,18 @@ PRODUCT_PACKAGES += \
 	u3gmonitor \
 	devlistener
 
+PRODUCT_PACKAGES += \
+	libthirdpartstream \
+	libcedarxsftstream \
+	libsrec_jni \
+	libjpgenc \
+	libI420colorconvert.so \
+	libstagefrighthw \
+	libOmxCore \
+	libOmxVdec \
+	libOmxVenc \
+	libaw_h264enc \
+	
 # CedarX libraries
 PRODUCT_PACKAGES += \
 	libCedarA \

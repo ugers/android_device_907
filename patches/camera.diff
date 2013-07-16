@@ -22,17 +22,3 @@ diff --git a/packages/apps/Camera/src/com/android/camera/FocusOverlayManager.jav
          // Pause the face view because the driver will keep sending face
          // callbacks after the focus completes.
          if (mFaceView != null) mFaceView.pause();
-diff --git a/system/core/include/system/camera.h b/system/core/include/system/camera.h
---- a/system/core/include/system/camera.h
-+++ b/system/core/include/system/camera.h
-@@ -160,6 +160,10 @@ enum {
-      * Stop the face detection.
-      */
-     CAMERA_CMD_STOP_FACE_DETECTION = 7,
-+    
-+  // add command
-+  CAMERA_CMD_SET_SCREEN_ID = 0xFF000000,
-+  CAMERA_CMD_SET_CEDARX_RECORDER = 0xFF000001,
- 
- #if defined(QCOM_ICS_COMPAT) && defined(QCOM_HARDWARE)
-     CAMERA_CMD_HISTOGRAM_ON     = 8,
