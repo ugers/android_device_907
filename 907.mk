@@ -209,7 +209,7 @@ PRODUCT_PACKAGES += \
 	audio.primary.exDroid \
 	audio.a2dp.default \
 	audio.usb.default \
-	display.sun4i \
+	display.exDroid \
 	gralloc.sun4i \
 	power.sun4i \
 	camera.exDroid \
