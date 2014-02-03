@@ -105,7 +105,7 @@ BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
 BOARD_VOLD_DISC_HAS_MULTIPLE_MAJORS := false
 TARGET_USE_CUSTOM_LUN_FILE_PATH = "/sys/class/android_usb/android0/f_mass_storage/lun%d/file"
 TARGET_USE_CUSTOM_SECOND_LUN_NUM := 1
-TARGET_RECOVERY_FSTAB := device/softwinner/907/fstab.sun4i
+TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
 RECOVERY_FSTAB_VERSION := 2
 #BOARD_RECOVERY_SWIPE := true
 
