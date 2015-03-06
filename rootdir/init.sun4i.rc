@@ -135,7 +135,7 @@ service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d /mnt/media_r
 
 # 1. realtek wifi service
 # 1.1 realtek wifi sta service
-service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant \
+service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
     -O/data/misc/wifi/sockets \
     -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
@@ -149,7 +149,7 @@ service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant \
     oneshot
 
 # 1.2 realtek wifi sta p2p concurrent service
-service p2p_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant \
+service p2p_supplicant /system/bin/wpa_supplicant \
 	-ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
 	-e/data/misc/wifi/entropy.bin -N \
 	-iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \

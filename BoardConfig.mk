@@ -127,6 +127,7 @@ TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 TARGET_PROVIDES_INIT_RC := true
 
 # Wifi stuff
+CONFIG_CTRL_IFACE 		 := true
 BOARD_WIFI_VENDOR                := realtek
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
 BOARD_WPA_SUPPLICANT_DRIVER      := NL80211
