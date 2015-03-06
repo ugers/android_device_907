@@ -1939,8 +1939,8 @@ static int get_next_buffer(struct resampler_buffer_provider *buffer_provider,
         return -ENODEV;
     }
 
-	ALOGV("get_next_buffer: in->config.period_size: %d, audio_stream_frame_size: %d", 
-		in->config.period_size, audio_stream_frame_size(&in->stream.common));
+//	ALOGV("get_next_buffer: in->config.period_size: %d, audio_stream_frame_size: %d",
+//		in->config.period_size, audio_stream_frame_size(&in->stream.common));
     if (in->frames_in == 0) {
         in->read_status = pcm_read(in->pcm,
                                    (void*)in->buffer,
