@@ -128,7 +128,7 @@ PRODUCT_PACKAGES += \
 	lights.exDroid \
 	libaudioutils \
 	chat \
-	radiooptions \
+	u3gmonitor \
 	devlistener \
 	camera.exDroid \
 

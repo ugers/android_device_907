@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-#define LOG_TAG "RadioMonitor"
+#define LOG_TAG "USB3G"
 #include <cutils/log.h>
 
 #include "UEventFramework.h"
@@ -60,7 +60,7 @@ static void coldboot(const char *path)
     }
 }
 
-static int read_vid_pid(char * path)
+int read_vid_pid(char * path)
 {
 	int fd,size;
 	char usb_path[0x60] = {0};
@@ -75,13 +75,13 @@ static int read_vid_pid(char * path)
 	fd=open(usb_path,O_RDONLY);
 	size=read(fd,usb_vid,sizeof(usb_vid));
 	close(fd);
-	//RLOGI("VID :size %d,vid_path '%s',VID  '%s'.\n",size,usb_path,usb_vid);
+	ALOGI("VID :size %d,vid_path '%s',VID  '%s'.\n",size,usb_path,usb_vid);
 	if(size<=0)
 	{
-		RLOGE("Vid :err\n");
+		SLOGE("Vid :err\n");
 		return -1;
 	}
-	//脳卯潞贸脪禄啪枚脳脰路没脢脟禄禄脨脨路没潞脜拢卢脨猫脪陋脠楼碌么
+	//最后一个字符是换行符号，需要去掉
 	usb_vid[size-1] = 0;
 
 	//read Pid
@@ -92,20 +92,21 @@ static int read_vid_pid(char * path)
 	size=read(fd,usb_pid,sizeof(usb_pid));
 	close(fd);
 
-	//RLOGI("PID :size %d,Pid_path '%s',PID  '%s'.\n",size,usb_path,usb_pid);
+	ALOGI("PID :size %d,Pid_path '%s',PID  '%s'.\n",size,usb_path,usb_pid);
 	if(size<=0)
 	{
-		RLOGE("Pid :err\n");
+		SLOGE("Pid :err\n");
 		return -1;
 	}
-	//脳卯潞贸脪禄啪枚脳脰路没脢脟禄禄脨脨路没潞脜拢卢脨猫脪陋脠楼碌么
+	//最后一个字符是换行符号，需要去掉
 	usb_pid[size-1] = 0;
 
 	return 0;
 }
 
-static void handleUsbEvent(struct uevent *evt)
+void handleUsbEvent(struct uevent *evt)
 {
+	pid_t pid;
     const char *devtype = evt->devtype;
     char *p,*cmd = NULL, path[0x60] = {0};
     char *argv_rc[] =
@@ -116,23 +117,21 @@ static void handleUsbEvent(struct uevent *evt)
 	};
     int ret,status;
     char buffer[256];
-	char file[256];
 
-    //脠莽脧脗脜脨露脧脡猫卤啪脌脿脨脥拢卢潞脥脢脟路帽脦陋add脛拢脢艙隆拢 艙酶脨脨脧脿脫艩虏脵脳梅
+    //如下判断设备类型，和是否为add模式。 进行相应操作
     if(!strcmp(evt->action, "add") && !strcmp(devtype, "usb_device")) {
         /*call usb mode switch function*/
-/*
-		RLOGI("event { '%s', '%s', '%s', '%s', %d, %d }\n", evt->action, evt->path, evt->subsystem,
+		ALOGI("event { '%s', '%s', '%s', '%s', %d, %d }\n", evt->action, evt->path, evt->subsystem,
                     evt->firmware, evt->major, evt->minor);
-*/
+
         p = strstr(evt->path,"usb");
         if(p == NULL)
         {
         	return;
         }
         p += sizeof("usb");
-        /*脠莽鹿没脢脟usb驴脴脰脝脝梅脭貌脡脧卤拧脌脿脣脝脠莽脧脗path拢潞  /devices/platform/sw-ehci.1/usb*
-          脠莽鹿没脢脟脥芒脡猫虏氓脠毛脭貌脡脧卤拧脌脿脣脝脠莽脧脗path拢潞   /devices/platform/sw-ehci.1/usb1/1-1/1-1.7
+        /*如果是usb控制器则上报类似如下path：  /devices/platform/sw-ehci.1/usb*
+          如果是外设插入则上报类似如下path：   /devices/platform/sw-ehci.1/usb1/1-1/1-1.7
         */
         p = strchr(p,'-');
         if(p == NULL)
@@ -142,30 +141,23 @@ static void handleUsbEvent(struct uevent *evt)
 
         strcat(path,"/sys");
         strcat(path,evt->path);
-        //RLOGI("path : '%s'\n",path);
+        ALOGI("path : '%s'\n",path);
         ret = read_vid_pid(path);
         if((ret < 0)||(usb_pid == NULL)||(usb_vid == NULL))
         {
         	return;
         }
+        // add for zoomdata,StrongRising 3g dongle
+        if(!strncmp(usb_vid,"8888",4)&& !strncmp(usb_pid, "6500",4))
+        	sleep(8);
 
-		sprintf(file, "/etc/usb_modeswitch.d/%s_%s", usb_vid, usb_pid);
-		if(access(file, 0) == 0){
-			//wait for usb device ready, zoomdata,StrongRising 3g dongle
-	        if(!strncmp(usb_vid,"8888",4)&& !strncmp(usb_pid, "6500",4)){
-	        	sleep(8);
-			}
+		asprintf(&cmd, "source %s%s_%s &","/system/xbin/usb_modeswitch.sh /system/etc/usb_modeswitch.d/",usb_vid,usb_pid);
+		ALOGI("cmd=%s", cmd);
+        ret = system(cmd);
+        free(cmd);
+        ALOGI("excute ret:%d,err:%s\n",ret,strerror(errno));
 
-            //send usb_modeswitch command
-			asprintf(&cmd, "source /system/xbin/usb_modeswitch.sh %s &", file);
-			RLOGI("cmd: %s", cmd);
-
-			ret = system(cmd);
-			free(cmd);
-			RLOGI("err: excute command faild, ret=%d, err=%s\n",ret, strerror(errno));
-		}
     }
-
     return;
 }
 
@@ -174,56 +166,18 @@ static void on_uevent(struct uevent *event)
 {
 	const char *subsys = event->subsystem;
 
-	//RLOGI("3g monitor on_uevent: action=%s, path=%s, subsystem=%s\n",  event->action, event->path, event->subsystem);
-
 	if (!strcmp(subsys, "usb")) {
-    	handleUsbEvent(event);	//沤脣潞炉脢媒脨猫脪陋脭脷 Event脌脿脰脨脤铆艗脫
+    	handleUsbEvent(event);	//此函数需要在 Event类中添加
     }
 
 }
 
-static void *radio_monitor_thread(void *param)
+int main()
 {
-	RLOGI("radio_monitor_thread run");
+	ALOGI("usb 3g monitor v0.1 start");
 
 	uevent_init();
-	//coldboot("/sys/devices");
-	coldboot("/sys/bus/usb/devices");
-	RLOGI("change coldboot to /sys/bus/usb/devices");
+	coldboot("/sys/devices");
 	uevent_next_event(on_uevent);
-
-	return param;
-}
-
-int radio_monitor(void)
-{
-	int ret;
-	pthread_t pid;
-    pthread_attr_t attr;
-
-    ret = pthread_attr_init (&attr);
-    if (ret != 0) {
-        ALOGE("err: pthread_attr_init failed err=%s", strerror(ret));
-        goto pthread_attr_init_failed;
-    }
-
-    ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    if (ret != 0) {
-        ALOGE("err: pthread_attr_setdetachstate failed err=%s", strerror(ret));
-        goto pthread_attr_setdetachstate_failed;
-    }
-
-	ret = pthread_create(&pid, &attr, radio_monitor_thread, NULL);
-	if (ret) {
-		ALOGE("err: pthread_create failed, ret=%d\n", ret);
-		goto pthread_create_failed;
-	}
-
 	return 0;
-
-pthread_create_failed:
-pthread_attr_setdetachstate_failed:
-pthread_attr_init_failed:
-	return -1;
 }
-
