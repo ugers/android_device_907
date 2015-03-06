@@ -139,10 +139,10 @@ BOARD_WLAN_DEVICE                := rtl8192cu
 SW_BOARD_USR_WIFI                := rtl8192cu
 
 WIFI_DRIVER               := rtl8192cu
-WIFI_DRIVER_MODULE_NAME   := 8192cu
-WIFI_DRIVER_FW_PATH_STA := none
+WIFI_DRIVER_MODULE_NAME   := "8192cu"
+WIFI_DRIVER_FW_PATH_STA   := none
 WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
-WIFI_DRIVER_MODULE_ARG    := "ifname=wlan0if2name=p2p0"
+WIFI_DRIVER_MODULE_ARG    := "ifname=wlan0 if2name=p2p0"
 
 WIFI_FIRMWARE_LOADER      := ""
 WIFI_DRIVER_FW_PATH_STA   := ""
