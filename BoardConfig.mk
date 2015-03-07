@@ -159,11 +159,14 @@ BOARD_SEPOLICY_DIRS += \
 BOARD_SEPOLICY_UNION += \
     app.te \
     device.te \
+    dhcp.te \
     domain.te \
     drmserver.te \
     file.te \
     file_contexts \
     healthd.te \
+    init.te \
+    mac_update.te \
     mount.te \
     netd.te \
     rild.te \
