@@ -3,13 +3,7 @@
 
 #define CAMERA_HAL_VERSION		"3000130327_V1.0"
 
-#define CAMERA_HAL_MODE_OLD		1
-#if	(CAMERA_HAL_MODE_OLD == 1)
 #define USE_OLD_MODE
-#else
-#define USE_NEW_MODE
-#endif
-#define USE_ION_MEM_ALLOCATOR
 
 #define ALIGN_4K(x) (((x) + (4095)) & ~(4095))
 #define ALIGN_32B(x) (((x) + (31)) & ~(31))
@@ -95,35 +89,11 @@
 #define DBG_TIME_AVG_END(tag, inf)
 #endif
 
-
 #ifdef __SUN4I__
-#define USE_MP_CONVERT
+#define USE_MP_CONVERT 1		// A10 can define 1, or must 0
+#else
+#define USE_MP_CONVERT 0		// A10 can define 1, or must 0
 #endif
-
-#ifdef __SUN6I__
-#define USE_MP_CONVERT
-#endif
-
-#ifdef USE_ION_MEM_ALLOCATOR
-extern "C" int ion_alloc_open();
-extern "C" int ion_alloc_close();
-extern "C" int ion_alloc_alloc(int size);
-extern "C" void ion_alloc_free(void * pbuf);
-extern "C" int ion_alloc_vir2phy(void * pbuf);
-extern "C" int ion_alloc_phy2vir(void * pbuf);
-extern "C" void ion_flush_cache(void* startAddr, int size);
-extern "C" void ion_flush_cache_all();
- 
-#elif USE_SUNXI_MEM_ALLOCATOR
-extern "C" int sunxi_alloc_open();
-extern "C" int sunxi_alloc_close();
-extern "C" int sunxi_alloc_alloc(int size);
-extern "C" void sunxi_alloc_free(void * pbuf);
-extern "C" int sunxi_alloc_vir2phy(void * pbuf);
-extern "C" int sunxi_alloc_phy2vir(void * pbuf);
-extern "C" void sunxi_flush_cache(void* startAddr, int size);
-extern "C" void sunxi_flush_cache_all();
-#endif /*USE_ION_MEM_ALLOCATOR*/
 
 #endif // __HAL_CAMERA_DEBUG_H__
 

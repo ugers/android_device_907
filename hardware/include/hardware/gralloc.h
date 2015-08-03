@@ -71,7 +71,7 @@ enum {
     GRALLOC_USAGE_SW_READ_OFTEN         = 0x00000003,
     /* mask for the software read values */
     GRALLOC_USAGE_SW_READ_MASK          = 0x0000000F,
-    
+
     /* buffer is never written in software */
     GRALLOC_USAGE_SW_WRITE_NEVER        = 0x00000000,
     /* buffer is rarely written in software */
@@ -126,19 +126,6 @@ enum {
     GRALLOC_USAGE_PRIVATE_2             = 0x40000000,
     GRALLOC_USAGE_PRIVATE_3             = 0x80000000,
     GRALLOC_USAGE_PRIVATE_MASK          = 0xF0000000,
-
-#ifdef EXYNOS4_ENHANCEMENTS
-    /* SAMSUNG */
-    GRALLOC_USAGE_PRIVATE_NONECACHE     = 0x00800000,
-
-    GRALLOC_USAGE_HW_FIMC1              = 0x01000000,
-    GRALLOC_USAGE_HW_ION                = 0x02000000,
-    GRALLOC_USAGE_YUV_ADDR              = 0x04000000,
-    GRALLOC_USAGE_CAMERA                = 0x08000000,
-
-    /* SEC Private usage , for Overlay path at HWC */
-    GRALLOC_USAGE_HWC_HWOVERLAY         = 0x20000000,
-#endif
 };
 
 enum {
@@ -239,14 +226,13 @@ typedef struct gralloc_module_t {
     int (*unlock)(struct gralloc_module_t const* module,
             buffer_handle_t handle);
 
-#ifdef EXYNOS4_ENHANCEMENTS
-    int (*getphys) (struct gralloc_module_t const* module,
-            buffer_handle_t handle, void** paddr);
-#endif
 
     /* reserved for future use */
     int (*perform)(struct gralloc_module_t const* module,
             int operation, ... );
+
+    int (*getPhyAddress)(struct gralloc_module_t const* module, buffer_handle_t handle,
+					   void** auiPhyAddr);
 
     /*
      * The (*lock_ycbcr)() method is like the (*lock)() method, with the
@@ -278,35 +264,20 @@ typedef struct gralloc_module_t {
 typedef struct alloc_device_t {
     struct hw_device_t common;
 
-#ifdef QCOM_BSP
     /*
-     * (*allocSize)() Allocates a buffer in graphic memory with the requested
-     * bufferSize parameter and returns a buffer_handle_t and the stride in
-     * pixels to allow the implementation to satisfy hardware constraints on
-     * the width of a pixmap (eg: it may have to be multiple of 8 pixels).
-     * The CALLER TAKES OWNERSHIP of the buffer_handle_t.
-     *
-     * Returns 0 on success or -errno on error.
-     */
-    int (*allocSize)(struct alloc_device_t* dev,
-            int w, int h, int format, int usage,
-            buffer_handle_t* handle, int* stride, int bufferSize);
-#endif
-
-    /* 
      * (*alloc)() Allocates a buffer in graphic memory with the requested
      * parameters and returns a buffer_handle_t and the stride in pixels to
      * allow the implementation to satisfy hardware constraints on the width
-     * of a pixmap (eg: it may have to be multiple of 8 pixels). 
+     * of a pixmap (eg: it may have to be multiple of 8 pixels).
      * The CALLER TAKES OWNERSHIP of the buffer_handle_t.
      *
      * If format is HAL_PIXEL_FORMAT_YCbCr_420_888, the returned stride must be
      * 0, since the actual strides are available from the android_ycbcr
      * structure.
-     * 
+     *
      * Returns 0 on success or -errno on error.
      */
-    
+
     int (*alloc)(struct alloc_device_t* dev,
             int w, int h, int format, int usage,
             buffer_handle_t* handle, int* stride);

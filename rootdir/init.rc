@@ -237,13 +237,19 @@ on post-fs-data
     mkdir /data/misc/zoneinfo 0775 system system
     mkdir /data/misc/vpn 0770 system vpn
     mkdir /data/misc/systemkeys 0700 system system
-    # give system access to wpa_supplicant.conf for backup and restore
+    # give system access to wpa_supplicant.conf for backup and restore           
+    chmod 0770 /system/etc/wifi                                 
+    chmod 0660 /system/etc/wifi/wpa_supplicant.conf                 
+    chown wifi wifi /system/etc/wifi/wpa_supplicant.conf
+#wpa_supplicant control socket for android wifi.c (android private socket)
     mkdir /data/misc/wifi 0770 wifi wifi
-    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
-    chown system wifi /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
     mkdir /data/misc/dhcp 0770 dhcp dhcp
     chown dhcp dhcp /data/misc/dhcp
+    chmod 0770 /data/misc/wifi
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf       
+    chown wifi wifi /data/misc/wifi
+    chown wifi wifi /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/local 0751 root root
     mkdir /data/misc/media 0700 media media
     

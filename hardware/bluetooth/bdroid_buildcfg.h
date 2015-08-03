@@ -18,14 +18,16 @@
 #ifndef _BDROID_BUILDCFG_H
 #define _BDROID_BUILDCFG_H
 
-#define BTM_DEF_LOCAL_NAME   "AllwinnerA10"
+#define BTM_DEF_LOCAL_NAME "AllwinnerA10"
+// At present either USB or UART is supported
+#define BLUETOOTH_HCI_USE_USB          TRUE
+// Bluetooth Low Power Mode is supported on BT4.0
+#define HCILP_INCLUDED                 FALSE
 
-// Networking, Capturing, Object Transfer
-// MAJOR CLASS: COMPUTER
-// MINOR CLASS: LAPTOP
-#define BTA_DM_COD {0x1A, 0x01, 0x0C}
-
-#define BTA_DISABLE_DELAY 1000 /* in milliseconds */
+// 10.2 Updates
+#define BLE_INCLUDED FALSE
+#define BTA_GATT_INCLUDED FALSE
+#define SMP_INCLUDED FALSE
 #define PAN_NAP_DISABLED TRUE
 
 #endif 

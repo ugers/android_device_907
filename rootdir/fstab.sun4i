@@ -3,16 +3,16 @@
 # The filesystem that contains the filesystem checker binary (typically /system) cannot
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
-/dev/block/nandd       /system        ext4     ro                                                                    wait
+/dev/block/nandd       /system        ext4     ro                                                                    		      wait
 /dev/block/nande       /data          ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0,journal_checksum,noauto_da_alloc    wait
 /dev/block/nandh       /cache         ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0,journal_checksum,noauto_da_alloc    wait
 
-/devices/virtual/block/nand             /storage/sdcard0        vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,noemulatedsd,voldmanaged=sdcard0:9
-/devices/platform/sunxi-mmc.0/mmc_host  /storage/sdcard1        vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,voldmanaged=sdcard1:auto
-/devices/platform/sunxi-mmc.1/mmc_host  /storage/sdcard1        vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,voldmanaged=sdcard1:auto
-/devices/platform/sw-ehci.1             /storage/usbdisk0       vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,voldmanaged=usbdisk0:auto
-/devices/platform/sw_hcd_host0          /storage/usbdisk0       vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,voldmanaged=usbdisk0:auto
-/devices/platform/sw-ohci.1             /storage/usbdisk0       vfat    rw,relatime,fmask=0000,dmask=0000    wait,check,voldmanaged=usbdisk0:auto
+/devices/virtual/block/nand     	   auto    auto    defaults        voldmanaged=sdcard0:9,nonremovable,noemulatedsd
+/devices/platform/sunxi-mmc.0/mmc_host     auto    auto    defaults        voldmanaged=sdcard1:auto
+/devices/platform/sunxi-mmc.1/mmc_host     auto    auto    defaults        voldmanaged=sdcard1:auto
+/devices/platform/sw-ehci.1                auto    auto    defaults        voldmanaged=usbdisk0:auto
+/devices/platform/sw_hcd_host0             auto    auto    defaults        voldmanaged=usbdisk0:auto
+/devices/platform/sw-ohci.1                auto    auto    defaults        voldmanaged=usbdisk0:auto
 
 # recovery
 /dev/block/nandc       /boot           emmc    defaults recoveryonly            

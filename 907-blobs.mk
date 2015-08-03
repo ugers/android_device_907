@@ -25,28 +25,25 @@ PRODUCT_COPY_FILES += \
 
 # /system/etc
 PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/prebuilt/etc/ppp/ip-down:system/etc/ppp/ip-down \
-	$(COMMON_PATH)/prebuilt/etc/ppp/ip-up:system/etc/ppp/ip-up \
-	$(COMMON_PATH)/prebuilt/etc/ppp/call-pppd:system/etc/ppp/call-pppd \
+	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/etc/ppp,system/etc/ppp) \
 	$(COMMON_PATH)/prebuilt/etc/firmware/ath3k-1.fw:system/etc/firmware/ath3k-1.fw \
 	$(COMMON_PATH)/prebuilt/etc/firmware/ath3k-1.fw:system/vendor/firmware/ath3k-1.fw \
 	$(COMMON_PATH)/prebuilt/etc/3g_dongle.cfg:system/etc/3g_dongle.cfg \
+	$(COMMON_PATH)/prebuilt/etc/3ginfo.gz:system/etc/3ginfo.gz \
 	$(COMMON_PATH)/prebuilt/etc/camera.cfg:system/etc/camera.cfg \
 	$(COMMON_PATH)/prebuilt/etc/gps.conf:system/etc/gps.conf \
 	$(COMMON_PATH)/prebuilt/etc/usb_modeswitch.sh:system/etc/usb_modeswitch.sh \
 
 # Media files
 PRODUCT_COPY_FILES += \
-    $(COMMON_PATH)/hardware/audio/audio_policy.conf:system/etc/audio_policy.conf \
-    $(COMMON_PATH)/prebuilt/etc/media_codecs.xml:system/etc/media_codecs.xml \
-    $(COMMON_PATH)/prebuilt/etc/media_profiles.xml:system/etc/media_profiles.xml \
-    $(COMMON_PATH)/prebuilt/etc/audio_effects.conf:system/etc/audio_effects.conf \
+    	$(COMMON_PATH)/hardware/audio/audio_policy.conf:system/etc/audio_policy.conf \
+    	$(COMMON_PATH)/prebuilt/etc/media_codecs.xml:system/etc/media_codecs.xml \
+    	$(COMMON_PATH)/prebuilt/etc/media_profiles.xml:system/etc/media_profiles.xml \
+    	$(COMMON_PATH)/prebuilt/etc/audio_effects.conf:system/etc/audio_effects.conf \
 
 # /system/lib
 PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/prebuilt/lib/egl/libEGL_mali.so:system/lib/egl/libEGL_mali.so \
-	$(COMMON_PATH)/prebuilt/lib/egl/libGLESv1_CM_mali.so:system/lib/egl/libGLESv1_CM_mali.so \
-	$(COMMON_PATH)/prebuilt/lib/egl/libGLESv2_mali.so:system/lib/egl/libGLESv2_mali.so \
+	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/egl,system/lib/egl) \
 	$(COMMON_PATH)/prebuilt/lib/libsoftwinner-ril.so:system/lib/libsoftwinner-ril.so \
 	$(COMMON_PATH)/prebuilt/lib/libMali.so:system/lib/libMali.so \
 	$(COMMON_PATH)/prebuilt/lib/libUMP.so:system/lib/libUMP.so \

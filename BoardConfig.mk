@@ -50,6 +50,7 @@ BOARD_HAVE_BLUETOOTH_BCM := true
 BLUETOOTH_HCI_USE_USB := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/softwinner/907/hardware/bluetooth
 BOARD_BLUEDROID_VENDOR_CONF := device/softwinner/907/hardware/bluetooth/vnd_generic_usb.txt
+BOARD_BLUETOOTH_DOES_NOT_USE_RFKILL := true
 BOARD_HAS_VIBRATOR_IMPLEMENTATION := ../../device/softwinner/907/hardware/include/vibrator.c
 
 # Partition sizes; must be in decimal
@@ -89,6 +90,7 @@ BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/fi
 RECOVERY_FSTAB_VERSION := 2
 BOARD_RECOVERY_SWIPE := true
 TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
+BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 #TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 #TARGET_RECOVERY_UI_LIB := librecovery_ui_crane_evb
 #TARGET_RECOVERY_UPDATER_LIBS :=
@@ -127,30 +129,31 @@ TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 TARGET_PROVIDES_INIT_RC := true
 
 # Wifi stuff
-CONFIG_CTRL_IFACE 		 := true
+#CONFIG_CTRL_IFACE 		 := true
 BOARD_WIFI_VENDOR                := realtek
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
-BOARD_WPA_SUPPLICANT_DRIVER      := NL80211
-CONFIG_DRIVER_WEXT               :=y
+BOARD_WPA_SUPPLICANT_DRIVER      := WEXT
+#CONFIG_DRIVER_WEXT               :=y
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_rtl
-BOARD_HOSTAPD_DRIVER             := NL80211
+BOARD_HOSTAPD_DRIVER             := WEXT
 BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
 BOARD_WLAN_DEVICE                := rtl8192cu
 SW_BOARD_USR_WIFI                := rtl8192cu
 
-WIFI_DRIVER               := rtl8192cu
-WIFI_DRIVER_MODULE_NAME   := "8192cu"
-WIFI_DRIVER_FW_PATH_STA   := none
+#WIFI_DRIVER               := rtl8192cu
+WIFI_DRIVER_MODULE_NAME   := 8192cu
+#WIFI_DRIVER_FW_PATH_STA   := none
 WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
-WIFI_DRIVER_MODULE_ARG    := "ifname=wlan0 if2name=p2p0"
+#WIFI_DRIVER_MODULE_ARG := "ifname=wlan0"
 
+WIFI_DRIVER_MODULE_ARG    := ""
 WIFI_FIRMWARE_LOADER      := ""
 WIFI_DRIVER_FW_PATH_STA   := ""
 WIFI_DRIVER_FW_PATH_AP    := ""
 WIFI_DRIVER_FW_PATH_P2P   := ""
 WIFI_DRIVER_FW_PATH_PARAM := ""
 
-TARGET_CUSTOM_WIFI := hardware/realtek/wlan/libhardware_legacy/wifi/wifi_realtek.c
+#TARGET_CUSTOM_WIFI := hardware/realtek/wlan/libhardware_legacy/wifi/wifi_realtek.c
 
 # Selinux
 BOARD_SEPOLICY_DIRS += \

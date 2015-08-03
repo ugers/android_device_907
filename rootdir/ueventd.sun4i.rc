@@ -59,6 +59,12 @@
 /dev/dvb/adapter0   0777  system    system
 /dev/dvb/adapter0/* 0666  system    system
 
+# for bluetooth nodes
+/dev/uhid                 0660    bluetooth bluetooth
+ 
+# bluetooth device
+/dev/bus/usb/001/005      0660    bluetooth bluetooth
+
 #ChristianTroy
 #/sys/devices/platform/sw-ehci.1/usb2/2-1/2-1.1/2-1.1:1.0/bluetooth/hci0/rfkill* state  0777 system system
 #/sys/devices/platform/sw_hcd_host0/usb1/1-1/1-1:1.0/bluetooth/hci0/rfkill* state  0777 system system

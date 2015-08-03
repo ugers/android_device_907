@@ -1393,7 +1393,7 @@ static int hwc_init(sun4i_hwc_context_t *ctx)
     arg[0] = (unsigned long)&init_para;
     ioctl(ctx->dispfd,DISP_CMD_GET_DISP_INIT_PARA,(unsigned long)arg);
 
-    if(init_para.disp_mode == DISP_INIT_MODE_SCREEN0_PARTLY)
+    if(init_para.disp_mode == DISP_INIT_MODE_TWO_DIFF_SCREEN_SAME_CONTENTS)
     {
     	ctx->mode = HWC_MODE_SCREEN0_GPU;
 	}

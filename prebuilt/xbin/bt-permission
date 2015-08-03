@@ -1,0 +1,19 @@
+#!/system/xbin/busybox ash
+
+if [ $# -lt 1 ]; then
+	echo "Usage: bt-permissions vid"
+	exit 1
+fi
+
+BUS=`lsusb | grep $1 | cut -f2 -d' '`
+DEVICE=`lsusb | grep $1 | cut -f4 -d' ' | sed -e 's/:$//'`
+
+if [ -n "$BUS" ] && [ -n "$DEVICE" ]; then
+	echo "Changing permissions to device /dev/bus/usb/$BUS/$DEVICE"
+	busybox chown root.bluetooth /dev/bus/usb/$BUS/$DEVICE
+	exit
+else
+	echo "Device not found"
+	exit 1
+fi
+

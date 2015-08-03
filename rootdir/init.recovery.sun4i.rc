@@ -4,6 +4,7 @@ on early-init
 on init
     mkdir /storage/sdcard0 0700 root root
     mkdir /storage/sdcard1 0700 root root
+    symlink /storage/sdcard1 /sd-ext
 
     write /sys/devices/virtual/bdi/179:0/read_ahead_kb 2048
     write /sys/devices/virtual/bdi/7:0/read_ahead_kb 2048

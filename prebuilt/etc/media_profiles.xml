@@ -101,7 +101,7 @@
              frameRate="15" />
 
       <Audio codec="aac"
-             bitRate="96000"
+             bitRate="12200"
              sampleRate="44100"
              channels="1" />
     </EncoderProfile>

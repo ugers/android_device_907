@@ -74,6 +74,9 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
 	frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
 	frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
+	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
+	frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
+	frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
 	frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
 	frameworks/native/data/etc/android.hardware.sensor.compass.xml:system/etc/permissions/android.hardware.sensor.compass.xml \
 	frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
@@ -87,8 +90,8 @@ PRODUCT_COPY_FILES += \
         frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
-#Cedarx prebuild lib's from 4.2
-PRODUCT_COPY_FILES += \
+#Cedarx lib's from 4.2
+#PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/cedarx,system/lib)
 	
 #Cedarx-Crack only
@@ -104,16 +107,19 @@ PRODUCT_PACKAGES += \
 
 # Device specific settings
 PRODUCT_PACKAGES += \
+	4KPlayer \
         dispctl \
-        #ethernet
+        ethernet \
 
 PRODUCT_PACKAGES += \
 	librs_jni \
-        rild_sun4i
+        rild_sun4i \
 
 # Bluetooth
 PRODUCT_PACKAGES += \
-	libusb
+	libusb  \
+	hciconfig \
+	hcitool \
 
 # Hardware libs
 PRODUCT_PACKAGES += \
@@ -132,7 +138,7 @@ PRODUCT_PACKAGES += \
 	devlistener \
 	camera.exDroid \
 
-#PRODUCT_PACKAGES += \
+PRODUCT_PACKAGES += \
 	libthirdpartstream \
 	libcedarxsftstream \
 	libsrec_jni \
@@ -144,9 +150,11 @@ PRODUCT_PACKAGES += \
 	libOmxVdec \
 	libOmxVenc \
 	libaw_h264enc \
+	libsunxi_alloc \
+	libion_alloc
 	
 # CedarX libraries
-#PRODUCT_PACKAGES += \
+PRODUCT_PACKAGES += \
 	libCedarA \
 	libCedarX \
 	libcedarv \

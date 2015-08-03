@@ -215,7 +215,7 @@ static int display_releasebuf(struct display_device_t *dev,int buf_hdl)
         return -1;
     }
     args[0] = buf_hdl - 100;
-    ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELASE,(unsigned long)args);
+    ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELEASE,(unsigned long)args);
     ctx->mem_status[buf_hdl - 100] = 0;
     return 0;
 }
@@ -1412,7 +1412,7 @@ static int display_spriterequest(struct display_device_t *dev,int displayno)
 
                 args[0] = MAX_CURSOR_MEMIDX + displayno;
                 args[1] = MAX_CURSOR_SIZE * MAX_CURSOR_SIZE * 4;
-                ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELASE,(unsigned long)args);
+                ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELEASE,(unsigned long)args);
                 
                 return  -1;
             }
@@ -1446,7 +1446,7 @@ static int display_spriterelease(struct display_device_t *dev,int displayno)
             
             args[0] = MAX_CURSOR_MEMIDX + displayno;
             args[1] = MAX_CURSOR_SIZE * MAX_CURSOR_SIZE * 4;
-            ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELASE,(unsigned long)args);
+            ioctl(ctx->mFD_disp,DISP_CMD_MEM_RELEASE,(unsigned long)args);
 
             args[0] = displayno;
             args[1] = 0;
@@ -2502,7 +2502,7 @@ static int display_init(struct display_context_t* ctx)
     
     if(init_para.b_init)
     {
-        if(init_para.disp_mode == DISP_INIT_MODE_SCREEN0_PARTLY)
+        if(init_para.disp_mode == DISP_INIT_MODE_TWO_DIFF_SCREEN_SAME_CONTENTS)
         {
             ctx->mode = DISPLAY_MODE_SINGLE_VAR_GPU;
         }
@@ -2514,7 +2514,7 @@ static int display_init(struct display_context_t* ctx)
         for(sel=0; sel<2; sel++)
         {
             if(((sel == 0) && ((init_para.disp_mode == DISP_INIT_MODE_SCREEN0) || (init_para.disp_mode == DISP_INIT_MODE_TWO_DIFF_SCREEN)
-                    || (init_para.disp_mode == DISP_INIT_MODE_TWO_SAME_SCREEN) || (init_para.disp_mode == DISP_INIT_MODE_SCREEN0_PARTLY)))
+                    || (init_para.disp_mode == DISP_INIT_MODE_TWO_SAME_SCREEN) || (init_para.disp_mode == DISP_INIT_MODE_TWO_DIFF_SCREEN_SAME_CONTENTS)))
             || ((sel == 1) && ((init_para.disp_mode == DISP_INIT_MODE_SCREEN1) || (init_para.disp_mode == DISP_INIT_MODE_TWO_DIFF_SCREEN)
                     || (init_para.disp_mode == DISP_INIT_MODE_TWO_SAME_SCREEN))))
             {

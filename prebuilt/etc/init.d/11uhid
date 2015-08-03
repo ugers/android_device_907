@@ -1,0 +1,7 @@
+#!/system/bin/sh
+#
+
+# bluetooth uhid
+insmod /system/lib/modules/uhid.ko
+chmod 666 /dev/uhid
+
