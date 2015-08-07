@@ -91,7 +91,7 @@ PRODUCT_COPY_FILES += \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
 #Cedarx lib's from 4.2
-#PRODUCT_COPY_FILES += \
+PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/cedarx,system/lib)
 	
 #Cedarx-Crack only
@@ -108,8 +108,8 @@ PRODUCT_PACKAGES += \
 # Device specific settings
 PRODUCT_PACKAGES += \
 	4KPlayer \
-        dispctl \
-        ethernet \
+        dispctl
+        #ethernet
 
 PRODUCT_PACKAGES += \
 	librs_jni \
@@ -135,10 +135,10 @@ PRODUCT_PACKAGES += \
 	libaudioutils \
 	chat \
 	u3gmonitor \
-	devlistener \
-	camera.exDroid \
+	devlistener
+	#camera.exDroid
 
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libthirdpartstream \
 	libcedarxsftstream \
 	libsrec_jni \
@@ -154,7 +154,7 @@ PRODUCT_PACKAGES += \
 	libion_alloc
 	
 # CedarX libraries
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libCedarA \
 	libCedarX \
 	libcedarv \
