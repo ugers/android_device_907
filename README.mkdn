@@ -15,7 +15,7 @@ Compilation Notes
 
 3)Init the AOKP repository
 
-	repo init -u https://github.com/AOKP/platform_manifest.git -b kitkat_mr2
+	repo init -u https://github.com/AOKP/platform_manifest.git -b kitkat
 
 4)Paste this lines inside new file .repo/manifests/local_manifest.xml
 and paste this lines inside new file .repo/local_manifest.xml
