@@ -1,21 +1,21 @@
-CyanogenMod Sun4i
-===============
-Compilation Notes
------------------
+ParanoidAndroid Sun4i
+====================================
 
-* Build from Sources
+
+Compilation Notes
+--------------
 
 1)Create a directory
 
-	mkdir cyanogen
+	mkdir paranoid
 
 2)Change to the created directory
 
-	cd cyanogen
+	cd paranoid
 
-3)Init the CyanogenMod repository
+3)Init the ParanoidAndroid repository
 
-	repo init -u git://github.com/CyanogenMod/android.git -b cm-11.0
+	repo init -u https://github.com/AOSPA/manifest -b kitkat
 
 4)Paste this lines inside new file .repo/manifests/local_manifest.xml
 and paste this lines inside new file .repo/local_manifest.xml
@@ -23,47 +23,17 @@ and paste this lines inside new file .repo/local_manifest.xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
 	  <!-- remote  name="github" fetch="git://github.com/" /-->
-	  <remove-project name="CyanogenMod/android_external_tinyalsa"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware_legacy"/>
-	  <remove-project name="CyanogenMod/android_frameworks_base"/>
-	  <remove-project name="CyanogenMod/android_frameworks_av"/>
-	  <remove-project name="CyanogenMod/android_frameworks_native"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_SoundRecorder"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Camera2"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Gallery2"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Settings"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Browser"/>
-	  <remove-project name="CyanogenMod/android_packages_providers_MediaProvider"/>
-	  <project remote="github" revision="cm-11.0" name="ugers/android_external_tinyalsa" path="external/tinyalsa" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware" path="hardware/libhardware" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware_legacy" path="hardware/libhardware_legacy" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_aw" path="hardware/aw" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_device_907" path="device/softwinner/907" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_base" path="frameworks/base" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_av" path="frameworks/av" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_native" path="frameworks/native" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_SoundRecorder" path="packages/apps/SoundRecorder" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Camera2" path="packages/apps/Camera2" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Gallery2" path="packages/apps/Gallery2" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Settings" path="packages/apps/Settings" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Browser" path="packages/apps/Browser" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_providers_MediaProvider" path="packages/providers/MediaProvider" />
+	  <project remote="github" revision="ParanoidAndroid-4.4" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
 5)Now type this command:
 
 	repo sync -j16
 
-6)Prebuilts:
 
-	cd vendor/cm
-	./get-prebuilts
+6)Finally you're ready to build it:
 
-7)Finally you're ready to build it:
+	./rom-build.sh 907
 
-	export APPLY_PATCHES_907=1
-	source build/envsetup.sh
-	brunch cm_907-userdebug
-
-Credits to ugers,fire855,shaun2029 and christiantroy.
+Patches - (if you have already modify your tree and patches can't be applied, run: repo forall -c git reset --hard)
+Remember to `make clobber` every now and then!
