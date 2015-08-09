@@ -14,13 +14,13 @@ $(call inherit-product, vendor/aokp/configs/gsm.mk)
 # Tablets Overlay
 PRODUCT_PACKAGE_OVERLAYS += vendor/aokp/overlay/common_tablets
 
-
 ## Device identifier. This must come after all inclusions
 PRODUCT_NAME := aokp_907
-PRODUCT_BRAND := Google
 PRODUCT_DEVICE := 907
+PRODUCT_BRAND := Google
 PRODUCT_MODEL := Nexus 7
 PRODUCT_MANUFACTURER := Asus
+PRODUCT_RELEASE_NAME := 907
 
 #Set build fingerprint / ID / Product Name ect.
 PRODUCT_BUILD_PROP_OVERRIDES += PRODUCT_NAME=nakasi TARGET_DEVICE=grouper BUILD_FINGERPRINT="google/nakasi/grouper:4.4.4/JDQ39E/402395:user/release-keys" PRIVATE_BUILD_DESC="nakasi-user 4.4.4 JDQ39E 402395 release-keys"
