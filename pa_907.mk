@@ -30,11 +30,8 @@ TARGET_OTA_ASSERT_SKIP := true
 # CM Package Extras
 -include vendor/pa/packages/cm.mk
 
-# Product Package Extras - Repos can be added manually or via addprojects.py
--include vendor/pa/packages/907.mk
-
 # Include ParanoidAndroid common configuration
-include vendor/pa/config/pa_common.mk
+include vendor/pa/main.mk
 
 # Inherit device configuration
 $(call inherit-product, device/softwinner/907/full_907.mk)
@@ -49,9 +46,3 @@ PRODUCT_BUILD_PROP_OVERRIDES += PRODUCT_NAME=mantaray BUILD_FINGERPRINT="google/
 
 # Allow ADB (to access dev settings)
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.secure=0 service.adb.enable=1 persist.sys.usb.config=mass_storage ro.debuggable=1 persist.service.adb.enable=1 rild.libpath=/system/lib/liballwinner-ril.so
-
-# Update local_manifest.xml
-GET_VENDOR_PROPS := $(shell vendor/pa/tools/getvendorprops.py $(PRODUCT_NAME))
-GET_PROJECT_RMS := $(shell vendor/pa/tools/removeprojects.py $(PRODUCT_NAME))
-GET_PROJECT_ADDS := $(shell vendor/pa/tools/addprojects.py $(PRODUCT_NAME))
-GET_CM_PROJECT_ADDS := $(shell vendor/pa/tools/addprojects.py cm.adds)
