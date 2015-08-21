@@ -26,6 +26,12 @@ and paste this lines inside new file .repo/local_manifest.xml
 	  <project remote="github" revision="ParanoidAndroid-4.4" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
+4.5)copy pa_907.mk into vendor/pa/products and add this lines into AndroidProducts.mk:
+
+	ifeq (pa_907,$(TARGET_PRODUCT))
+    	PRODUCT_MAKEFILES += $(LOCAL_DIR)/pa_907.mk
+	endif
+	
 5)Now type this command:
 
 	repo sync -j16
