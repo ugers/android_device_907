@@ -1,5 +1,5 @@
-#
-# Copyright (C) 2011 The Android Open-Source Project
+# Copyright (C) 2013 OmniROM Project
+# Copyright (C) 2012 The CyanogenMod Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 # Inherit device configuration
 $(call inherit-product, device/softwinner/907/full_907.mk)
 $(call inherit-product, device/softwinner/907/907-blobs.mk)
 
-# Inherit some common CyanogenMod stuff.
-$(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
+# Inherit from our omni product configuration
+$(call inherit-product, vendor/omni/config/common.mk)
 
-# Inherit GSM common stuff
-$(call inherit-product, vendor/cm/config/gsm.mk)
+# Inherit Omni GSM telephony parts
+$(call inherit-product, vendor/omni/config/gsm.mk)
 
 ## Device identifier. This must come after all inclusions
-PRODUCT_NAME := cm_907
+PRODUCT_NAME := omni_907
 PRODUCT_BRAND := Google
 PRODUCT_DEVICE := 907
 PRODUCT_MODEL := Nexus 7
