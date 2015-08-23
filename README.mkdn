@@ -35,6 +35,6 @@ and paste this lines inside new file .repo/local_manifest.xml
 
 	export APPLY_PATCHES_907=1
 	source build/envsetup.sh
-	brunch cm_907-userdebug
+	brunch omni_907-userdebug
 
 Credits to ugers,fire855,shaun2029 and christiantroy.
