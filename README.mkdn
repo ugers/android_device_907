@@ -1,4 +1,4 @@
-CyanogenMod Sun4i
+OmniROM Sun4i
 ===============
 Compilation Notes
 -----------------
@@ -7,15 +7,15 @@ Compilation Notes
 
 1)Create a directory
 
-	mkdir cyanogen
+	mkdir -p ~/android/omni
 
 2)Change to the created directory
 
-	cd cyanogen
+	cd ~/android/omni
 
 3)Init the CyanogenMod repository
 
-	repo init -u git://github.com/CyanogenMod/android.git -b cm-11.0
+	repo init -u https://github.com/omnirom/android.git -b android-4.4
 
 4)Paste this lines inside new file .repo/manifests/local_manifest.xml
 and paste this lines inside new file .repo/local_manifest.xml
@@ -23,44 +23,15 @@ and paste this lines inside new file .repo/local_manifest.xml
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
 	  <!-- remote  name="github" fetch="git://github.com/" /-->
-	  <remove-project name="CyanogenMod/android_external_tinyalsa"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware_legacy"/>
-	  <remove-project name="CyanogenMod/android_frameworks_base"/>
-	  <remove-project name="CyanogenMod/android_frameworks_av"/>
-	  <remove-project name="CyanogenMod/android_frameworks_native"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_SoundRecorder"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Camera2"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Gallery2"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Settings"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Browser"/>
-	  <remove-project name="CyanogenMod/android_packages_providers_MediaProvider"/>
-	  <project remote="github" revision="cm-11.0" name="ugers/android_external_tinyalsa" path="external/tinyalsa" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware" path="hardware/libhardware" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware_legacy" path="hardware/libhardware_legacy" />
 	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_aw" path="hardware/aw" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_device_907" path="device/softwinner/907" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_base" path="frameworks/base" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_av" path="frameworks/av" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_native" path="frameworks/native" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_SoundRecorder" path="packages/apps/SoundRecorder" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Camera2" path="packages/apps/Camera2" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Gallery2" path="packages/apps/Gallery2" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Settings" path="packages/apps/Settings" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Browser" path="packages/apps/Browser" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_providers_MediaProvider" path="packages/providers/MediaProvider" />
+	  <project remote="github" revision="omni-4.4" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
 5)Now type this command:
 
-	repo sync -j16
+	repo sync -j4 -f --no-clone-bundle
 
-6)Prebuilts:
-
-	cd vendor/cm
-	./get-prebuilts
-
-7)Finally you're ready to build it:
+6)Finally you're ready to build it:
 
 	export APPLY_PATCHES_907=1
 	source build/envsetup.sh
