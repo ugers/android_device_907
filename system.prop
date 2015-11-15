@@ -46,5 +46,5 @@ ro.device.cpu=AllWinner A10
 ro.device.gpu=ARM Mali 400MP
 ro.device.rear_cam=2 MP
 ro.device.front_cam=0.3 MP
-ro.device.screen_res=1024x768
+ro.device.screen_res=1024x600
 ro.chip_type=a10
