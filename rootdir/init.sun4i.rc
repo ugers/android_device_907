@@ -62,6 +62,7 @@ on boot
 	insmod /system/lib/modules/mecs.ko
 	insmod /system/lib/modules/mxc622x.ko
 	insmod /system/lib/modules/mma7660.ko
+	insmod /system/lib/modules/mma8452.ko
 	insmod /system/lib/modules/kxte9.ko
 	insmod /system/lib/modules/dmard06.ko
 	# camera drivers
