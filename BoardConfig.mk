@@ -130,22 +130,17 @@ TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 TARGET_PROVIDES_INIT_RC := true
 
 # Wifi stuff
-#CONFIG_CTRL_IFACE 		 := true
 BOARD_WIFI_VENDOR                := realtek
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
 BOARD_WPA_SUPPLICANT_DRIVER      := WEXT
-#CONFIG_DRIVER_WEXT               :=y
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_rtl
 BOARD_HOSTAPD_DRIVER             := WEXT
 BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
-BOARD_WLAN_DEVICE                := rtl8192cu
-SW_BOARD_USR_WIFI                := rtl8192cu
+BOARD_WLAN_DEVICE                := rtl8188eu
+SW_BOARD_USR_WIFI                := rtl8188eu
 
-#WIFI_DRIVER               := rtl8192cu
-WIFI_DRIVER_MODULE_NAME   := 8192cu
-#WIFI_DRIVER_FW_PATH_STA   := none
-WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
-#WIFI_DRIVER_MODULE_ARG := "ifname=wlan0"
+WIFI_DRIVER_MODULE_NAME   := "8188eu"
+WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8188eu.ko"
 
 WIFI_DRIVER_MODULE_ARG    := ""
 WIFI_FIRMWARE_LOADER      := ""
