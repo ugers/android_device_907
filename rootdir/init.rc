@@ -8,6 +8,7 @@ import /init.environ.rc
 import /init.usb.rc
 import /init.sun4i.rc
 import /init.trace.rc
+import /init.carrier.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -19,7 +20,7 @@ on early-init
 
     # Set the security context of /adb_keys if present.
     restorecon /adb_keys
-    
+
     start ueventd
 
 # create mountpoints
@@ -79,9 +80,6 @@ loglevel 3
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
 
-    # Create private mountpoint so we can MS_MOVE from staging
-    mount tmpfs tmpfs /mnt/secure mode=0700,uid=0,gid=0
-
     # Directory for staging bindmounts
     mkdir /mnt/secure/staging 0700 root root
 
@@ -111,7 +109,7 @@ loglevel 3
     write /proc/sys/kernel/randomize_va_space 2
     write /proc/sys/kernel/kptr_restrict 2
     write /proc/sys/kernel/dmesg_restrict 1
-	write  /proc/sys/vm/legacy_va_layout 1
+    write  /proc/sys/vm/legacy_va_layout 1
     write /proc/sys/vm/mmap_min_addr 32768
     write /proc/sys/net/ipv4/ping_group_range "0 2147483647"
     write /proc/sys/kernel/sched_rt_runtime_us 950000
@@ -141,7 +139,7 @@ loglevel 3
     write /dev/cpuctl/apps/bg_non_interactive/cpu.shares 52
     write /dev/cpuctl/apps/bg_non_interactive/cpu.rt_runtime_us 700000
     write /dev/cpuctl/apps/bg_non_interactive/cpu.rt_period_us 1000000
-    
+
 # qtaguid will limit access to specific data based on group memberships.
 #   net_bw_acct grants impersonation of socket owners.
 #   net_bw_stats grants access to other apps' detailed tagged-socket stats.
@@ -160,13 +158,12 @@ loglevel 3
     mount pstore pstore /sys/fs/pstore
     chown system log /sys/fs/pstore/console-ramoops
     chmod 0440 /sys/fs/pstore/console-ramoops
-    
+
 on post-fs
     # once everything is setup, no need to modify /
     mount rootfs rootfs / ro remount
     # mount shared so changes propagate into child namespaces
     mount rootfs rootfs / shared rec
-    mount tmpfs tmpfs /mnt/secure private rec
 
     # We chown/chmod /cache again so because mount is run as root + defaults
     chown system cache /cache
@@ -237,19 +234,12 @@ on post-fs-data
     mkdir /data/misc/zoneinfo 0775 system system
     mkdir /data/misc/vpn 0770 system vpn
     mkdir /data/misc/systemkeys 0700 system system
-    # give system access to wpa_supplicant.conf for backup and restore           
-    chmod 0770 /system/etc/wifi                                 
-    chmod 0660 /system/etc/wifi/wpa_supplicant.conf                 
-    chown wifi wifi /system/etc/wifi/wpa_supplicant.conf
-#wpa_supplicant control socket for android wifi.c (android private socket)
     mkdir /data/misc/wifi 0770 wifi wifi
     mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
     mkdir /data/misc/dhcp 0770 dhcp dhcp
-    chown dhcp dhcp /data/misc/dhcp
-    chmod 0770 /data/misc/wifi
-    chmod 0660 /data/misc/wifi/wpa_supplicant.conf       
-    chown wifi wifi /data/misc/wifi
-    chown wifi wifi /data/misc/wifi/wpa_supplicant.conf
+    # give system access to wpa_supplicant.conf for backup and restore
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
     mkdir /data/local 0751 root root
     mkdir /data/misc/media 0700 media media
     
@@ -313,7 +303,7 @@ on post-fs-data
 
     # Set SELinux security contexts on upgrade or policy update.
     restorecon_recursive /data
-    
+
     # If there is no fs-post-data action in the init.<device>.rc file, you
     # must uncomment this line, otherwise encrypted filesystems
     # won't work.
@@ -345,7 +335,7 @@ on boot
     # Tweak background writeout
     write /proc/sys/vm/dirty_expire_centisecs 200
     write /proc/sys/vm/dirty_background_ratio  5
-    
+
     # Permissions for System Server and daemons.
     chown radio system /sys/android_power/state
     chown radio system /sys/android_power/request_state
@@ -422,17 +412,19 @@ on boot
 
 # Define TCP buffer sizes for various networks
 #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
-    setprop net.tcp.buffersize.default 4096,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.default 4096,87380,704512,4096,16384,110208
     setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
     setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
     setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4094,87380,262144,4096,16384,262144
-    setprop net.tcp.buffersize.hsupa   4094,87380,262144,4096,16384,262144
-    setprop net.tcp.buffersize.hsdpa   4094,87380,262144,4096,16384,262144
+    setprop net.tcp.buffersize.hspa    4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
     setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.dchspap 4094,87380,1220608,4096,16384,1220608
     setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
     setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
     setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
+    setprop net.tcp.buffersize.evdo_b  4096,87380,704512,4096,16384,262144
 
 # allow system to modify ksm control files
     chown root system /sys/kernel/mm/ksm/pages_to_scan
@@ -454,7 +446,7 @@ on boot
 
 # Define default initial receive window size in segments.
     setprop net.tcp.default_init_rwnd 60
-    
+
     class_start core
     class_start main
 
@@ -496,6 +488,7 @@ on property:sys.sysctl.extra_free_kbytes=*
 on property:sys.sysctl.tcp_def_init_rwnd=*
     write /proc/sys/net/ipv4/tcp_default_init_rwnd ${sys.sysctl.tcp_def_init_rwnd}
 
+
 ## Daemon processes to be run by init.
 ##
 service ueventd /sbin/ueventd
@@ -520,7 +513,7 @@ service console /system/bin/sh
     user shell
     group log
     seclabel u:r:shell:s0
-    
+
 service auditd /system/bin/auditd -k
     class main
 
@@ -568,7 +561,7 @@ service ril-daemon /system/bin/rild -l libsoftwinner-ril.so -- -d /dev/ttyUSB2
     socket rild stream 660 root radio
     socket rild-debug stream 660 radio system
     user root
-    group radio cache inet misc audio sdcard_r sdcard_rw qcom_oncrpc diag log
+    group radio cache inet misc audio sdcard_rw qcom_oncrpc qcom_diag log
 
 service surfaceflinger /system/bin/surfaceflinger
     class main
@@ -596,7 +589,7 @@ service sysinit /system/bin/logwrapper /system/xbin/busybox run-parts /system/et
 service media /system/bin/mediaserver
     class main
     user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc sdcard_rw media_rw mediadrm
+    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc sdcard_rw media_rw qcom_diag mediadrm nvram ccci radio
     ioprio rt 4
 
 service bootanim /system/bin/bootanimation
@@ -633,7 +626,7 @@ service flash_recovery /system/etc/install-cm-recovery.sh
 # update recovery if enabled
 on property:persist.sys.recovery_update=true
     start flash_recovery
-    
+
 service racoon /system/bin/racoon
     class main
     socket racoon stream 600 system system
@@ -653,7 +646,7 @@ service mtpd /system/bin/mtpd
 service keystore /system/bin/keystore /data/misc/keystore
     class main
     user keystore
-    group keystore drmrpc
+    group keystore drmrpc system
 
 service dumpstate /system/bin/dumpstate -s
     class main
