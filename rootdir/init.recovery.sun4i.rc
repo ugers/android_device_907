@@ -15,6 +15,7 @@ on init
     insmod /lib/modules/goodix_touch.ko
     insmod /lib/modules/gt801_2plus1.ko
     insmod /lib/modules/ssd253x-ts.ko
+    insmod /lib/modules/ssd253x_ts.ko
     insmod /lib/modules/Novatek_TouchDriver.ko
 
 on boot

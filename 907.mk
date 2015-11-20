@@ -17,7 +17,7 @@ COMMON_PATH := device/softwinner/907
 
 PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
-        $(COMMON_PATH)/prebuilt/lib/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
+        $(COMMON_PATH)/prebuilt/lib/modules/ssd253x_ts.ko:root/lib/modules/ssd253x_ts.ko \
         $(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
 

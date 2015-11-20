@@ -17,8 +17,7 @@ Compilation Notes
 
 	repo init -u git://github.com/CyanogenMod/android.git -b cm-11.0
 
-4)Paste this lines inside new file .repo/manifests/local_manifest.xml
-and paste this lines inside new file .repo/local_manifest.xml
+4)Paste this lines inside new file .repo/local_manifest.xml
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
