@@ -20,9 +20,6 @@ $(call inherit-product, device/softwinner/907/907-blobs.mk)
 # Inherit some common CyanogenMod stuff.
 $(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
 
-# Inherit GSM common stuff
-$(call inherit-product, vendor/cm/config/gsm.mk)
-
 ## Device identifier. This must come after all inclusions
 PRODUCT_NAME := cm_907
 PRODUCT_BRAND := Google
