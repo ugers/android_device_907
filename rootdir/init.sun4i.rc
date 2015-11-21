@@ -148,8 +148,8 @@ service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdis
     disabled
 
 # wifi related service
-service wpa_supplicant /system/bin/wpa_supplicant -D wext -i wlan0 \
-	-c /data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
+service wpa_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
+	-c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
 	-O/data/misc/wifi/sockets -g@android:wpa_wlan0
     class main
     socket wpa_wlan0 dgram 0660 wifi wifi
@@ -157,8 +157,8 @@ service wpa_supplicant /system/bin/wpa_supplicant -D wext -i wlan0 \
     disabled
     oneshot
 
-service p2p_supplicant /system/bin/wpa_supplicant -D wext -i wlan0 \
-	-c /data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
+service p2p_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
+	-c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
 	-O/data/misc/wifi/sockets -g@android:wpa_wlan0
     class main
     socket wpa_wlan0 dgram 0660 wifi wifi
