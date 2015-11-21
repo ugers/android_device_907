@@ -1,5 +1,14 @@
 CyanogenMod Sun4i
 ===============
+Working
+-----------------
+- Touchscreen
+- Wifi
+- Sensors
+- Audio
+- Camera preview
+- Storage
+
 Compilation Notes
 -----------------
 
