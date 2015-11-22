@@ -12,7 +12,7 @@
 #include <hardware/camera.h>
 #include <videodev2.h>
 
-#include <type_camera.h>
+#include "include_camera/type_camera.h"
 
 #include "OSAL_Queue.h"
 
@@ -29,7 +29,8 @@ class PreviewWindow;
 /*
  * 
  */
-typedef struct HALCameraInfo{
+typedef struct HALCameraInfo
+{
 	char	device_name[16];		// device node name, such as "/dev/video0"
 	int 	device_id;				// device id for camera share with the same CSI
 	int 	facing; 				// facing front or back

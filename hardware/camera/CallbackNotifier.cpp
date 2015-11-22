@@ -11,7 +11,7 @@
 #include "V4L2CameraDevice.h"
 #include "CallbackNotifier.h"
 
-extern "C" int JpegEnc(void * pBufOut, int * bufSize, JPEG_ENC_t *jpeg_enc);
+//extern "C" int JpegEnc(void * pBufOut, int * bufSize, JPEG_ENC_t *jpeg_enc);
 
 extern "C" int scaler(unsigned char * psrc, unsigned char * pdst, int src_w, int src_h, int dst_w, int dst_h, int fmt, int align);
 
@@ -901,13 +901,13 @@ bool CallbackNotifier::takePicture(const void* frame, bool is_continuous)
 	}
 
 	//int64_t lasttime = systemTime();
-	int ret = JpegEnc(pOutBuf, &bufSize, &jpeg_enc);
+	/**int ret = JpegEnc(pOutBuf, &bufSize, &jpeg_enc);
 	if (ret < 0)
 	{
 		LOGE("JpegEnc failed");
 		LOGE("AWHLABEL#camera#takePicture:JpegEnc-FAIL!\n");
 		return false;
-	}
+	}*/
 	//LOGV("hw enc time: %lld(ms), size: %d", (systemTime() - lasttime)/1000000, bufSize);
 
 	DBG_TIME_DIFF("enc");

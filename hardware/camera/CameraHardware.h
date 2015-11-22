@@ -15,7 +15,7 @@
 
 #include <videodev2.h>
 #include <camera/CameraParameters.h>
-#include <FaceDetectionApi.h>
+#include "include_camera/FaceDetectionApi.h"
 
 #include "V4L2CameraDevice.h"
 #include "PreviewWindow.h"

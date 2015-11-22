@@ -13,16 +13,15 @@ LOCAL_SHARED_LIBRARIES:= \
     libui \
 	
 # cedarx libraries
-LOCAL_SHARED_LIBRARIES += \
-	libfacedetection \
-	libjpgenc \
+#LOCAL_SHARED_LIBRARIES += \
+#	libfacedetection \
+#	libjpgenc \
 	
 LOCAL_C_INCLUDES += 						\
 	frameworks/base/core/jni/android/graphics 		\
 	frameworks/native/include/media/openmax			\
 	hardware/libhardware/include/hardware			\
 	frameworks/native/include						\
-	frameworks/av/media/CedarX-Projects/CedarX/include/include_camera \
 	$(TARGET_HARDWARE_INCLUDE) \
 
 LOCAL_SRC_FILES := \
