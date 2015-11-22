@@ -107,7 +107,6 @@ PRODUCT_PACKAGES += \
 
 # Device specific settings
 PRODUCT_PACKAGES += \
-	4KPlayer \
         dispctl \
         ethernet \
 
@@ -136,38 +135,6 @@ PRODUCT_PACKAGES += \
 	u3gmonitor \
 	devlistener \
 	camera.exDroid \
-
-PRODUCT_PACKAGES += \
-	libthirdpartstream \
-	libcedarxsftstream \
-	libsrec_jni \
-	libjpgenc \
-	libI420colorconvert.so \
-	AWcodecTest \
-	libstagefrighthw \
-	libOmxCore \
-	libOmxVdec \
-	libOmxVenc \
-	libaw_h264enc \
-	libsunxi_alloc \
-	libion_alloc
-	
-# CedarX libraries
-PRODUCT_PACKAGES += \
-	libCedarA \
-	libCedarX \
-	libcedarv \
-        libcedarxbase \
-        libcedarxosal \
-        libswdrm \
-	libcedarv_adapter \
-	libve \
-	libfacedetection \
-	libaw_audio \
-	libaw_audioa \
-        libcedarv_base \
-	libstagefright_soft_cedar_h264dec \
-	librtmp
 
 # CyanogenMOD
 PRODUCT_PACKAGES += \
