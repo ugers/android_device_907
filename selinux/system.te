@@ -1,3 +1,0 @@
-# Grant GPU access to system apps (e.g., PowerManagerService)
-allow system graphics_device:chr_file rw_file_perms;
-allow system system_data_file:dir relabelto;

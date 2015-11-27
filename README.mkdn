@@ -2,63 +2,44 @@ CyanogenMod Sun4i
 ===============
 Working
 -----------------
-- Touchscreen
-- Wifi
-- Sensors
-- Audio
-- Camera preview
-- Storage
 
 Compilation Notes
 -----------------
 
 * Build from Sources
 
-1)Create a directory
+1) Create a directory
 
 	mkdir cyanogen
 
-2)Change to the created directory
+2) Change to the created directory
 
 	cd cyanogen
 
-3)Init the CyanogenMod repository
+3) Init the CyanogenMod repository
 
-	repo init -u git://github.com/CyanogenMod/android.git -b cm-11.0
+	repo init -u git://github.com/CyanogenMod/android.git -b cm-12.1
 
-4)Paste this lines inside new file .repo/local_manifest.xml
+4) Paste this lines inside new file .repo/local_manifest.xml
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
-	  <!-- remote  name="github" fetch="git://github.com/" /-->
-	  <remove-project name="CyanogenMod/android_external_tinyalsa"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware"/>
-	  <remove-project name="CyanogenMod/android_hardware_libhardware_legacy"/>
-	  <remove-project name="CyanogenMod/android_frameworks_base"/>
-	  <remove-project name="CyanogenMod/android_frameworks_native"/>
-	  <remove-project name="CyanogenMod/android_packages_apps_Settings"/>
-	  <project remote="github" revision="cm-11.0" name="ugers/android_external_tinyalsa" path="external/tinyalsa" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware" path="hardware/libhardware" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_hardware_libhardware_legacy" path="hardware/libhardware_legacy" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_device_907" path="device/softwinner/907" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_base" path="frameworks/base" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_frameworks_native" path="frameworks/native" />
-	  <project remote="github" revision="cm-11.0" name="ugers/android_packages_apps_Settings" path="packages/apps/Settings" />
+	  <project remote="github" revision="cm-12.1" name="ugers/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
-5)Now type this command:
+5) Now type this command:
 
 	repo sync -j16
 
-6)Prebuilts:
+6) Prebuilts:
 
 	cd vendor/cm
 	./get-prebuilts
 
-7)Finally you're ready to build it:
+7) Finally you're ready to build it:
 
 	export APPLY_PATCHES_907=1
 	source build/envsetup.sh
 	brunch cm_907-userdebug
 
-Credits to ugers,fire855,shaun2029 and christiantroy.
+Credits to ugers, shaun2029 and christiantroy

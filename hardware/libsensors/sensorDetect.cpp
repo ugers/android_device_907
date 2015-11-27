@@ -68,7 +68,6 @@ struct sensor_extend_t tempSensorList[] = {
             125.0f, 1.0f,
             0.35f, 0,
             0, 0,
-            { },
         },
     },
 };
@@ -86,7 +85,6 @@ struct sensor_extend_t oriSensorList[] = {
             360.0f,  CONVERT_O,
             0.50f,  100000,
             0, 0,
-            { },
         },
     },
 };
@@ -104,7 +102,6 @@ struct sensor_extend_t proSensorList[] = {
             5.0f, 5.0f,
             0.2f, 0,
             0, 0,
-            { },
         },
     },{
         {
@@ -118,7 +115,6 @@ struct sensor_extend_t proSensorList[] = {
             1.0f, 0.1f,
             0.873f, 0,
             0, 0,
-            { },
         },
     }
 
@@ -137,7 +133,6 @@ struct sensor_extend_t ligSensorList[] = {
             20000.0f, 20.0f,
             0.2f, 0, 
             0, 0,
-            { },
         },
     }, {
         {
@@ -151,7 +146,6 @@ struct sensor_extend_t ligSensorList[] = {
             4096.0f, 1.0f,
             0.09f, 0, 
             0, 0,
-            { },
         },
     },
 
@@ -171,7 +165,6 @@ struct sensor_extend_t gyrSensorList[] = {
             (70.0f / 1000.0f) * ((float)M_PI / 180.0f),
             6.1f, 1190,
             0, 0,
-            { },
         },
     },
 };
@@ -189,7 +182,6 @@ struct sensor_extend_t magSensorList[] = {
             2000.0f, CONVERT_M,
             6.8f, 16667,
             0, 0,
-            { },
         },
     }, {
         {
@@ -203,7 +195,6 @@ struct sensor_extend_t magSensorList[] = {
             1500.0f, 1.0f/20.0f,
             0.50f, 100000,
             0, 0,
-            { },
         },
     },
 };
@@ -221,7 +212,6 @@ struct sensor_extend_t gsensorList[] = {
             GRAVITY_EARTH/21.0f,
             0.30f, 20000,
             0, 0,
-            { },
         },
     }, {
         {
@@ -235,7 +225,6 @@ struct sensor_extend_t gsensorList[] = {
             (4.0f*9.81f)/1024.0f,
             0.2f, 0,
 			0, 0,
-			{ },
         },
     },{
         {
@@ -249,7 +238,6 @@ struct sensor_extend_t gsensorList[] = {
             GRAVITY_EARTH/1024.0f,
             0.30f, 20000,
 			0, 0,
-			{ },
         },
     }, {
         {
@@ -263,7 +251,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/21.0f,
                 0.30f, 20000,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -277,7 +264,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/1024.0f,
                 0.30f, 20000,
                 0, 0,
-                { },
         },
     },  {
         {
@@ -291,7 +277,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/4096.0f,
                 0.8f, 0,
                 0, 0,
-                { },
         },
     },  {
         {
@@ -305,7 +290,6 @@ struct sensor_extend_t gsensorList[] = {
                 (4.0f*9.81f)/1024.0f,
                 0.2f, 0,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -319,7 +303,6 @@ struct sensor_extend_t gsensorList[] = {
                 (4.0f*9.81f)/256.0f,
                 0.2f, 0,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -333,7 +316,6 @@ struct sensor_extend_t gsensorList[] = {
                 (4.0f*9.81f)/256.0f,
                 0.2f, 0,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -348,7 +330,6 @@ struct sensor_extend_t gsensorList[] = {
                 9.81f/16384.0f,
                 0.30f,  20000,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -362,7 +343,6 @@ struct sensor_extend_t gsensorList[] = {
                 RESOLUTION_A,
                 0.23f, 20000,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -376,7 +356,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH / 1024,
                 0.145f, 0,
                 0, 0,
-                { },
         },
     }, {
         {
@@ -390,7 +369,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/256.0f,
                 0.5f, 0,
                 0, 0,
-                { },
         },
     },{
         {
@@ -404,7 +382,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/64.0f,
                 0.005, 0,
                 0, 0,
-                { },
         },
     },{
         {
@@ -418,7 +395,6 @@ struct sensor_extend_t gsensorList[] = {
                 GRAVITY_EARTH/64.0f,
                 0.005, 0,
                 0, 0,
-               { },
         },
     }, {
         {
@@ -432,7 +408,6 @@ struct sensor_extend_t gsensorList[] = {
                 (4.0f*9.81f)/15.0f,
                 0.2f, 0,
                 0, 0,
-                { },
             },
     },
 

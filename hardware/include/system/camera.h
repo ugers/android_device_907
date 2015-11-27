@@ -87,12 +87,14 @@ enum {
     CAMERA_MSG_PREVIEW_METADATA = 0x0400, // dataCallback
     // Notify on autofocus start and stop. This is useful in continuous
     // autofocus - FOCUS_MODE_CONTINUOUS_VIDEO and FOCUS_MODE_CONTINUOUS_PICTURE.
-     CAMERA_MSG_FOCUS_MOVE = 0x0800,       // notifyCallback
-     CAMERA_MSG_CONTINUOUSSNAP= 0x1000,    //notifyCallback for continuous snap by fuqiang
-     CAMERA_MSG_SNAP= 0x2000,    //notifyCallback of setting camera idle  for single snap by fuqiang
-     CAMERA_MSG_SNAP_THUMB= 0x4000,    //notifyCallback of saving thumb for single snap by fuqiang
-     CAMERA_MSG_SNAP_FD= 0x8000,    //notifyCallback of requesting fd for single and continuoussnap by fuqiang
-     CAMERA_MSG_ALL_MSGS = 0xFFFF
+    CAMERA_MSG_FOCUS_MOVE = 0x0800,       // notifyCallback
+    CAMERA_MSG_STATS_DATA = 0x1000,
+    CAMERA_MSG_META_DATA = 0x2000,
+    CAMERA_MSG_CONTINUOUSSNAP = 0x1000,    //notifyCallback for continuous snap by fuqiang
+    CAMERA_MSG_SNAP = 0x2000,    //notifyCallback of setting camera idle  for single snap by fuqiang
+    CAMERA_MSG_SNAP_THUMB = 0x4000,    //notifyCallback of saving thumb for single snap by fuqiang
+    CAMERA_MSG_SNAP_FD = 0x8000,    //notifyCallback of requesting fd for single and continuoussnap by fuqiang
+    CAMERA_MSG_ALL_MSGS = 0xFFFF
 };
 
 /** meta data type in CameraMetaDataCallback */
@@ -157,20 +159,7 @@ enum {
      * Stop the face detection.
      */
     CAMERA_CMD_STOP_FACE_DETECTION = 7,
-    
-  // add command
-  CAMERA_CMD_SET_SCREEN_ID = 0xFF000000,
-  CAMERA_CMD_SET_CEDARX_RECORDER = 0xFF000001,
 
-#if defined(QCOM_ICS_COMPAT) && defined(QCOM_HARDWARE)
-    CAMERA_CMD_HISTOGRAM_ON     = 8,
-    CAMERA_CMD_HISTOGRAM_OFF     = 9,
-    CAMERA_CMD_HISTOGRAM_SEND_DATA  = 10,
-    /* Unused by the older blobs, but referenced */
-    CAMERA_CMD_ENABLE_FOCUS_MOVE_MSG = 11,
-    CAMERA_CMD_PING = 12,
-    CAMERA_CMD_SET_VIDEO_BUFFER_COUNT = 13,
-#else
     /**
      * Enable/disable focus move callback (CAMERA_MSG_FOCUS_MOVE). Passing
      * arg1 = 0 will disable, while passing arg1 = 1 will enable the callback.
@@ -211,9 +200,19 @@ enum {
     CAMERA_CMD_HISTOGRAM_SEND_DATA  = 13,
     CAMERA_CMD_LONGSHOT_ON = 14,
     CAMERA_CMD_LONGSHOT_OFF = 15,
+    CAMERA_CMD_STOP_LONGSHOT = 16,
     CAMERA_CMD_METADATA_ON = 100,
     CAMERA_CMD_METADATA_OFF = 101,
-#endif
+
+    /**
+     * Set screen ID (Allwinner)
+     */
+    CAMERA_CMD_SET_SCREEN_ID = 0xFF000000,
+
+    /**
+     * Set CedarX recorder (Allwinner)
+     */
+    CAMERA_CMD_SET_CEDARX_RECORDER = 0xFF000001,
 };
 
 /** camera fatal errors */
@@ -236,15 +235,6 @@ enum {
     /** The facing of the camera is the same as that of the screen. */
     CAMERA_FACING_FRONT = 1
 };
-
-#ifdef QCOM_HARDWARE
-enum {
-    CAMERA_SUPPORT_MODE_2D = 0x01, /* Camera Sensor supports 2D mode. */
-    CAMERA_SUPPORT_MODE_3D = 0x02, /* Camera Sensor supports 3D mode. */
-    CAMERA_SUPPORT_MODE_NONZSL = 0x04, /* Camera Sensor in NON-ZSL mode. */
-    CAMERA_SUPPORT_MODE_ZSL = 0x08 /* Camera Sensor supports ZSL mode. */
-};
-#endif
 
 enum {
     /** Hardware face detection. It does not use much CPU. */
@@ -303,8 +293,7 @@ typedef struct camera_face {
      * -2000, -2000 if this is not supported.
      */
     int32_t mouth[2];
-
-#ifdef QCOM_HARDWARE
+#ifdef QCOM_BSP
     int32_t smile_degree;
     int32_t smile_score;
     int32_t blink_detected;
@@ -320,6 +309,16 @@ typedef struct camera_face {
 #endif
 
 } camera_face_t;
+
+/**
+ * The information of a data type received in a camera frame.
+ */
+typedef enum {
+    /** Data buffer */
+    CAMERA_FRAME_DATA_BUF = 0x000,
+    /** File descriptor */
+    CAMERA_FRAME_DATA_FD = 0x100
+} camera_frame_data_type_t;
 
 /**
  * The metadata of the frame data.

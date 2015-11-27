@@ -49,7 +49,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.verify-bytecode=false \
 	dalvik.vm.lockprof.threshold=500 \
 
+# Dex2oat flags
+ADDITIONAL_BUILD_PROPERTIES += \
+	dalvik.vm.image-dex2oat-filter=verify-none \
+	dalvik.vm.dex2oat-filter=interpret-only
+
 PRODUCT_PROPERTY_OVERRIDES += \
+	service.adb.root=1 \
 	ro.eventproc.start=0 \
         ro.debuggable=1 \
 	ro.com.google.locationfeatures=1 \
@@ -89,17 +95,6 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
 	frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
-
-#Cedarx lib's from 4.2
-#PRODUCT_COPY_FILES += \
-	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/cedarx,system/lib)
-	
-#Cedarx-Crack only
-#PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/prebuilt/lib/cedarx/libdemux_rmvb.so:system/lib/libdemux_rmvb.so \
-	$(COMMON_PATH)/prebuilt/lib/cedarx/librm.so:system/lib/librm.so \
-	$(COMMON_PATH)/prebuilt/lib/cedarx/libswa1.so:system/lib/libswa1.so \
-	$(COMMON_PATH)/prebuilt/lib/cedarx/libswa2.so:system/lib/libswa2.so \
 
 # Wlan
 PRODUCT_PACKAGES += \

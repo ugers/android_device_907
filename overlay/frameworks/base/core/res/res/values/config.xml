@@ -123,9 +123,6 @@
          to handle queries on each database when using Write-Ahead Logging. -->
     <integer name="db_connection_pool_size">3</integer>
     
-    <!-- Close low battery warning when battery level reaches this value -->    
-    <integer name="config_lowBatteryCloseWarningLevel">15</integer>
-    
     <!-- Display low battery warning when battery level dips to this value -->    
     <integer name="config_lowBatteryWarningLevel">10</integer>
     

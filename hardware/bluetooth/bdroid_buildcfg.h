@@ -25,9 +25,9 @@
 #define HCILP_INCLUDED                 FALSE
 
 // 10.2 Updates
-#define BLE_INCLUDED FALSE
-#define BTA_GATT_INCLUDED FALSE
-#define SMP_INCLUDED FALSE
+#define BLE_INCLUDED TRUE
+#define BTA_GATT_INCLUDED TRUE
+#define SMP_INCLUDED TRUE
 #define PAN_NAP_DISABLED TRUE
 
 #endif 

@@ -44,6 +44,9 @@ TARGET_GLOBAL_CFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_ARCH_LOWMEM := true
 
+# Dexpreopt
+WITH_DEXPREOPT := true
+
 # Bluetooth and Vibro stuff
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
@@ -58,8 +61,8 @@ BOARD_HAS_VIBRATOR_IMPLEMENTATION := ../../device/softwinner/907/hardware/includ
 TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 33554432
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 33554432
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 402653184
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 1073741824
+BOARD_SYSTEMIMAGE_PARTITION_SIZE := 524288000
+BOARD_USERDATAIMAGE_PARTITION_SIZE := 952107008
 BOARD_FLASH_BLOCK_SIZE := 4096
 
 # EGL stuff
@@ -69,7 +72,7 @@ BOARD_EGL_WORKAROUND_BUG_10194508 := true
 USE_OPENGL_RENDERER := true
 ENABLE_WEBGL := true
 BOARD_USE_SKIA_LCDTEXT := true
-BOARD_EGL_NEEDS_LEGACY_FB := true
+BOARD_EGL_NEEDS_FNW := true
 BOARD_NO_ALLOW_DEQUEUE_CURRENT_BUFFER := true
 
 # Workaround for no SYNC support
@@ -85,7 +88,7 @@ CEDARX_CHIP_VERSION := F23
 CEDARX_USE_SWAUDIO := N
 
 # CWM Recovery
-BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
+#BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
 BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
 RECOVERY_FSTAB_VERSION := 2
@@ -123,7 +126,6 @@ TARGET_USE_CUSTOM_SECOND_LUN_NUM := 1
 # Misc stuff
 TARGET_RECOVERY_PRE_COMMAND := "echo -n boot-recovery | busybox dd of=/dev/block/nandf count=1 conv=sync; sync"
 BOARD_USE_LEGACY_TOUCHSCREEN := true
-TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/softwinner/907/releasetools/907_ota_from_target_files
 # Hardware module include file path
 TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 # Use our own init.rc
@@ -156,7 +158,6 @@ BOARD_SEPOLICY_DIRS += \
     device/softwinner/907/selinux
 
 BOARD_SEPOLICY_UNION += \
-    app.te \
     device.te \
     dhcp.te \
     domain.te \
@@ -170,7 +171,6 @@ BOARD_SEPOLICY_UNION += \
     netd.te \
     rild.te \
     surfaceflinger.te \
-    system.te \
     ueventd.te \
     untrusted_app.te \
     vold.te \

@@ -21,7 +21,8 @@ LOCAL_C_INCLUDES += 						\
 	frameworks/base/core/jni/android/graphics 		\
 	frameworks/native/include/media/openmax			\
 	hardware/libhardware/include/hardware			\
-	frameworks/native/include						\
+	frameworks/native/include				\
+	system/media/camera/include \
 	$(TARGET_HARDWARE_INCLUDE) \
 
 LOCAL_SRC_FILES := \

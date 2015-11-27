@@ -8,7 +8,6 @@
 
 #include <sys/mman.h> 
 #include <videodev2.h>
-#include <linux/videodev.h> 
 
 #ifdef USE_MP_CONVERT
 #include <g2d_driver.h>
