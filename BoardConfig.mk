@@ -85,33 +85,33 @@ CEDARX_CHIP_VERSION := F23
 CEDARX_USE_SWAUDIO := N
 
 # CWM Recovery
-BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
-BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
-BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
-RECOVERY_FSTAB_VERSION := 2
-BOARD_RECOVERY_SWIPE := true
-TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
+#BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
+#BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
+#BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
+#RECOVERY_FSTAB_VERSION := 2
+#BOARD_RECOVERY_SWIPE := true
+#TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
+#BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 #TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 #TARGET_RECOVERY_UI_LIB := librecovery_ui_crane_evb
 #TARGET_RECOVERY_UPDATER_LIBS :=
 
 # TWRP recovery
-#BOARD_HAS_SDCARD_INTERNAL := true
-#TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
-#DEVICE_RESOLUTION := 1024x768
-#TW_FLASH_FROM_STORAGE := true
-#TW_NO_REBOOT_BOOTLOADER := true
-#TW_HAS_DUAL_STORAGE := true
+BOARD_HAS_SDCARD_INTERNAL := true
+TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
+DEVICE_RESOLUTION := 1024x768
+TW_FLASH_FROM_STORAGE := true
+TW_NO_REBOOT_BOOTLOADER := true
+TW_HAS_DUAL_STORAGE := true
 #TWRP_EVENT_LOGGING := true
-#TW_INTERNAL_STORAGE_PATH := "/emmc"
-#TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
-#TW_EXTERNAL_STORAGE_PATH := "/sdcard"
-#TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
-#TWHAVE_SELINUX := true
+TW_INTERNAL_STORAGE_PATH := "/emmc"
+TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
+TW_EXTERNAL_STORAGE_PATH := "/sdcard"
+TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
+TWHAVE_SELINUX := true
 #BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 #BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
-#TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/twrp.fstab
+TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
 
 # Vold stuff
 BOARD_VOLD_MAX_PARTITIONS := 20
@@ -130,22 +130,17 @@ TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 TARGET_PROVIDES_INIT_RC := true
 
 # Wifi stuff
-#CONFIG_CTRL_IFACE 		 := true
 BOARD_WIFI_VENDOR                := realtek
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
-BOARD_WPA_SUPPLICANT_DRIVER      := WEXT
-#CONFIG_DRIVER_WEXT               :=y
+BOARD_WPA_SUPPLICANT_DRIVER      := NL80211
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_rtl
-BOARD_HOSTAPD_DRIVER             := WEXT
+BOARD_HOSTAPD_DRIVER             := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
 BOARD_WLAN_DEVICE                := rtl8192cu
 SW_BOARD_USR_WIFI                := rtl8192cu
 
-#WIFI_DRIVER               := rtl8192cu
-WIFI_DRIVER_MODULE_NAME   := 8192cu
-#WIFI_DRIVER_FW_PATH_STA   := none
+WIFI_DRIVER_MODULE_NAME   := "8192cu"
 WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
-#WIFI_DRIVER_MODULE_ARG := "ifname=wlan0"
 
 WIFI_DRIVER_MODULE_ARG    := ""
 WIFI_FIRMWARE_LOADER      := ""

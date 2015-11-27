@@ -14,7 +14,9 @@
 /devices/platform/sw_hcd_host0             auto    auto    defaults        voldmanaged=usbdisk0:auto
 /devices/platform/sw-ohci.1                auto    auto    defaults        voldmanaged=usbdisk0:auto
 
+
 # recovery
-/dev/block/nandc       /boot           emmc    defaults recoveryonly            
-/dev/block/nanda       /bootloader     emmc    defaults recoveryonly            
-/dev/block/nandg       /recovery       ext4    defaults recoveryonly
+/dev/block/nandi	/sdcard 	auto 	defaults recoveryonly
+/dev/block/nandc	/boot           emmc    defaults recoveryonly            
+/dev/block/nanda	/bootloader     emmc    defaults recoveryonly            
+/dev/block/nandg	/recovery       ext4    defaults recoveryonly

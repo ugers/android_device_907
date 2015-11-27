@@ -12,17 +12,16 @@ LOCAL_SHARED_LIBRARIES:= \
     libcamera_client \
     libui \
 	
-# cedarx libraries
-LOCAL_SHARED_LIBRARIES += \
-	libfacedetection \
-	libjpgenc \
+LOCAL_LDFLAGS += \
+	device/softwinner/907/prebuilt/lib/cedarx/libjpgenc.so \
+	device/softwinner/907/prebuilt/lib/cedarx/libfacedetection.so \
 	
 LOCAL_C_INCLUDES += 						\
 	frameworks/base/core/jni/android/graphics 		\
 	frameworks/native/include/media/openmax			\
 	hardware/libhardware/include/hardware			\
 	frameworks/native/include						\
-	frameworks/av/media/CedarX-Projects/CedarX/include/include_camera \
+	device/softwinner/907/hardware/camera/include_camera \
 	$(TARGET_HARDWARE_INCLUDE) \
 
 LOCAL_SRC_FILES := \

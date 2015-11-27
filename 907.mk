@@ -19,7 +19,8 @@ PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
         $(COMMON_PATH)/prebuilt/lib/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
         $(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
-	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
+	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root) \
+    	$(LOCAL_PATH)/twrp.fstab:recovery/root/etc/twrp.fstab
 
 PRODUCT_CHARACTERISTICS := tablet
 
@@ -91,7 +92,7 @@ PRODUCT_COPY_FILES += \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
 #Cedarx lib's from 4.2
-#PRODUCT_COPY_FILES += \
+PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/cedarx,system/lib)
 	
 #Cedarx-Crack only
@@ -108,6 +109,7 @@ PRODUCT_PACKAGES += \
 # Device specific settings
 PRODUCT_PACKAGES += \
 	4KPlayer \
+	FileExplore \
         dispctl \
         ethernet \
 
@@ -138,7 +140,7 @@ PRODUCT_PACKAGES += \
 	devlistener \
 	camera.exDroid \
 
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libthirdpartstream \
 	libcedarxsftstream \
 	libsrec_jni \
@@ -154,7 +156,7 @@ PRODUCT_PACKAGES += \
 	libion_alloc
 	
 # CedarX libraries
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libCedarA \
 	libCedarX \
 	libcedarv \
