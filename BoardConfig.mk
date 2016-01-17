@@ -46,6 +46,8 @@ TARGET_ARCH_LOWMEM := true
 
 # Dexpreopt
 WITH_DEXPREOPT := true
+WITH_DEXPREOPT_BOOT_IMG_ONLY := true
+DONT_DEXPREOPT_PREBUILTS := true
 
 # Bluetooth and Vibro stuff
 BOARD_HAVE_BLUETOOTH := true

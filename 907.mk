@@ -17,8 +17,8 @@ COMMON_PATH := device/softwinner/907
 
 PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
-        $(COMMON_PATH)/prebuilt/lib/modules/ssd253x_ts.ko:root/lib/modules/ssd253x_ts.ko \
-        $(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
+	$(COMMON_PATH)/prebuilt/lib/modules/ssd253x_ts.ko:root/lib/modules/ssd253x_ts.ko \
+	$(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
 
 PRODUCT_CHARACTERISTICS := tablet
@@ -31,7 +31,7 @@ PRODUCT_PROPERTY_OVERRIDES := \
 
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
-        ro.opengles.version = 131072 \
+	ro.opengles.version = 131072 \
 	drm.service.enabled=true \
 
 # Fix Graphics Issues
@@ -39,25 +39,23 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.zygote.disable_gl_preload=true \
 	ro.bq.gpu_to_cpu_unsupported=true \
 
-# Dalvik options
+# ART
 PRODUCT_PROPERTY_OVERRIDES += \
-	dalvik.vm.debug.alloc=0 \
-	dalvik.vm.checkjni=false \
-	dalvik.vm.dexopt-data-only=1 \
-	dalvik.vm.dexopt-flags=v=a,o=v,m=y,u=y \
-	dalvik.vm.execution-mode=int:jit \
-	dalvik.vm.verify-bytecode=false \
-	dalvik.vm.lockprof.threshold=500 \
-
-# Dex2oat flags
-ADDITIONAL_BUILD_PROPERTIES += \
-	dalvik.vm.image-dex2oat-filter=verify-none \
-	dalvik.vm.dex2oat-filter=interpret-only
+	dalvik.vm.dex2oat-Xms=8m \
+	dalvik.vm.dex2oat-Xmx=96m \
+	dalvik.vm.image-dex2oat-Xms=48m \
+	dalvik.vm.image-dex2oat-Xmx=48m \
+	dalvik.vm.dex2oat-flags=--no-watch-dog \
+	dalvik.vm.dex2oat-filter=interpret-only \
+	dalvik.vm.image-dex2oat-filter=speed
+	
+PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
+	--compiler-filter=interpret-only
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	service.adb.root=1 \
 	ro.eventproc.start=0 \
-        ro.debuggable=1 \
+	ro.debuggable=1 \
 	ro.com.google.locationfeatures=1 \
 	ro.kernel.android.checkjni=0 \
 	ro.vold.umsdirtyratio=40 \
@@ -68,8 +66,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vold.switchablepair=/storage/sdcard0,/storage/sdcard1 \
 	ro.config.nocheckin=1 \
 	persist.sys.vold.switchexternal=0 \
-        persist.service.adb.enable=1 \
-        keyguard.no_require_sim=true \
+	persist.service.adb.enable=1 \
+	keyguard.no_require_sim=true \
 	logcat.live=disable \
 	media.stagefright.maxsubfont=72 \
 	net.dns1=8.8.8.8 \
@@ -95,15 +93,15 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
 	frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
-
+	
 # Wlan
 PRODUCT_PACKAGES += \
 	dhcpcd.conf
 
 # Device specific settings
 PRODUCT_PACKAGES += \
-        dispctl \
-        ethernet \
+	dispctl \
+	ethernet \
 
 PRODUCT_PACKAGES += \
 	librs_jni \
@@ -165,6 +163,8 @@ PRODUCT_PACKAGES += \
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
+
+$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
 
 # Should be after the full_base include, which loads languages_full
 PRODUCT_AAPT_CONFIG := large xlarge hdpi mdpi
