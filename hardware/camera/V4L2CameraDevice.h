@@ -12,7 +12,7 @@
 #include <hardware/camera.h>
 #include <videodev2.h>
 
-#include <type_camera.h>
+#include "include_camera/type_camera.h"
 
 #include "OSAL_Queue.h"
 

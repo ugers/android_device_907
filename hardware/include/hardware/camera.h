@@ -22,7 +22,10 @@
 /**
  * Camera device HAL, initial version [ CAMERA_DEVICE_API_VERSION_1_0 ]
  *
- * Supports the android.hardware.Camera API.
+ * DEPRECATED. New devices should use Camera HAL v3.2 or newer.
+ *
+ * Supports the android.hardware.Camera API, and the android.hardware.camera2
+ * API in legacy mode only.
  *
  * Camera devices that support this version of the HAL must return a value in
  * the range HARDWARE_DEVICE_API_VERSION(0,0)-(1,FF) in
@@ -75,9 +78,6 @@ typedef struct preview_stream_ops {
     int (*cancel_buffer)(struct preview_stream_ops* w,
                 buffer_handle_t* buffer);
     int (*set_buffer_count)(struct preview_stream_ops* w, int count);
-#ifdef HTC_3D_SUPPORT
-    int (*set_3d_mode)(const struct preview_stream_ops *w, int r1, int r2, int r3);
-#endif
     int (*set_buffers_geometry)(struct preview_stream_ops* pw,
                 int w, int h, int format);
     int (*set_crop)(struct preview_stream_ops *w,
@@ -94,10 +94,11 @@ typedef struct preview_stream_ops {
     // consecutive or parallel preview streams, cameras, or app runs.
     int (*set_timestamp)(struct preview_stream_ops *w, int64_t timestamp);
 
-    // star add
-  int (*perform)(struct preview_stream_ops* w, int cmd0, int cmd1, int value);
-  int (*set_buffers_geometryex)(struct preview_stream_ops* pw,
+    // Allwinner
+    int (*perform)(struct preview_stream_ops* w, int cmd0, int cmd1, int value);
+    int (*set_buffers_geometryex)(struct preview_stream_ops* pw,
             int w, int h, int format,int screenid);
+
 } preview_stream_ops_t;
 
 struct camera_device;

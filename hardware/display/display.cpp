@@ -26,11 +26,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#ifdef HAVE_ANDROID_OS      // just want PAGE_SIZE define
-#include <asm/page.h>
-#else
-#include <sys/user.h>
-#endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/mman.h>

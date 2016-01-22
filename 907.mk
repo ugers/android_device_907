@@ -35,19 +35,23 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.zygote.disable_gl_preload=true \
 	ro.bq.gpu_to_cpu_unsupported=true \
 
-# Dalvik options
+# ART
 PRODUCT_PROPERTY_OVERRIDES += \
-	dalvik.vm.debug.alloc=0 \
-	dalvik.vm.checkjni=false \
-	dalvik.vm.dexopt-data-only=1 \
-	dalvik.vm.dexopt-flags=v=a,o=v,m=y,u=y \
-	dalvik.vm.execution-mode=int:jit \
-	dalvik.vm.verify-bytecode=false \
-	dalvik.vm.lockprof.threshold=500 \
+	dalvik.vm.dex2oat-Xms=8m \
+	dalvik.vm.dex2oat-Xmx=96m \
+	dalvik.vm.image-dex2oat-Xms=48m \
+	dalvik.vm.image-dex2oat-Xmx=48m \
+	dalvik.vm.dex2oat-flags=--no-watch-dog \
+	dalvik.vm.dex2oat-filter=interpret-only \
+	dalvik.vm.image-dex2oat-filter=speed
+	
+PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
+	--compiler-filter=interpret-only
 
 PRODUCT_PROPERTY_OVERRIDES += \
+	service.adb.root=1 \
 	ro.eventproc.start=0 \
-        ro.debuggable=1 \
+	ro.debuggable=1 \
 	ro.com.google.locationfeatures=1 \
 	ro.kernel.android.checkjni=0 \
 	ro.vold.umsdirtyratio=40 \
@@ -58,8 +62,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.vold.switchablepair=/storage/sdcard0,/storage/sdcard1 \
 	ro.config.nocheckin=1 \
 	persist.sys.vold.switchexternal=0 \
-        persist.service.adb.enable=1 \
-        keyguard.no_require_sim=true \
+	persist.service.adb.enable=1 \
+	keyguard.no_require_sim=true \
 	logcat.live=disable \
 	media.stagefright.maxsubfont=72 \
 	net.dns1=8.8.8.8 \
@@ -101,15 +105,18 @@ PRODUCT_COPY_FILES += \
 	$(COMMON_PATH)/prebuilt/lib/cedarx/libswa1.so:system/lib/libswa1.so \
 	$(COMMON_PATH)/prebuilt/lib/cedarx/libswa2.so:system/lib/libswa2.so \
 
-#Wlan
+# Wifi
 PRODUCT_PACKAGES += \
-	dhcpcd.conf
+    libwpa_client \
+    hostapd \
+    dhcpcd.conf \
+    wpa_supplicant \
+    wpa_supplicant.conf
 
 # Device specific settings
 PRODUCT_PACKAGES += \
-	4KPlayer \
-        dispctl \
-        ethernet \
+	dispctl \
+	ethernet \
 
 PRODUCT_PACKAGES += \
 	librs_jni \
@@ -138,7 +145,7 @@ PRODUCT_PACKAGES += \
 	devlistener \
 	camera.exDroid \
 
-PRODUCT_PACKAGES += \
+/*PRODUCT_PACKAGES += \
 	libthirdpartstream \
 	libcedarxsftstream \
 	libsrec_jni \
@@ -168,7 +175,7 @@ PRODUCT_PACKAGES += \
 	libaw_audioa \
         libcedarv_base \
 	libstagefright_soft_cedar_h264dec \
-	librtmp
+	librtmp*/
 
 # CyanogenMOD
 PRODUCT_PACKAGES += \
@@ -204,6 +211,8 @@ PRODUCT_PACKAGES += \
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
+
+$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
 
 # Should be after the full_base include, which loads languages_full
 PRODUCT_AAPT_CONFIG := large xlarge hdpi mdpi

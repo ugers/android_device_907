@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# Specify phone tech before including full_phone
+$(call inherit-product, vendor/cm/config/gsm.mk)
+
 # Inherit device configuration
 $(call inherit-product, device/softwinner/907/full_907.mk)
 $(call inherit-product, device/softwinner/907/907-blobs.mk)
 
 # Inherit some common CyanogenMod stuff.
 $(call inherit-product, vendor/cm/config/common_full_tablet_wifionly.mk)
-
-# Inherit GSM common stuff
-$(call inherit-product, vendor/cm/config/gsm.mk)
 
 ## Device identifier. This must come after all inclusions
 PRODUCT_NAME := cm_907
