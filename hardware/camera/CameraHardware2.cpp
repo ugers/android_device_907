@@ -2191,7 +2191,7 @@ status_t CameraHardware::sendCommand(int32_t cmd, int32_t arg1, int32_t arg2)
 
 	switch (cmd)
 	{
-	case CAMERA_CMD_SET_CEDARX_RECORDER:
+	case CAMERA_CMD_SET_VIDEO_BUFFER_COUNT:
 		mUseHwEncoder = true;
 		mV4L2CameraDevice->setHwEncoder(true);
 		return OK;

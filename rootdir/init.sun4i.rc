@@ -17,6 +17,7 @@ on init
 on fs
 	setprop ro.crypto.umount_sd false
 	mount_all /fstab.sun4i
+	swapon_all /fstab.sun4i
 
    	chmod 0770 /data/misc/wifi 
 on boot	
@@ -123,7 +124,7 @@ on post-fs-data
     	mkdir /data/misc/dhcp 0770 dhcp dhcp
     	chown dhcp dhcp /data/misc/dhcp
 
-	setprop wifi.interface "wlan0"
+	setprop wifi.interface wlan0
 	setprop wlan.interface "wlan0"
 	setprop wlan.driver.status "ok"
 
@@ -198,10 +199,15 @@ service iprenew_eth0 /system/bin/dhcpcd -n
     disabled
     oneshot
 
-service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
     class main
     disabled
     oneshot
+
+service iprenew_bt-pan /system/bin/dhcpcd -n
+      class main
+      disabled
+      oneshot
 
 service iprenew_eth /system/bin/dhcpcd -n
     class main
@@ -224,3 +230,17 @@ service memsicd /system/bin/logwrapper /system/bin/memsicd
 on property:sys.boot_completed=1
     start ril-daemon
     start u3gmonitor
+
+
+## CyanogenMod Performance Profiles
+# Powersave
+on property:sys.perf.profile=0
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
+
+# Balanced
+on property:sys.perf.profile=1
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
+
+# Performance
+on property:sys.perf.profile=2
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance

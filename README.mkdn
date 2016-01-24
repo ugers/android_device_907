@@ -30,12 +30,7 @@ and paste this lines inside new file .repo/local_manifest.xml
 
 	repo sync -j16
 
-6)Prebuilts:
-
-	cd vendor/cm
-	./get-prebuilts
-
-7)Finally you're ready to build it:
+6)Finally you're ready to build it:
 
 	export APPLY_PATCHES_907=1
 	source build/envsetup.sh

@@ -45,9 +45,9 @@ TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_ARCH_LOWMEM := true
 
 # Dexpreopt
-WITH_DEXPREOPT := true
-WITH_DEXPREOPT_BOOT_IMG_ONLY := true
-DONT_DEXPREOPT_PREBUILTS := true
+#WITH_DEXPREOPT := true
+#WITH_DEXPREOPT_BOOT_IMG_ONLY := true
+#DONT_DEXPREOPT_PREBUILTS := true
 
 # Bluetooth and Vibro stuff
 BOARD_HAVE_BLUETOOTH := true
@@ -75,6 +75,8 @@ USE_OPENGL_RENDERER := true
 ENABLE_WEBGL := true
 BOARD_USE_SKIA_LCDTEXT := true
 BOARD_EGL_NEEDS_FNW := true
+#BOARD_EGL_SKIP_FIRST_DEQUEUE := true
+#BOARD_EGL_SYSTEMUI_PBSIZE_HACK := true
 BOARD_NO_ALLOW_DEQUEUE_CURRENT_BUFFER := true
 
 # Workaround for no SYNC support
@@ -161,19 +163,24 @@ BOARD_SEPOLICY_DIRS += \
     device/softwinner/907/selinux
 
 BOARD_SEPOLICY_UNION += \
+    bluetooth.te \
     device.te \
     dhcp.te \
     domain.te \
     drmserver.te \
+    dumpstate.te \
     file.te \
     file_contexts \
     healthd.te \
     init.te \
+    init_shell.te \
     mac_update.te \
     mount.te \
     netd.te \
     rild.te \
+    recovery.te \
     surfaceflinger.te \
+    system_server.te \
     ueventd.te \
     untrusted_app.te \
     vold.te \

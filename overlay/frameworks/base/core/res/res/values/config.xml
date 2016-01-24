@@ -127,9 +127,6 @@
          to handle queries on each database when using Write-Ahead Logging. -->
     <integer name="db_connection_pool_size">3</integer>
     
-    <!-- Close low battery warning when battery level reaches this value -->    
-    <integer name="config_lowBatteryCloseWarningLevel">15</integer>
-    
     <!-- Display low battery warning when battery level dips to this value -->    
     <integer name="config_lowBatteryWarningLevel">10</integer>
     
@@ -138,5 +135,9 @@
     
     <!--  Maximum number of supported users -->
     <integer name="config_multiuserMaximumUsers">5</integer>
-    
+
+    <!-- Performance profiles -->
+    <string name="config_perf_profile_prop">sys.perf.profile</string>
+    <string name="config_perf_profile_default_entry">1</string>
+
   </resources>

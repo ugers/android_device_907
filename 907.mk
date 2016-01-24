@@ -42,11 +42,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.image-dex2oat-Xms=48m \
 	dalvik.vm.image-dex2oat-Xmx=48m \
 	dalvik.vm.dex2oat-flags=--no-watch-dog \
-	dalvik.vm.dex2oat-filter=interpret-only \
-	dalvik.vm.image-dex2oat-filter=speed
-	
-PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
-	--compiler-filter=interpret-only
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	service.adb.root=1 \
@@ -68,6 +63,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	media.stagefright.maxsubfont=72 \
 	net.dns1=8.8.8.8 \
 	net.dns2=8.8.4.4 \
+    	persist.sys.isUsbOtgEnabled=true \
 
 DEVICE_PACKAGE_OVERLAYS := device/softwinner/907/overlay
 
@@ -77,6 +73,7 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
 	frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
 	frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
+    	frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
 	frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
 	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
 	frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
@@ -92,7 +89,10 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
 	frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
         frameworks/native/data/etc/android.hardware.telephony.gsm.xml:system/etc/permissions/android.hardware.telephony.gsm.xml \
-	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
+	frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
+	frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
+	frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
+	#packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:/system/etc/permissions/android.software.live_wallpaper.xml
 
 #Cedarx lib's from 4.2
 #PRODUCT_COPY_FILES += \
@@ -111,7 +111,7 @@ PRODUCT_PACKAGES += \
     hostapd \
     dhcpcd.conf \
     wpa_supplicant \
-    wpa_supplicant.conf
+    wpa_supplicant.conf \
 
 # Device specific settings
 PRODUCT_PACKAGES += \
@@ -145,7 +145,7 @@ PRODUCT_PACKAGES += \
 	devlistener \
 	camera.exDroid \
 
-/*PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libthirdpartstream \
 	libcedarxsftstream \
 	libsrec_jni \
@@ -161,7 +161,7 @@ PRODUCT_PACKAGES += \
 	libion_alloc
 	
 # CedarX libraries
-PRODUCT_PACKAGES += \
+#PRODUCT_PACKAGES += \
 	libCedarA \
 	libCedarX \
 	libcedarv \
@@ -175,7 +175,7 @@ PRODUCT_PACKAGES += \
 	libaw_audioa \
         libcedarv_base \
 	libstagefright_soft_cedar_h264dec \
-	librtmp*/
+	librtmp
 
 # CyanogenMOD
 PRODUCT_PACKAGES += \
@@ -211,8 +211,6 @@ PRODUCT_PACKAGES += \
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
-
-$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
 
 # Should be after the full_base include, which loads languages_full
 PRODUCT_AAPT_CONFIG := large xlarge hdpi mdpi

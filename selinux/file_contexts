@@ -3,8 +3,8 @@
 /dev/g2d                                u:object_r:graphics_device:s0
 /dev/cedar_dev                          u:object_r:graphics_device:s0
 /dev/ace_dev                            u:object_r:graphics_device:s0
-/dev/mali                               u:object_r:graphics_device:s0
-/dev/ump                                u:object_r:graphics_device:s0
+/dev/mali                               u:object_r:mali_device:s0
+/dev/ump                                u:object_r:mali_device:s0
 
 # Bluetooth
 /dev/ttyS1                              u:object_r:hci_attach_dev:s0
