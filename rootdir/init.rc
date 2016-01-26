@@ -605,7 +605,7 @@ service sysinit /system/bin/logwrapper /system/xbin/busybox run-parts /system/et
 service media /system/bin/mediaserver
     class main
     user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm qcom_diag
+    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm qcom_diag cache
     ioprio rt 4
 
 # One shot invocation to deal with encrypted volume.

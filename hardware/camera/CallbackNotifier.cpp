@@ -10,8 +10,11 @@
 
 #include "V4L2CameraDevice.h"
 #include "CallbackNotifier.h"
+#include "raw2jpeg.h"
 
-//extern "C" int JpegEnc(void * pBufOut, int * bufSize, JPEG_ENC_t *jpeg_enc);
+extern "C" {
+#include "exifwriter.h"
+}
 
 extern "C" int scaler(unsigned char * psrc, unsigned char * pdst, int src_w, int src_h, int dst_w, int dst_h, int fmt, int align);
 
@@ -783,10 +786,7 @@ void CallbackNotifier::setContinuousPictureCnt(int cnt)
 
 bool CallbackNotifier::takePicture(const void* frame, bool is_continuous)
 {
-	buffer_node * pNode = NULL;
 	V4L2BUF_t * pbuf = (V4L2BUF_t *)frame;
-	void * pOutBuf = NULL;
-	int bufSize = 0;
 
 	int src_format = 0;
 	int src_addr_phy = 0;
@@ -816,149 +816,49 @@ bool CallbackNotifier::takePicture(const void* frame, bool is_continuous)
 		src_height			= pbuf->height;
 		memcpy((void*)&src_crop, (void*)&pbuf->crop_rect, sizeof(RECT_t));
 	}
-
-	JPEG_ENC_t jpeg_enc;
-	memset(&jpeg_enc, 0, sizeof(jpeg_enc));
-	jpeg_enc.addrY			= src_addr_phy;
-	jpeg_enc.addrC			= src_addr_phy + ALIGN_16B(src_width) * src_height;
-	jpeg_enc.src_w			= src_width;
-	jpeg_enc.src_h			= src_height;
-	jpeg_enc.pic_w			= mPictureWidth;
-	jpeg_enc.pic_h			= mPictureHeight;
-	jpeg_enc.colorFormat	= (src_format == V4L2_PIX_FMT_NV21) ? JPEG_COLOR_YUV420_NV21 : JPEG_COLOR_YUV420_NV12;
-	jpeg_enc.quality		= mJpegQuality;
-	jpeg_enc.rotate			= mJpegRotate;
-
-	getCurrentDateTime();
-
-	// 
-	strcpy(jpeg_enc.CameraMake, mExifMake);
-	strcpy(jpeg_enc.CameraModel, mExifModel);
-	strcpy(jpeg_enc.DateTime, mDateTime);
 	
-	jpeg_enc.thumbWidth		= mThumbWidth;
-	jpeg_enc.thumbHeight	= mThumbHeight;
-	jpeg_enc.whitebalance   = mWhiteBalance;
-	jpeg_enc.focal_length	= mFocalLength;
-
-	if (0 != strlen(mGpsMethod))
+	int framesize = ALIGN_16B(src_width) * src_height * 3/2;
+	camera_memory_t* src_addr_vir_copy = mGetMemoryCB(-1, framesize, 1, NULL);
+	if (NULL == src_addr_vir_copy || NULL == src_addr_vir_copy->data) 
 	{
-		jpeg_enc.enable_gps			= 1;
-		jpeg_enc.gps_latitude		= mGpsLatitude;
-		jpeg_enc.gps_longitude		= mGpsLongitude;
-		jpeg_enc.gps_altitude		= mGpsAltitude;
-		jpeg_enc.gps_timestamp		= mGpsTimestamp;
-		strcpy(jpeg_enc.gps_processing_method, mGpsMethod);
-		memset(mGpsMethod, 0, sizeof(mGpsMethod));
-	}
-	else
-	{
-		jpeg_enc.enable_gps			= 0;
-	}
-
-	if ((src_crop.width != jpeg_enc.src_w)
-		|| (src_crop.height != jpeg_enc.src_h))
-	{
-		jpeg_enc.enable_crop		= 1;
-		jpeg_enc.crop_x				= src_crop.left;
-		jpeg_enc.crop_y				= src_crop.top;
-		jpeg_enc.crop_w				= src_crop.width;
-		jpeg_enc.crop_h				= src_crop.height;
-	}
-	else
-	{
-		jpeg_enc.enable_crop		= 0;
-	}
-	
-	LOGV("addrY: %x, src: %dx%d, pic: %dx%d, quality: %d, rotate: %d, Gps method: %s, \
-		thumbW: %d, thumbH: %d, thubmFactor: %d, crop: [%d, %d, %d, %d]", 
-		jpeg_enc.addrY, 
-		jpeg_enc.src_w, jpeg_enc.src_h,
-		jpeg_enc.pic_w, jpeg_enc.pic_h,
-		jpeg_enc.quality, jpeg_enc.rotate,
-		jpeg_enc.gps_processing_method,
-		jpeg_enc.thumbWidth,
-		jpeg_enc.thumbHeight,
-		jpeg_enc.scale_factor,
-		jpeg_enc.crop_x,
-		jpeg_enc.crop_y,
-		jpeg_enc.crop_w,
-		jpeg_enc.crop_h);
-	
-	pNode = mBufferList->allocBuffer(-1, mPictureWidth * mPictureHeight);
-	if (pNode == NULL)
-	{
-		LOGE("malloc picture node failed");
-		LOGE("AWHLABEL#camera#takePicture-FAIL!\n");
-		return false;
-	}
-	pOutBuf = pNode->data;
-	if (pOutBuf == NULL)
-	{
-		LOGE("malloc picture memory failed");
-		LOGE("AWHLABEL#camera#takePicture-FAIL!\n");
+		LOGE("%s: Memory failure", __FUNCTION__);
 		return false;
 	}
 
-	//int64_t lasttime = systemTime();
-	/**int ret = JpegEnc(pOutBuf, &bufSize, &jpeg_enc);
-	if (ret < 0)
+	framesize = mCBWidth * mCBHeight * 3/2;
+	camera_memory_t* cam_buff_copy = mGetMemoryCB(-1, framesize, 1, NULL);
+	if (NULL == cam_buff_copy || NULL == cam_buff_copy->data) 
 	{
-		LOGE("JpegEnc failed");
-		LOGE("AWHLABEL#camera#takePicture:JpegEnc-FAIL!\n");
+		LOGE("%s: Memory failure", __FUNCTION__);
 		return false;
-	}*/
-	//LOGV("hw enc time: %lld(ms), size: %d", (systemTime() - lasttime)/1000000, bufSize);
+	}
+			
+	if (src_format == V4L2_PIX_FMT_NV12)
+	{
+		NV12ToYVU420((void*)src_addr_vir, (void*)src_addr_vir_copy->data, ALIGN_16B(src_width), src_height);
+	}
+	else if(src_format == V4L2_PIX_FMT_NV21)
+	{
+		NV21ToYVU420((void*)src_addr_vir, (void*)src_addr_vir_copy->data, ALIGN_16B(src_width), src_height);
+	}
+	
+	// Receive and convert to jpeg internaly, without using privative app
+	uint32_t jpegSize = 0;
+    if (yuv420_save2jpeg((unsigned char*) cam_buff_copy->data,
+        (void*)src_addr_vir_copy->data, mCBWidth, mCBHeight, 100 /* maximum quality */, &jpegSize)) {
+        LOGD("jpegConvert done! ExifWriter...");
+	}
+	else {
+        LOGE("jpegConvert failed!");
+		return false;
+	}
+ 
+    writeExif(cam_buff_copy->data, cam_buff_copy->data, jpegSize,
+             &jpegSize, 0 /* change this later */, NULL /* no location */);
 
 	DBG_TIME_DIFF("enc");
 
-	if (is_continuous)
-	{
-		pNode->id = mSavePictureCnt;
-		pNode->size = bufSize;
-		mBufferList->push(pNode);
-
-		// cb number of pictures
-		if (isMessageEnabled(CAMERA_MSG_CONTINUOUSSNAP)) 
-		{
-			mNotifyCB(CAMERA_MSG_CONTINUOUSSNAP, mSavePictureCnt, 0, mCallbackCookie);
-	    }
-		
-		pthread_cond_signal(&mSavePictureCond);
-
-		mSavePictureCnt++;
-	}
-	else
-	{
-		if (strlen(mSnapPath) > 0)
-		{
-			camera_memory_t* cb_buff;
-			
-			strcpy(pNode->priv, mSnapPath);
-			pNode->id = -1;
-			pNode->size = bufSize;
-			mBufferList->push(pNode);
-
-			mNotifyCB(CAMERA_MSG_SNAP, 0, 0, mCallbackCookie);
-			pthread_cond_signal(&mSavePictureCond);
-		}
-		else
-		{
-			camera_memory_t* jpeg_buff = mGetMemoryCB(-1, bufSize, 1, NULL);
-			if (NULL != jpeg_buff && NULL != jpeg_buff->data) 
-			{
-				memcpy(jpeg_buff->data, (uint8_t *)pOutBuf, bufSize); 
-				mDataCB(CAMERA_MSG_COMPRESSED_IMAGE, jpeg_buff, 0, NULL, mCallbackCookie);
-				jpeg_buff->release(jpeg_buff);
-			} 
-			else 
-			{
-				LOGE("%s: Memory failure in CAMERA_MSG_COMPRESSED_IMAGE", __FUNCTION__);
-			}
-
-			mBufferList->releaseBuffer(pNode);
-		}
-	}
+	mDataCB(CAMERA_MSG_COMPRESSED_IMAGE, cam_buff_copy, 0, NULL, mCallbackCookie);
 	
 	DBG_TIME_DIFF("photo end");
 	LOGV("taking photo end");
