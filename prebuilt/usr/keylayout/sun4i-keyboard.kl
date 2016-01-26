@@ -1,5 +1,5 @@
 key 217   HOME              WAKE
 key 1     BACK              WAKE
-key 115	  MENU         	    WAKE_DROPPED
+key 115	  MENU
 key 102   VOLUME_UP
 key 28	  VOLUME_DOWN
