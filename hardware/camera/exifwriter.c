@@ -174,7 +174,7 @@ void writeExif( void *origData, void *destData , int origSize , uint32_t *result
     it++;
     (*it).Tag = TAG_MODEL;
     (*it).Format = FMT_STRING;
-    (*it).Value = "Tattoo with CyanogenMOD\0";
+    (*it).Value = "\0";
     (*it).DataLength = 24;
     (*it).GpsTag = FALSE;
 
