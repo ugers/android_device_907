@@ -29,7 +29,8 @@ class PreviewWindow;
 /*
  * 
  */
-typedef struct HALCameraInfo{
+typedef struct HALCameraInfo
+{
 	char	device_name[16];		// device node name, such as "/dev/video0"
 	int 	device_id;				// device id for camera share with the same CSI
 	int 	facing; 				// facing front or back

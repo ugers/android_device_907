@@ -57,7 +57,7 @@ PRODUCT_COPY_FILES += \
 
 # temporary prebuilt wpa_supplicant
 PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/prebuilt/etc/wifi/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf
+	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/etc/wifi,system/etc/wifi) \
 
 # HACK by turl: Create some intermediate files to link with libMali/libUMP
 $(shell mkdir -p out/target/product/907/obj/SHARED_LIBRARIES/libMali_intermediates)

@@ -1,3 +1,5 @@
 type mali_device, dev_type, mlstrustedobject;
+type cedar_device, dev_type;
+type disp_device, dev_type;
 type rfkill_device, dev_type;
 type diag_device, dev_type;

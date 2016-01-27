@@ -1,0 +1,1 @@
+allow sdcardd unlabeled:dir { getattr read open };

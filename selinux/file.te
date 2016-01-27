@@ -1,3 +1,4 @@
 #allow file_type rootfs:filesystem associate;
+type logger_file, file_type;
 allow asec_apk_file rootfs:filesystem associate;
 allow cache_file rootfs:filesystem associate;

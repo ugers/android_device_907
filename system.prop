@@ -34,7 +34,7 @@ view.touch_slop=2
 ro.sys.bootfast=true
 ro.display.switch=1
 ro.property.tabletUI=false
-ro.product.firmware=v2.0
+ro.product.firmware=v1.0
 ro.property.fontScale=1.15
 
 # RIL config

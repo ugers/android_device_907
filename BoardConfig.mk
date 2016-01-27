@@ -45,9 +45,10 @@ TARGET_GLOBAL_CPPFLAGS += -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
 TARGET_ARCH_LOWMEM := true
 
 # Dexpreopt
-#WITH_DEXPREOPT := true
-#WITH_DEXPREOPT_BOOT_IMG_ONLY := true
-#DONT_DEXPREOPT_PREBUILTS := true
+USE_DEX2OAT_DEBUG := false
+WITH_DEXPREOPT := true
+WITH_DEXPREOPT_BOOT_IMG_ONLY := true
+DONT_DEXPREOPT_PREBUILTS := true
 
 # Bluetooth and Vibro stuff
 BOARD_HAVE_BLUETOOTH := true
@@ -99,7 +100,7 @@ RECOVERY_FSTAB_VERSION := 2
 BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
-#TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
+TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 #TARGET_RECOVERY_UI_LIB := librecovery_ui_crane_evb
 #TARGET_RECOVERY_UPDATER_LIBS :=
 
@@ -175,16 +176,23 @@ BOARD_SEPOLICY_UNION += \
     init.te \
     init_shell.te \
     mac_update.te \
+    mediaserver.te \
     mount.te \
     netd.te \
-    rild.te \
     recovery.te \
+    rild.te \
+    sdcardd.te \
+    sensors.te \
+    shell.te \
     surfaceflinger.te \
+    system_app.te \
     system_server.te \
     ueventd.te \
+    unconfined.te \
     untrusted_app.te \
     vold.te \
     wpa_supplicant.te \
+    wpa.te \
     zygote.te \
 
 # Beware: set only prebuilt OR source+config

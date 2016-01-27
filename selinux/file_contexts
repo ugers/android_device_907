@@ -1,18 +1,25 @@
 # GFX
-/dev/disp                               u:object_r:graphics_device:s0
 /dev/g2d                                u:object_r:graphics_device:s0
-/dev/cedar_dev                          u:object_r:graphics_device:s0
 /dev/ace_dev                            u:object_r:graphics_device:s0
 /dev/mali                               u:object_r:mali_device:s0
 /dev/ump                                u:object_r:mali_device:s0
 
+# disp device labeling
+/dev/disp               		u:object_r:disp_device:s0
+/dev/transform          		u:object_r:disp_device:s0
+
 # Bluetooth
 /dev/ttyS1                              u:object_r:hci_attach_dev:s0
 /dev/ttyHS2                             u:object_r:hci_attach_dev:s0
+# Bluetooth
+/sys/class/rfkill/rfkill0/state u:object_r:sysfs_bluetooth_writable:s0
 
+# cedar_dev
+/dev/cedar_dev    			u:object_r:cedar_device:s0
 # for wpa_supp
 /dev/rfkill                             u:object_r:rfkill_device:s0
 
 # rild
+/dev/ttyUSB[0-4]  			u:object_r:radio_device:s0
 /system/bin/mount.exfat        		u:object_r:mount_exec:s0
 /system/bin/ntfs-3g            		u:object_r:mount_exec:s0

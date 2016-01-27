@@ -18,7 +18,11 @@ COMMON_PATH := device/softwinner/907
 PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
         $(COMMON_PATH)/prebuilt/lib/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
+        $(COMMON_PATH)/prebuilt/lib/modules/disp_ump.ko:root/lib/modules/disp_ump.ko \
+        $(COMMON_PATH)/prebuilt/lib/modules/mali.ko:root/lib/modules/mali.ko \
+        $(COMMON_PATH)/prebuilt/lib/modules/ump.ko:root/lib/modules/ump.ko \
         $(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
+	$(COMMON_PATH)/rootdir/config_mem.ini:root/config_mem.ini \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
 
 PRODUCT_CHARACTERISTICS := tablet
@@ -37,11 +41,17 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
-	dalvik.vm.dex2oat-Xms=8m \
-	dalvik.vm.dex2oat-Xmx=96m \
-	dalvik.vm.image-dex2oat-Xms=48m \
-	dalvik.vm.image-dex2oat-Xmx=48m \
+	ro.sys.fw.dex2oat_thread_count=2 \
+	dalvik.vm.dex2oat-swap=true \
 	dalvik.vm.dex2oat-flags=--no-watch-dog \
+	dalvik.vm.dex2oat-filter=interpret-only \
+	dalvik.vm.image-dex2oat-filter=speed \
+	dalvik.vm.profiler=1 \
+	persist.sys.dalvik.vm.lib.2=libart.so \
+	dalvik.vm.isa.arm.features=default \
+	
+PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
+	--compiler-filter=interpret-only
 
 PRODUCT_PROPERTY_OVERRIDES += \
 	service.adb.root=1 \
@@ -56,16 +66,23 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.additionalmounts=/storage/sdcard1 \
 	ro.vold.switchablepair=/storage/sdcard0,/storage/sdcard1 \
 	ro.config.nocheckin=1 \
+	ro.spk_dul.used=false \
+	ro.zram.default=1 \
+	persist.sys.root_access=3 \
 	persist.sys.vold.switchexternal=0 \
+	persist.sys.force_highendgfx=true \
 	persist.service.adb.enable=1 \
 	keyguard.no_require_sim=true \
+	rw.logger=0 \
 	logcat.live=disable \
 	media.stagefright.maxsubfont=72 \
 	net.dns1=8.8.8.8 \
 	net.dns2=8.8.4.4 \
     	persist.sys.isUsbOtgEnabled=true \
+	sys.io.scheduler=bfq \
+	config.disable_atlas=true \
 
-DEVICE_PACKAGE_OVERLAYS := device/softwinner/907/overlay
+DEVICE_PACKAGE_OVERLAYS := $(COMMON_PATH)/overlay
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -211,6 +228,8 @@ PRODUCT_PACKAGES += \
 
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
+#ART
+$(call add-product-dex-preopt-module-config,services,--compiler-filter=verify-none)
 
 # Should be after the full_base include, which loads languages_full
 PRODUCT_AAPT_CONFIG := large xlarge hdpi mdpi
