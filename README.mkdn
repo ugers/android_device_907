@@ -6,7 +6,12 @@ Working
 - Audio
 - Sensors
 - Storage
-- Camera preview
+- Camera (photo recording)
+
+Not Working
+-----------------
+- Wifi
+- Video recording
 
 Compilation Notes
 -----------------
@@ -29,19 +34,14 @@ Compilation Notes
 
 	<?xml version="1.0" encoding="UTF-8"?>
 	<manifest>
-	  <project remote="github" revision="cm-12.1" name="ugers/android_device_907" path="device/softwinner/907" />
+	  <project remote="github" revision="cm-12.1" name="fire855/android_device_907" path="device/softwinner/907" />
 	</manifest>
 
 5) Now type this command:
 
 	repo sync -j16
 
-6) Prebuilts:
-
-	cd vendor/cm
-	./get-prebuilts
-
-7) Finally you're ready to build it:
+6) Finally you're ready to build it:
 
 	export APPLY_PATCHES_907=1
 	source build/envsetup.sh
