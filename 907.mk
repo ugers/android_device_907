@@ -41,13 +41,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
-	dalvik.vm.dex2oat-Xms=8m \
-	dalvik.vm.dex2oat-Xmx=96m \
-	dalvik.vm.image-dex2oat-Xms=48m \
-	dalvik.vm.image-dex2oat-Xmx=48m \
+	dalvik.vm.dex2oat-swap=true \
 	dalvik.vm.dex2oat-flags=--no-watch-dog \
 	dalvik.vm.dex2oat-filter=interpret-only \
-	dalvik.vm.image-dex2oat-filter=speed
+	dalvik.vm.image-dex2oat-filter=speed \
+	dalvik.vm.profiler=1 \
+	dalvik.vm.isa.arm.features=lpae
 	
 PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
 	--compiler-filter=interpret-only
@@ -72,8 +71,11 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	media.stagefright.maxsubfont=72 \
 	net.dns1=8.8.8.8 \
 	net.dns2=8.8.4.4 \
+	ro.zram.default=1 \
+	rw.logger=0 \
+	config.disable_atlas=true
 
-DEVICE_PACKAGE_OVERLAYS := device/softwinner/907/overlay
+DEVICE_PACKAGE_OVERLAYS := $(COMMON_PATH)/overlay
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -81,6 +83,7 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
 	frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
 	frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
+	frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
 	frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
 	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
 	frameworks/native/data/etc/android.hardware.bluetooth.xml:system/etc/permissions/android.hardware.bluetooth.xml \
@@ -173,7 +176,7 @@ PRODUCT_PACKAGES += \
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product, build/target/product/full_base.mk)
 
-$(call add-product-dex-preopt-module-config,services,--compiler-filter=speed)
+$(call add-product-dex-preopt-module-config,services,--compiler-filter=verify-none)
 
 # Should be after the full_base include, which loads languages_full
 PRODUCT_AAPT_CONFIG := large xlarge hdpi mdpi

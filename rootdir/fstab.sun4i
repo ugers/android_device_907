@@ -7,9 +7,9 @@
 /dev/block/nande       /data          ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0,journal_checksum,noauto_da_alloc    wait
 /dev/block/nandh       /cache         ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0,journal_checksum,noauto_da_alloc    wait
 
-/devices/virtual/block/nand     	   auto    auto    defaults        voldmanaged=sdcard0:10,nonremovable,noemulatedsd
-/devices/platform/sunxi-mmc.0/mmc_host     auto    auto    defaults        voldmanaged=sdcard1:auto
-/devices/platform/sunxi-mmc.1/mmc_host     auto    auto    defaults        voldmanaged=sdcard1:auto
+/devices/virtual/block/nand     	       auto    auto    defaults        wait,voldmanaged=sdcard0:10,nonremovable,noemulatedsd
+/devices/platform/sunxi-mmc.0/mmc_host     auto    auto    defaults        wait,voldmanaged=sdcard1:auto
+/devices/platform/sunxi-mmc.1/mmc_host     auto    auto    defaults        wait,voldmanaged=sdcard1:auto
 /devices/platform/sw-ehci.1                auto    auto    defaults        voldmanaged=usbdisk0:auto
 /devices/platform/sw_hcd_host0             auto    auto    defaults        voldmanaged=usbdisk0:auto
 /devices/platform/sw-ohci.1                auto    auto    defaults        voldmanaged=usbdisk0:auto
@@ -18,3 +18,6 @@
 /dev/block/nandc       /boot           emmc    defaults recoveryonly            
 /dev/block/nanda       /bootloader     emmc    defaults recoveryonly            
 /dev/block/nandg       /recovery       ext4    defaults recoveryonly
+
+# zRAM
+/dev/block/zram0                           none    swap    defaults      zramsize=268435456

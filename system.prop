@@ -42,6 +42,7 @@ rild.libpath=/system/lib/libsoftwinner-ril.so
 rild.libargs=-d /dev/ttyUSB2
 
 # Hardware info
+ro.sys.cputype=AllWinner A10
 ro.device.cpu=AllWinner A10
 ro.device.gpu=ARM Mali 400MP
 ro.device.rear_cam=2 MP
