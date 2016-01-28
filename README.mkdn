@@ -11,7 +11,7 @@ Working
 Not Working
 -----------------
 - Wifi
-- Video recording
+- HW video en/decoding
 
 Compilation Notes
 -----------------
