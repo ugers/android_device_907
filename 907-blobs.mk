@@ -54,10 +54,6 @@ PRODUCT_COPY_FILES += \
 	$(COMMON_PATH)/prebuilt/usr/icu/icudt48l.dat:system/usr/icu/icudt48l.dat \
 	$(COMMON_PATH)/prebuilt/usr/gsensor.cfg:system/usr/gsensor.cfg \
 
-# temporary prebuilt wpa_supplicant
-PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/prebuilt/etc/wifi/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf
-
 # HACK by turl: Create some intermediate files to link with libMali/libUMP
 $(shell mkdir -p out/target/product/907/obj/SHARED_LIBRARIES/libMali_intermediates)
 $(shell mkdir -p out/target/product/907/obj/SHARED_LIBRARIES/libUMP_intermediates)
