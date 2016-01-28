@@ -1,0 +1,252 @@
+From f9750169d1dd3c4843fcecfe2945cee6eaf77c13 Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 10:51:09 +0300
+Subject: [PATCH 1/2] hide baseband menu(we don't have radio) enable cpu info
+ menu
+
+Change-Id: I828883cbaeb9476ff316333f960ccde6cb37a01f
+---
+ res/values/custom.xml                            | 100 +++++++++++++++++++++++
+ res/values/custom_config.xml                     |  24 ++++++
+ res/xml/device_info_settings.xml                 |  12 +++
+ src/com/android/settings/DeviceInfoSettings.java |  12 +++
+ 4 files changed, 148 insertions(+)
+ create mode 100644 res/values/custom.xml
+ create mode 100644 res/values/custom_config.xml
+
+diff --git a/res/values/custom.xml b/res/values/custom.xml
+new file mode 100644
+index 0000000..0a2b3e0
+--- /dev/null
++++ b/res/values/custom.xml
+@@ -0,0 +1,100 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <!-- display settings -->
++    <!-- screen off timeout -->
++    <string name="screen_off_never_sleep_summary">Never</string>
++
++    <!-- hdmi -->
++    <string name="hdmi_setting">hdmi setting</string>
++    <string name="hdmi_output_mode">hdmi output mode</string>
++    <string name="hdmi_output_mode_summary">Set the default HDMI output standard.</string>
++    <string name="hdmi_full_screen">hdmi full screen mode</string>
++    <string name="hdmi_full_screen_summary">Set true to show HDMI in full screen mode.</string>
++    <string name="screen_scrap_edge">Screen scrap edge</string>
++    <string name="screen_scrap_edge_summary">Zooming edging with HDMI output</string>
++    <string name="screen_scrap_edge_height">Height</string>
++    <string name="screen_scrap_edge_width">Width</string>
++    <!-- hdmi array -->
++    <string-array name="hdmi_output_mode_720p_entries">
++        <item>HDMI 720P 50HZ</item>
++        <item>HDMI 720P 60HZ</item>
++    </string-array>
++    <string-array name="hdmi_output_mode_720p_values" translatable="false">
++        <!-- Do not translate. -->
++        <item>4</item>
++        <!-- Do not translate. -->
++        <item>5</item>
++    </string-array>
++    <string-array name="hdmi_output_mode_entries">
++        <item>HDMI 720P 60HZ</item>
++        <item>HDMI 1080P 60HZ</item>
++    </string-array>
++    <string-array name="hdmi_output_mode_values" translatable="false">
++        <!-- Do not translate. -->
++        <item>5</item>
++        <!-- Do not translate. -->
++        <item>10</item>
++    </string-array>
++    <!-- Sound settings -->
++    <string name="boot_music_enable_title">Boot music</string>
++    <!-- bright system -->
++    <string name="bright_system">Smart color</string>
++    <string name="bright_system_summary">It is better for playing games and video and picture.</string>
++    <string name="brightness_light">Intelligent backlight</string>
++    <string name="demo_mode">Demo mode</string>
++    <string name="demo_mode_summary">Only half of the screen is effective, in order to show the effect easily.</string>
++	<!-- display settings end -->
++
++    <!-- storage custom label -->
++    <string name="custom_usb_eject">Unmount USB storage</string>
++    <string name="custom_sd_eject">Unmount SD card</string>
++    <string name="custom_usb_eject_summary">Unmount the internal USB storage</string>
++    <string name="custom_sd_eject_summary">Unmount the SD card so you can safely remove it</string>
++    <string name="custom_usb_insert_summary">Insert USB storage for mounting</string>
++    <string name="custom_sd_insert_summary">Insert an SD card for mounting</string>
++    <string name="custom_usb_mount">Mount USB storage</string>
++    <string name="custom_sd_mount">Mount SD card</string>
++    <string name="custom_usb_mount_summary"></string>
++    <string name="custom_sd_mount_summary"></string>
++    <string name="custom_usb_format">Erase USB storage</string>
++    <string name="custom_sd_format">Erase SD card</string>
++    <string name="custom_usb_format_summary">Erases all data on the internal USB storage, such as music and photos</string>
++    <string name="custom_sd_format_summary">Erases all data on the SD card, such as music and photos</string>
++    <string name="custom_usb_media_format_desc">Erase all USB storage? You will lose <b>all</b> stored data!</string>
++    <string name="custom_sd_media_format_desc">Erase the SD card? You will lose <b>all</b> data on the card!</string>
++    <string name="custom_usb_media_format_final_desc">Erase the USB storage, deleting all files stored there? You can\'t reverse this action!</string>
++    <string name="custom_sd_media_format_final_desc">Erase the SD card, deleting all files stored there? You can\'t reverse this action!</string>
++    <string name="custom_usb_dlg_confirm_unmount_text">If you unmount the USB storage, some apps you are using will stop and may be unavailable until you remount the USB storage.</string>
++    <string name="custom_sd_dlg_confirm_unmount_text">If you unmount the SD card, some apps you are using will stop and may be unavailable until you remount the SD card.</string>
++    <string name="custom_usb_dlg_error_unmount_text">Couldn\'t unmount USB storage. Try again later.</string>
++    <string name="custom_sd_dlg_error_unmount_text">Couldn\'t unmount SD card. Try again later.</string>
++    <string name="custom_usb_dlg_confirm_unmount_title">Unmount USB storage?</string>
++    <string name="custom_sd_dlg_confirm_unmount_title">Unmount SD card?</string>
++    <string name="custom_usb_unmount_inform_text">USB storage will be unmounted.</string>
++    <string name="custom_sd_unmount_inform_text">SD card will be unmounted.</string>
++
++    <!-- memory -->
++    <string name="memory_info">Memory Info</string>
++    <string name="memory_ram_size">RAM Size</string>
++    <string name="memory_flash_size">FLASH Size</string>
++
++    <string name="usb_storage_usage">USB large storage</string>
++
++    <!-- system update  -->
++    <string name="system_update_section_title" msgid="7815209034443782061">"System upgrade"</string>
++    <string name="system_recovery_title" msgid="7815209034443782061">"Recovery Mode"</string>
++    <string name="system_recovery_summary" msgid="7815209034443782061">"Reboot into the system in Recovery Mode.Can clear the data or system upgrade"</string>
++    <string name="system_recovery_dialog_massage" msgid="7815209034443782061">"Now reboot into System Recovery Mode, you can partition to remove data or system upgrade?"</string>
++
++    <!-- cpu type & firmware verison-->
++    <string name="cpu_type">Processor type</string>
++    <string name="software_version">Firmware version</string>
++
++    <!-- gesture screenshot -->
++    <string name="title_gesture_screenshot">Gesture screenshot</string>
++    <string name="title_gesture_screenshot_summary">Sliding from the right side of the screen with two fingers.</string>
++    <!-- gesture screenrecord -->
++    <string name="title_gesture_screenrecord">Gesture screenrecord</string>
++    <string name="title_gesture_screenrecord_summary">Sliding from the right side of the screen with three fingers, and stop with the same gesture.</string>
++
++</resources>
+\ No newline at end of file
+diff --git a/res/values/custom_config.xml b/res/values/custom_config.xml
+new file mode 100644
+index 0000000..a223b51
+--- /dev/null
++++ b/res/values/custom_config.xml
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2007 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++    <!-- Whether to show a seletor item for screen off never timeout -->
++    <bool name="config_show_screen_off_never_timeout">false</bool>
++	<!-- show hdmi settings mode 0~7. -->
++    <integer name="config_hdmi_settings_mode" translatable="false">7</integer>
++
++</resources>
+diff --git a/res/xml/device_info_settings.xml b/res/xml/device_info_settings.xml
+index 7443784..cdba695 100644
+--- a/res/xml/device_info_settings.xml
++++ b/res/xml/device_info_settings.xml
+@@ -130,6 +130,12 @@
+                 android:title="@string/device_model"
+                 android:summary="@string/device_info_default"/>
+ 
++        <!-- CPU type -->
++        <Preference android:key="cpu_type"
++                style="?android:preferenceInformationStyle"
++                android:title="@string/cpu_type"
++                android:summary="@string/device_info_default"/>
++		
+         <!-- Mod version -->
+         <Preference android:key="mod_version"
+                 style="?android:preferenceInformationStyle"
+@@ -154,6 +160,12 @@
+                 android:title="@string/fcc_equipment_id"
+                 android:summary="@string/device_info_default"/>
+ 
++        <!-- Device software version -->
++        <Preference android:key="software_version"
++                style="?android:preferenceInformationStyle"
++                android:title="@string/software_version"
++                android:summary="@string/device_info_default"/>
++		
+         <!-- Device Baseband version -->
+         <Preference android:key="baseband_version" 
+                 style="?android:preferenceInformationStyle"
+diff --git a/src/com/android/settings/DeviceInfoSettings.java b/src/com/android/settings/DeviceInfoSettings.java
+index 3c5399b..b107879 100644
+--- a/src/com/android/settings/DeviceInfoSettings.java
++++ b/src/com/android/settings/DeviceInfoSettings.java
+@@ -94,6 +94,11 @@ public class DeviceInfoSettings extends SettingsPreferenceFragment implements In
+     private static final String PROPERTY_EQUIPMENT_ID = "ro.ril.fccid";
+     private static final String KEY_DEVICE_FEEDBACK = "device_feedback";
+     private static final String KEY_SAFETY_LEGAL = "safetylegal";
++    private static final String KEY_SOFTWARE_VERSION = "software_version";
++    private static final String KEY_CPU_TYPE = "cpu_type";
++    private static final String PROPERTY_CPUTYPE = "ro.sys.cputype";
++    private static final String PROPETY_BASEBAND = "ro.sw.embeded.telephony";
++    private static final String PROPETY_FIRMWARE_VERSION = "ro.product.firmware";
+     private static final String KEY_MOD_VERSION = "mod_version";
+     private static final String KEY_MOD_BUILD_DATE = "build_date";
+     private static final String KEY_CM_UPDATES = "cm_updates";
+@@ -115,8 +120,11 @@ public class DeviceInfoSettings extends SettingsPreferenceFragment implements In
+ 
+         addPreferencesFromResource(R.xml.device_info_settings);
+ 
++
++        setStringSummary(KEY_CPU_TYPE, SystemProperties.get(PROPERTY_CPUTYPE, "Unknown"));
+         setStringSummary(KEY_FIRMWARE_VERSION, Build.VERSION.RELEASE);
+         findPreference(KEY_FIRMWARE_VERSION).setEnabled(true);
++        setStringSummary(KEY_SOFTWARE_VERSION,SystemProperties.get(PROPETY_FIRMWARE_VERSION, "Unknown"));
+         String patch = Build.VERSION.SECURITY_PATCH;
+         if (!"".equals(patch)) {
+             try {
+@@ -132,6 +140,10 @@ public class DeviceInfoSettings extends SettingsPreferenceFragment implements In
+             getPreferenceScreen().removePreference(findPreference(KEY_SECURITY_PATCH));
+         }
+         setValueSummary(KEY_BASEBAND_VERSION, "gsm.version.baseband");
++        if(!SystemProperties.getBoolean(PROPETY_BASEBAND,false)){
++            removePreference(KEY_BASEBAND_VERSION);
++        }
++        setStringSummary(KEY_DEVICE_MODEL, Build.MODEL + getMsvSuffix());
+         setValueSummary(KEY_EQUIPMENT_ID, PROPERTY_EQUIPMENT_ID);
+         setStringSummary(KEY_DEVICE_MODEL, Build.MODEL);
+         setStringSummary(KEY_BUILD_NUMBER, Build.DISPLAY);
+-- 
+1.9.1
+
+
+From c048f719bba35d8f2eb435d6de6a64d8c43674b0 Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 10:55:39 +0300
+Subject: [PATCH 2/2] Revert "Settings: Fix NFC Tap & pay removal"
+
+This reverts commit 3ae6fe7db5aab4b082f7e285a2467cac75ec4d25.
+---
+ src/com/android/settings/WirelessSettings.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/WirelessSettings.java b/src/com/android/settings/WirelessSettings.java
+index 4d18019..835aa30 100644
+--- a/src/com/android/settings/WirelessSettings.java
++++ b/src/com/android/settings/WirelessSettings.java
+@@ -340,7 +340,7 @@ public class WirelessSettings extends SettingsPreferenceFragment
+             mNfcEnabler = null;
+         } else if (!mPm.hasSystemFeature(PackageManager.FEATURE_NFC_HOST_CARD_EMULATION)) {
+             // Only show if we have the HCE feature
+-            nfcCategory.removePreference(nfcPayment);
++            getPreferenceScreen().removePreference(nfcPayment);
+         }
+ 
+         // Remove Mobile Network Settings and Manage Mobile Plan for secondary users,
+-- 
+1.9.1
+

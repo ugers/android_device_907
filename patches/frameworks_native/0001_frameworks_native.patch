@@ -1,0 +1,433 @@
+From bbb965dd992b7b60189c935bbda2cf48dbce8938 Mon Sep 17 00:00:00 2001
+From: fire855 <thefire855@gmail.com>
+Date: Sun, 17 Jan 2016 16:12:22 +0100
+Subject: [PATCH 1/3] Add legacy touchscreen support
+
+Change-Id: I26244ce60bdb8230d71498e3f289cad62bb918f9
+---
+ services/inputflinger/Android.mk      |  5 +++++
+ services/inputflinger/InputReader.cpp | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
+
+diff --git a/services/inputflinger/Android.mk b/services/inputflinger/Android.mk
+index 85edbe5..e3c4ad2 100644
+--- a/services/inputflinger/Android.mk
++++ b/services/inputflinger/Android.mk
+@@ -47,4 +47,9 @@ LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+ 
+ LOCAL_MODULE := libinputflinger
+ 
++
++ifeq ($(BOARD_USE_LEGACY_TOUCHSCREEN),true)
++LOCAL_CFLAGS += -DLEGACY_TOUCHSCREEN
++endif
++
+ include $(BUILD_SHARED_LIBRARY)
+diff --git a/services/inputflinger/InputReader.cpp b/services/inputflinger/InputReader.cpp
+index 6bca3d4..2228831 100644
+--- a/services/inputflinger/InputReader.cpp
++++ b/services/inputflinger/InputReader.cpp
+@@ -1368,6 +1368,12 @@ void TouchButtonAccumulator::process(const RawEvent* rawEvent) {
+             break;
+         }
+     }
++#ifdef LEGACY_TOUCHSCREEN
++    // set true to mBtnTouch by multi-touch event with pressure more than zero
++    // some touchscreen driver which has BTN_TOUCH feature doesn't send BTN_TOUCH event
++    else if (rawEvent->type == EV_ABS && rawEvent->code == ABS_MT_TOUCH_MAJOR && rawEvent->value > 0)
++        mBtnTouch = true;
++#endif
+ }
+ 
+ uint32_t TouchButtonAccumulator::getButtonState() const {
+@@ -1650,7 +1656,12 @@ void MultiTouchMotionAccumulator::process(const RawEvent* rawEvent) {
+                 break;
+             case ABS_MT_TOUCH_MAJOR:
+                 slot->mInUse = true;
++#ifdef LEGACY_TOUCHSCREEN
++                // emulate ABS_MT_PRESSURE
++                slot->mAbsMTPressure = rawEvent->value;
++#else
+                 slot->mAbsMTTouchMajor = rawEvent->value;
++#endif
+                 break;
+             case ABS_MT_TOUCH_MINOR:
+                 slot->mInUse = true;
+@@ -1659,7 +1670,12 @@ void MultiTouchMotionAccumulator::process(const RawEvent* rawEvent) {
+                 break;
+             case ABS_MT_WIDTH_MAJOR:
+                 slot->mInUse = true;
++#ifdef LEGACY_TOUCHSCREEN
++                // emulate ABS_MT_TOUCH_MAJOR
++                slot->mAbsMTTouchMajor = rawEvent->value;
++#else
+                 slot->mAbsMTWidthMajor = rawEvent->value;
++#endif
+                 break;
+             case ABS_MT_WIDTH_MINOR:
+                 slot->mInUse = true;
+@@ -1696,6 +1712,12 @@ void MultiTouchMotionAccumulator::process(const RawEvent* rawEvent) {
+             }
+         }
+     } else if (rawEvent->type == EV_SYN && rawEvent->code == SYN_MT_REPORT) {
++#ifdef LEGACY_TOUCHSCREEN
++        // don't use the slot with pressure less than or qeual to zero
++        // some touchscreen driver sends multi-touch event for not-in-use pointer
++        if (mSlots[mCurrentSlot].mAbsMTPressure <= 0)
++            mSlots[mCurrentSlot].mInUse = false;
++#endif
+         // MultiTouch Sync: The driver has returned all data for *one* of the pointers.
+         mCurrentSlot += 1;
+     }
+@@ -6256,12 +6278,20 @@ void MultiTouchInputMapper::configureRawPointerAxes() {
+ 
+     getAbsoluteAxisInfo(ABS_MT_POSITION_X, &mRawPointerAxes.x);
+     getAbsoluteAxisInfo(ABS_MT_POSITION_Y, &mRawPointerAxes.y);
++#ifdef LEGACY_TOUCHSCREEN
++    getAbsoluteAxisInfo(ABS_MT_WIDTH_MAJOR, &mRawPointerAxes.touchMajor);
++#else
+     getAbsoluteAxisInfo(ABS_MT_TOUCH_MAJOR, &mRawPointerAxes.touchMajor);
++#endif
+     getAbsoluteAxisInfo(ABS_MT_TOUCH_MINOR, &mRawPointerAxes.touchMinor);
+     getAbsoluteAxisInfo(ABS_MT_WIDTH_MAJOR, &mRawPointerAxes.toolMajor);
+     getAbsoluteAxisInfo(ABS_MT_WIDTH_MINOR, &mRawPointerAxes.toolMinor);
+     getAbsoluteAxisInfo(ABS_MT_ORIENTATION, &mRawPointerAxes.orientation);
++#ifdef LEGACY_TOUCHSCREEN
++    getAbsoluteAxisInfo(ABS_MT_TOUCH_MAJOR, &mRawPointerAxes.pressure);
++#else
+     getAbsoluteAxisInfo(ABS_MT_PRESSURE, &mRawPointerAxes.pressure);
++#endif
+     getAbsoluteAxisInfo(ABS_MT_DISTANCE, &mRawPointerAxes.distance);
+     getAbsoluteAxisInfo(ABS_MT_TRACKING_ID, &mRawPointerAxes.trackingId);
+     getAbsoluteAxisInfo(ABS_MT_SLOT, &mRawPointerAxes.slot);
+-- 
+1.9.1
+
+
+From 2b6843e38f5921144f6d3e658068c35fd70bcbdc Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 2 Aug 2015 00:28:55 +0400
+Subject: [PATCH 2/3] Disable HWC BLIT for qsd8k devices
+
+Change-Id: I4d281ab2eeef90fe75226ddfc3a03e33c36bf0f8
+---
+ services/surfaceflinger/DisplayHardware/HWComposer.cpp | 9 ---------
+ services/surfaceflinger/Layer.cpp                      | 3 +--
+ services/surfaceflinger/SurfaceFlinger.cpp             | 3 ---
+ 3 files changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/services/surfaceflinger/DisplayHardware/HWComposer.cpp b/services/surfaceflinger/DisplayHardware/HWComposer.cpp
+index 3aa8d3f..f43fb0a 100644
+--- a/services/surfaceflinger/DisplayHardware/HWComposer.cpp
++++ b/services/surfaceflinger/DisplayHardware/HWComposer.cpp
+@@ -758,14 +758,6 @@ status_t HWComposer::prepare() {
+                     if (l.compositionType == HWC_FRAMEBUFFER) {
+                         disp.hasFbComp = true;
+                     }
+-                    // If the composition type is BLIT, we set this to
+-                    // trigger a FLIP
+-                    if(l.compositionType == HWC_BLIT) {
+-                        disp.hasFbComp = true;
+-#ifdef QCOM_BSP
+-                        disp.hasBlitComp = true;
+-#endif
+-                    }
+                     if (l.compositionType == HWC_OVERLAY) {
+                         disp.hasOvComp = true;
+                     }
+@@ -1315,7 +1307,6 @@ void HWComposer::dump(String8& result) const {
+                             "FB TARGET",
+                             "SIDEBAND",
+                             "HWC_CURSOR",
+-                            "FB_BLIT",
+                             "UNKNOWN"};
+                     if (type >= NELEM(compositionTypeName))
+                         type = NELEM(compositionTypeName) - 1;
+diff --git a/services/surfaceflinger/Layer.cpp b/services/surfaceflinger/Layer.cpp
+index 0d8b009..5324d8e 100755
+--- a/services/surfaceflinger/Layer.cpp
++++ b/services/surfaceflinger/Layer.cpp
+@@ -676,8 +676,7 @@ void Layer::setAcquireFence(const sp<const DisplayDevice>& /* hw */,
+     // TODO: there is a possible optimization here: we only need to set the
+     // acquire fence the first time a new buffer is acquired on EACH display.
+ 
+-    if (layer.getCompositionType() == HWC_OVERLAY || layer.getCompositionType() == HWC_CURSOR_OVERLAY ||
+-            layer.getCompositionType() == HWC_BLIT) {
++    if (layer.getCompositionType() == HWC_OVERLAY || layer.getCompositionType() == HWC_CURSOR_OVERLAY) {
+         sp<Fence> fence = mSurfaceFlingerConsumer->getCurrentFence();
+         if (fence->isValid()) {
+             fenceFd = fence->dup();
+diff --git a/services/surfaceflinger/SurfaceFlinger.cpp b/services/surfaceflinger/SurfaceFlinger.cpp
+index ca3f027..9a799cf 100644
+--- a/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2339,9 +2339,6 @@ bool SurfaceFlinger::doComposeSurfaces(const sp<const DisplayDevice>& hw, const
+                         layer->draw(hw, clip);
+                         break;
+                     }
+-                    case HWC_BLIT:
+-                        //Do nothing
+-                        break;
+                     case HWC_FRAMEBUFFER_TARGET: {
+                         // this should not happen as the iterator shouldn't
+                         // let us get there.
+-- 
+1.9.1
+
+
+From ff5a0976c1fb8c7b98d9b4bc832a1faa3c0d1785 Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 11:10:16 +0300
+Subject: [PATCH 3/3] fix Open GL
+
+Change-Id: I380a5a8c1676c14ee8cd65b7db6e5e0a124b0d68
+---
+ include/input/InputDevice.h    |  11 ++++
+ libs/input/InputDevice.cpp     |  12 +++++
+ opengl/libagl/egl.cpp          |   2 +-
+ opengl/libs/EGL/eglApi.cpp     | 116 +++++++++++------------------------------
+ opengl/libs/EGL/egl_entries.in |   4 --
+ opengl/libs/GLES2/gl2.cpp      |   2 +-
+ 6 files changed, 56 insertions(+), 91 deletions(-)
+
+diff --git a/include/input/InputDevice.h b/include/input/InputDevice.h
+index adf9fb9..dea102c 100644
+--- a/include/input/InputDevice.h
++++ b/include/input/InputDevice.h
+@@ -22,6 +22,17 @@
+ 
+ namespace android {
+ 
++struct CtpName{
++    inline CtpName():
++        number (10),
++        default_name(String8("tp")),
++        ctp_name ({String8("gslX680"),String8("gt82x"),String8("ft5x_ts"),String8("sunxi-ts"),String8("gt818_ts"),
++                String8("tu_ts"),String8("sw-ts"),String8("gt9xx_ts"),String8("gt9xxf_ts"),String8("aw5306_ts")}){
++        }
++    int number;
++    String8 default_name;
++    String8 ctp_name[10];
++};
+ /*
+  * Identifies a device.
+  */
+diff --git a/libs/input/InputDevice.cpp b/libs/input/InputDevice.cpp
+index b11110a..f85b2e8 100644
+--- a/libs/input/InputDevice.cpp
++++ b/libs/input/InputDevice.cpp
+@@ -24,6 +24,7 @@
+ 
+ namespace android {
+ 
++CtpName name = CtpName();
+ static const char* CONFIGURATION_FILE_DIR[] = {
+         "idc/",
+         "keylayout/",
+@@ -78,6 +79,17 @@ String8 getInputDeviceConfigurationFilePathByDeviceIdentifier(
+             return productPath;
+         }
+     }
++    int i = 0;
++    while(i < name.number){
++#if DEBUG_PROBE
++        LOGE("#######name = %s", name.default_name.string());
++        LOGE("#######ctp_name = %s", name.ctp_name[i].string());
++#endif
++        if(name.ctp_name[i] == deviceIdentifier.name){
++            return getInputDeviceConfigurationFilePathByName(name.default_name, type);
++        }
++        i++;
++    }
+ 
+     // Try device name.
+     return getInputDeviceConfigurationFilePathByName(deviceIdentifier.name, type);
+diff --git a/opengl/libagl/egl.cpp b/opengl/libagl/egl.cpp
+index 24e3259..1feac8b 100644
+--- a/opengl/libagl/egl.cpp
++++ b/opengl/libagl/egl.cpp
+@@ -1346,7 +1346,7 @@ static EGLSurface createPbufferSurface(EGLDisplay dpy, EGLConfig config,
+ 
+     int32_t w = 0;
+     int32_t h = 0;
+-    while (attrib_list[0] != EGL_NONE) {
++    while (attrib_list[0]) {
+         if (attrib_list[0] == EGL_WIDTH)  w = attrib_list[1];
+         if (attrib_list[0] == EGL_HEIGHT) h = attrib_list[1];
+         attrib_list+=2;
+diff --git a/opengl/libs/EGL/eglApi.cpp b/opengl/libs/EGL/eglApi.cpp
+index 937665b..6e77e45 100644
+--- a/opengl/libs/EGL/eglApi.cpp
++++ b/opengl/libs/EGL/eglApi.cpp
+@@ -162,8 +162,7 @@ static const extention_map_t sExtensionMap[] = {
+         (!strcmp((procname), "eglSetBlobCacheFuncsANDROID") ||    \
+          !strcmp((procname), "eglHibernateProcessIMG")      ||    \
+          !strcmp((procname), "eglAwakenProcessIMG")         ||    \
+-         !strcmp((procname), "eglDupNativeFenceFDANDROID")  ||    \
+-         !strcmp((procname), "eglGpuPerfHintQCOM"))
++         !strcmp((procname), "eglDupNativeFenceFDANDROID"))
+ 
+ 
+ 
+@@ -453,54 +452,40 @@ EGLSurface eglCreateWindowSurface(  EGLDisplay dpy, EGLConfig config,
+ #else
+         // by default, just pick RGBA_8888
+         EGLint format = HAL_PIXEL_FORMAT_RGBA_8888;
+-        EGLint color_buffer = EGL_RGB_BUFFER;
+ 
+-        if (!cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_COLOR_BUFFER_TYPE, &color_buffer))
+-        {
+-            ALOGE("Could not configure a color buffer format");
+-            return setError(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+-        }
+-        if (EGL_RGB_BUFFER != color_buffer &&
+-            EGL_LUMINANCE_BUFFER != color_buffer)
+-        {
+-            cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_NATIVE_VISUAL_ID, &format);
+-        }
+-        else
+-        {
+-            EGLint a = 0;
+-            cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_ALPHA_SIZE, &a);
+-            if (a > 0) {
+-                // alpha-channel requested, there's really only one suitable format
+-                // Format will already be RGBA8888
++        EGLint a = 0;
++        cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_ALPHA_SIZE, &a);
++        if (a > 0) {
++            // alpha-channel requested, there's really only one suitable format
++            format = HAL_PIXEL_FORMAT_RGBA_8888;
++        } else {
++            EGLint r, g, b;
++            r = g = b = 0;
++            cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_RED_SIZE,   &r);
++            cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_GREEN_SIZE, &g);
++            cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_BLUE_SIZE,  &b);
++            EGLint colorDepth = r + g + b;
++            if (colorDepth <= 16) {
++                format = HAL_PIXEL_FORMAT_RGB_565;
+             } else {
+-                EGLint r, g, b;
+-                r = g = b = 0;
+-                cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_RED_SIZE,   &r);
+-                cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_GREEN_SIZE, &g);
+-                cnx->egl.eglGetConfigAttrib(iDpy, config, EGL_BLUE_SIZE,  &b);
+-                EGLint colorDepth = r + g + b;
+-                if (colorDepth <= 16) {
+-                    format = HAL_PIXEL_FORMAT_RGB_565;
+-                } else {
+-                    format = HAL_PIXEL_FORMAT_RGBX_8888;
+-                }
++                format = HAL_PIXEL_FORMAT_RGBX_8888;
+             }
++        }
+ 
+-            // now select a corresponding sRGB format if needed
+-            if (attrib_list && dp->haveExtension("EGL_KHR_gl_colorspace")) {
+-                for (const EGLint* attr = attrib_list; *attr != EGL_NONE; attr += 2) {
+-                    if (*attr == EGL_GL_COLORSPACE_KHR) {
+-                        if (ENABLE_EGL_KHR_GL_COLORSPACE) {
+-                            format = modifyFormatColorspace(format, *(attr+1));
+-                        } else {
+-                            // Normally we'd pass through unhandled attributes to
+-                            // the driver. But in case the driver implements this
+-                            // extension but we're disabling it, we want to prevent
+-                            // it getting through -- support will be broken without
+-                            // our help.
+-                            ALOGE("sRGB window surfaces not supported");
+-                            return setError(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+-                        }
++        // now select a corresponding sRGB format if needed
++        if (attrib_list && dp->haveExtension("EGL_KHR_gl_colorspace")) {
++            for (const EGLint* attr = attrib_list; *attr != EGL_NONE; attr += 2) {
++                if (*attr == EGL_GL_COLORSPACE_KHR) {
++                    if (ENABLE_EGL_KHR_GL_COLORSPACE) {
++                        format = modifyFormatColorspace(format, *(attr+1));
++                    } else {
++                        // Normally we'd pass through unhandled attributes to
++                        // the driver. But in case the driver implements this
++                        // extension but we're disabling it, we want to prevent
++                        // it getting through -- support will be broken without
++                        // our help.
++                        ALOGE("sRGB window surfaces not supported");
++                        return setError(EGL_BAD_ATTRIBUTE, EGL_NO_SURFACE);
+                     }
+                 }
+             }
+@@ -1569,45 +1554,6 @@ EGLBoolean eglPresentationTimeANDROID(EGLDisplay dpy, EGLSurface surface,
+ }
+ 
+ // ----------------------------------------------------------------------------
+-// QCOM extensions
+-// ----------------------------------------------------------------------------
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-EGLAPI EGLBoolean eglGpuPerfHintQCOM(EGLDisplay dpy, EGLContext ctx, EGLint *attrib_list);
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-EGLBoolean eglGpuPerfHintQCOM(EGLDisplay dpy, EGLContext ctx, EGLint *attrib_list)
+-{
+-    clearError();
+-
+-    const egl_display_ptr dp = validate_display(dpy);
+-    if (!dp) return EGL_FALSE;
+-
+-    ContextRef _c(dp.get(), ctx);
+-    if ((ctx != EGL_NO_CONTEXT) && !_c.get()) {
+-        // ctx is not valid
+-        return setError(EGL_BAD_CONTEXT, EGL_FALSE);
+-    }
+-
+-    egl_context_t * c = NULL;
+-    c = get_context(ctx);
+-
+-    EGLint result = EGL_FALSE;
+-    egl_connection_t* const cnx = &gEGLImpl;
+-    if (cnx->dso && cnx->egl.eglGpuPerfHintQCOM) {
+-        result = cnx->egl.eglGpuPerfHintQCOM(
+-                dp->disp.dpy,
+-                c->context,
+-                attrib_list);
+-    }
+-    return result;
+-
+-}
+-
+-// ----------------------------------------------------------------------------
+ // NVIDIA extensions
+ // ----------------------------------------------------------------------------
+ EGLuint64NV eglGetSystemTimeFrequencyNV()
+diff --git a/opengl/libs/EGL/egl_entries.in b/opengl/libs/EGL/egl_entries.in
+index aa92ea0..70d0e52 100644
+--- a/opengl/libs/EGL/egl_entries.in
++++ b/opengl/libs/EGL/egl_entries.in
+@@ -81,10 +81,6 @@ EGL_ENTRY(EGLBoolean, eglSetSwapRectangleANDROID, EGLDisplay, EGLSurface, EGLint
+ EGL_ENTRY(EGLClientBuffer, eglGetRenderBufferANDROID, EGLDisplay, EGLSurface)
+ EGL_ENTRY(EGLint, eglDupNativeFenceFDANDROID, EGLDisplay, EGLSyncKHR)
+ 
+-/* QCOM extensions */
+-
+-EGL_ENTRY(EGLBoolean, eglGpuPerfHintQCOM, EGLDisplay, EGLContext, EGLint *)
+-
+ /* NVIDIA extensions */
+ 
+ EGL_ENTRY(EGLuint64NV, eglGetSystemTimeFrequencyNV, void)
+diff --git a/opengl/libs/GLES2/gl2.cpp b/opengl/libs/GLES2/gl2.cpp
+index 0157bfe..b07228f 100644
+--- a/opengl/libs/GLES2/gl2.cpp
++++ b/opengl/libs/GLES2/gl2.cpp
+@@ -180,7 +180,7 @@ const GLubyte * glGetString(GLenum name)
+     const GLubyte * ret = egl_get_string_for_current_context(name);
+     if (ret == NULL) {
+         gl_hooks_t::gl_t const * const _c = &getGlThreadSpecific()->gl;
+-        if(_c) ret = _c->glGetString(name);
++        ret = _c->glGetString(name);
+     }
+     return ret;
+ }
+-- 
+1.9.1
+

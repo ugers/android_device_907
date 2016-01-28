@@ -1,0 +1,1927 @@
+From 4724d229ad8cfbd8d01997d9b59ce01fa21195c9 Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 11:01:07 +0300
+Subject: [PATCH] add initlogo support,fix adb,fix sdcard
+
+Change-Id: I77751e41ec6d522782bd748d6f4f4f979d4896a0
+---
+ adb/Android.mk                             |   2 +
+ adb/adb.c                                  |  14 +-
+ adb/transport_usb.c                        |  18 +-
+ adb/usb_linux_client.c                     |  43 +-
+ adb/usb_osx.c                              |  82 ++--
+ adb/usb_vendors.h                          |  25 ++
+ fastboot/protocol.c                        |   2 +-
+ include/system/audio.h                     |  12 +-
+ init/Android.mk                            |   1 +
+ init/builtins.c                            |  92 ++++-
+ init/init.c                                |   6 +-
+ init/init.h                                |   3 +-
+ init/init_mem_opt.c                        | 624 +++++++++++++++++++++++++++++
+ init/init_parser.c                         |   4 +
+ init/keywords.h                            |   4 +
+ init/logo.c                                | 261 ++++++++++++
+ init/property_service.c                    |   5 +
+ libcutils/Android.mk                       |   1 +
+ libcutils/android_reboot.c                 |   6 +-
+ libcutils/misc_rw.c                        | 108 +++++
+ libion/include/ion/ion.h                   |  10 +
+ libion/ion.c                               |  17 +
+ libion/ion_test.c                          |   2 +-
+ libion/original-kernel-headers/linux/ion.h |   2 +
+ sdcard/sdcard.c                            |   5 +-
+ toolbox/newfs_msdos.c                      |   4 +
+ 26 files changed, 1264 insertions(+), 89 deletions(-)
+ create mode 100644 adb/usb_vendors.h
+ create mode 100644 init/init_mem_opt.c
+ create mode 100644 init/logo.c
+ create mode 100644 libcutils/misc_rw.c
+
+diff --git a/adb/Android.mk b/adb/Android.mk
+index 32de999..6fca648 100644
+--- a/adb/Android.mk
++++ b/adb/Android.mk
+@@ -62,6 +62,7 @@ LOCAL_SRC_FILES := \
+ 	file_sync_client.c \
+ 	$(EXTRA_SRCS) \
+ 	$(USB_SRCS) \
++	usb_vendors.c
+ 
+ LOCAL_C_INCLUDES += external/openssl/include
+ 
+@@ -166,6 +167,7 @@ LOCAL_SRC_FILES := \
+ 	file_sync_client.c \
+ 	get_my_path_linux.c \
+ 	usb_linux.c \
++	usb_vendors.c \
+ 	fdevent.c
+ 
+ LOCAL_CFLAGS := \
+diff --git a/adb/adb.c b/adb/adb.c
+index 67c4a68..c86cea0 100644
+--- a/adb/adb.c
++++ b/adb/adb.c
+@@ -41,6 +41,8 @@
+ #include <sys/prctl.h>
+ #include <getopt.h>
+ #include <selinux/selinux.h>
++#else
++#include "usb_vendors.h"
+ #endif
+ 
+ #if ADB_TRACE
+@@ -1316,6 +1318,7 @@ int adb_main(int is_daemon, int server_port)
+ #ifdef WORKAROUND_BUG6558362
+     if(is_daemon) adb_set_affinity();
+ #endif
++    usb_vendors_init();
+     usb_init();
+     local_init(DEFAULT_ADB_LOCAL_TRANSPORT_PORT);
+     adb_auth_init();
+@@ -1326,12 +1329,8 @@ int adb_main(int is_daemon, int server_port)
+         exit(1);
+     }
+ #else
+-    // Override auth in factory test mode
+-    property_get("ro.boot.ftm", value, "0");
+-    if (!strcmp(value, "0")) {
+-        property_get("ro.adb.secure", value, "0");
+-        auth_enabled = !strcmp(value, "1");
+-    }
++    property_get("ro.adb.secure", value, "0");
++    auth_enabled = !strcmp(value, "1");
+     if (auth_enabled)
+         adb_auth_init();
+ 
+@@ -1350,12 +1349,13 @@ int adb_main(int is_daemon, int server_port)
+     ** AID_LOG to read system logs (adb logcat)
+     ** AID_INPUT to diagnose input issues (getevent)
+     ** AID_INET to diagnose network issues (netcfg, ping)
++    ** AID_GRAPHICS to access the frame buffer
+     ** AID_NET_BT and AID_NET_BT_ADMIN to diagnose bluetooth (hcidump)
+     ** AID_SDCARD_R to allow reading from the SD card
+     ** AID_SDCARD_RW to allow writing to the SD card
+     ** AID_NET_BW_STATS to read out qtaguid statistics
+     */
+-    gid_t groups[] = { AID_ADB, AID_LOG, AID_INPUT, AID_INET,
++    gid_t groups[] = { AID_ADB, AID_LOG, AID_INPUT, AID_INET, AID_GRAPHICS,
+                        AID_NET_BT, AID_NET_BT_ADMIN, AID_SDCARD_R, AID_SDCARD_RW,
+                        AID_NET_BW_STATS };
+     if (setgroups(sizeof(groups)/sizeof(groups[0]), groups) != 0) {
+diff --git a/adb/transport_usb.c b/adb/transport_usb.c
+index 3d19803..ee6b637 100644
+--- a/adb/transport_usb.c
++++ b/adb/transport_usb.c
+@@ -23,6 +23,10 @@
+ #define  TRACE_TAG  TRACE_TRANSPORT
+ #include "adb.h"
+ 
++#if ADB_HOST
++#include "usb_vendors.h"
++#endif
++
+ #ifdef HAVE_BIG_ENDIAN
+ #define H4(x)	(((x) & 0xFF000000) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | (((x) & 0x000000FF) << 24)
+ static inline void fix_endians(apacket *p)
+@@ -127,6 +131,18 @@ void init_usb_transport(atransport *t, usb_handle *h, int state)
+ #if ADB_HOST
+ int is_adb_interface(int vid, int pid, int usb_class, int usb_subclass, int usb_protocol)
+ {
+-    return (usb_class == ADB_CLASS && usb_subclass == ADB_SUBCLASS && usb_protocol == ADB_PROTOCOL);
++    unsigned i;
++    for (i = 0; i < vendorIdCount; i++) {
++        if (vid == vendorIds[i]) {
++            if (usb_class == ADB_CLASS && usb_subclass == ADB_SUBCLASS &&
++                    usb_protocol == ADB_PROTOCOL) {
++                return 1;
++            }
++
++            return 0;
++        }
++    }
++
++    return 0;
+ }
+ #endif
+diff --git a/adb/usb_linux_client.c b/adb/usb_linux_client.c
+index e3e1057..be7eb2b 100644
+--- a/adb/usb_linux_client.c
++++ b/adb/usb_linux_client.c
+@@ -313,23 +313,25 @@ static void init_functionfs(struct usb_handle *h)
+ {
+     ssize_t ret;
+ 
+-    D("OPENING %s\n", USB_FFS_ADB_EP0);
+-    h->control = adb_open(USB_FFS_ADB_EP0, O_RDWR);
+-    if (h->control < 0) {
+-        D("[ %s: cannot open control endpoint: errno=%d]\n", USB_FFS_ADB_EP0, errno);
+-        goto err;
+-    }
++    if (h->control < 0) { // might have already done this before
++        D("OPENING %s\n", USB_FFS_ADB_EP0);
++        h->control = adb_open(USB_FFS_ADB_EP0, O_RDWR);
++        if (h->control < 0) {
++            D("[ %s: cannot open control endpoint: errno=%d]\n", USB_FFS_ADB_EP0, errno);
++            goto err;
++        }
+ 
+-    ret = adb_write(h->control, &descriptors, sizeof(descriptors));
+-    if (ret < 0) {
+-        D("[ %s: write descriptors failed: errno=%d ]\n", USB_FFS_ADB_EP0, errno);
+-        goto err;
+-    }
++        ret = adb_write(h->control, &descriptors, sizeof(descriptors));
++        if (ret < 0) {
++            D("[ %s: write descriptors failed: errno=%d ]\n", USB_FFS_ADB_EP0, errno);
++            goto err;
++        }
+ 
+-    ret = adb_write(h->control, &strings, sizeof(strings));
+-    if (ret < 0) {
+-        D("[ %s: writing strings failed: errno=%d]\n", USB_FFS_ADB_EP0, errno);
+-        goto err;
++        ret = adb_write(h->control, &strings, sizeof(strings));
++        if (ret < 0) {
++            D("[ %s: writing strings failed: errno=%d]\n", USB_FFS_ADB_EP0, errno);
++            goto err;
++        }
+     }
+ 
+     h->bulk_out = adb_open(USB_FFS_ADB_OUT, O_RDWR);
+@@ -369,14 +371,14 @@ static void *usb_ffs_open_thread(void *x)
+     while (1) {
+         // wait until the USB device needs opening
+         adb_mutex_lock(&usb->lock);
+-        while (usb->control != -1)
++        while (usb->control != -1 && usb->bulk_in != -1 && usb->bulk_out != -1)
+             adb_cond_wait(&usb->notify, &usb->lock);
+         adb_mutex_unlock(&usb->lock);
+ 
+         while (1) {
+             init_functionfs(usb);
+ 
+-            if (usb->control >= 0)
++            if (usb->control >= 0 && usb->bulk_in >= 0 && usb->bulk_out >= 0)
+                 break;
+ 
+             adb_sleep_ms(1000);
+@@ -473,10 +475,13 @@ static void usb_ffs_kick(usb_handle *h)
+         D("[ kick: sink (fd=%d) clear halt failed (%d) ]", h->bulk_out, errno);
+ 
+     adb_mutex_lock(&h->lock);
+-    adb_close(h->control);
++
++    // don't close ep0 here, since we may not need to reinitialize it with
++    // the same descriptors again. if however ep1/ep2 fail to re-open in
++    // init_functionfs, only then would we close and open ep0 again.
+     adb_close(h->bulk_out);
+     adb_close(h->bulk_in);
+-    h->control = h->bulk_out = h->bulk_in = -1;
++    h->bulk_out = h->bulk_in = -1;
+ 
+     // notify usb_ffs_open_thread that we are disconnected
+     adb_cond_signal(&h->notify);
+diff --git a/adb/usb_osx.c b/adb/usb_osx.c
+index 294cc72..0ef7a71 100644
+--- a/adb/usb_osx.c
++++ b/adb/usb_osx.c
+@@ -28,11 +28,12 @@
+ 
+ #define TRACE_TAG   TRACE_USB
+ #include "adb.h"
++#include "usb_vendors.h"
+ 
+ #define  DBG   D
+ 
+ static IONotificationPortRef    notificationPort = 0;
+-static io_iterator_t            notificationIterator;
++static io_iterator_t*           notificationIterators;
+ 
+ struct usb_handle
+ {
+@@ -60,6 +61,8 @@ InitUSB()
+ {
+     CFMutableDictionaryRef  matchingDict;
+     CFRunLoopSourceRef      runLoopSource;
++    SInt32                  vendor, if_subclass, if_protocol;
++    unsigned                i;
+ 
+     //* To set up asynchronous notifications, create a notification port and
+     //* add its run loop event source to the program's run loop
+@@ -67,32 +70,46 @@ InitUSB()
+     runLoopSource = IONotificationPortGetRunLoopSource(notificationPort);
+     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode);
+ 
+-    //* Create our matching dictionary to find the Android device's
+-    //* adb interface
+-    //* IOServiceAddMatchingNotification consumes the reference, so we do
+-    //* not need to release this
+-    matchingDict = IOServiceMatching(kIOUSBInterfaceClassName);
++    memset(notificationIterators, 0, sizeof(notificationIterators));
+ 
+-    if (!matchingDict) {
+-        DBG("ERR: Couldn't create USB matching dictionary.\n");
+-        return -1;
+-    }
++    //* loop through all supported vendors
++    for (i = 0; i < vendorIdCount; i++) {
++        //* Create our matching dictionary to find the Android device's
++        //* adb interface
++        //* IOServiceAddMatchingNotification consumes the reference, so we do
++        //* not need to release this
++        matchingDict = IOServiceMatching(kIOUSBInterfaceClassName);
++
++        if (!matchingDict) {
++            DBG("ERR: Couldn't create USB matching dictionary.\n");
++            return -1;
++        }
+ 
+-    //* We have to get notifications for all potential candidates and test them
+-    //* at connection time because the matching rules don't allow for a
+-    //* USB interface class of 0xff for class+subclass+protocol matches
+-    //* See https://developer.apple.com/library/mac/qa/qa1076/_index.html
+-    IOServiceAddMatchingNotification(
+-            notificationPort,
+-            kIOFirstMatchNotification,
+-            matchingDict,
+-            AndroidInterfaceAdded,
+-            NULL,
+-            &notificationIterator);
+-
+-    //* Iterate over set of matching interfaces to access already-present
+-    //* devices and to arm the notification
+-    AndroidInterfaceAdded(NULL, notificationIterator);
++        //* Match based on vendor id, interface subclass and protocol
++        vendor = vendorIds[i];
++        if_subclass = ADB_SUBCLASS;
++        if_protocol = ADB_PROTOCOL;
++        CFDictionarySetValue(matchingDict, CFSTR(kUSBVendorID),
++                             CFNumberCreate(kCFAllocatorDefault,
++                                            kCFNumberSInt32Type, &vendor));
++        CFDictionarySetValue(matchingDict, CFSTR(kUSBInterfaceSubClass),
++                             CFNumberCreate(kCFAllocatorDefault,
++                                            kCFNumberSInt32Type, &if_subclass));
++        CFDictionarySetValue(matchingDict, CFSTR(kUSBInterfaceProtocol),
++                             CFNumberCreate(kCFAllocatorDefault,
++                                            kCFNumberSInt32Type, &if_protocol));
++        IOServiceAddMatchingNotification(
++                notificationPort,
++                kIOFirstMatchNotification,
++                matchingDict,
++                AndroidInterfaceAdded,
++                NULL,
++                &notificationIterators[i]);
++
++        //* Iterate over set of matching interfaces to access already-present
++        //* devices and to arm the notification
++        AndroidInterfaceAdded(NULL, notificationIterators[i]);
++    }
+ 
+     return 0;
+ }
+@@ -186,6 +203,7 @@ AndroidInterfaceAdded(void *refCon, io_iterator_t iterator)
+ 
+         //* Now after all that, we actually have a ref to the device and
+         //* the interface that matched our criteria
++
+         kr = (*dev)->GetDeviceVendor(dev, &vendor);
+         kr = (*dev)->GetDeviceProduct(dev, &product);
+         kr = (*dev)->GetLocationID(dev, &locationId);
+@@ -377,6 +395,8 @@ err_get_num_ep:
+ 
+ void* RunLoopThread(void* unused)
+ {
++    unsigned i;
++
+     InitUSB();
+ 
+     currentRunLoop = CFRunLoopGetCurrent();
+@@ -389,7 +409,9 @@ void* RunLoopThread(void* unused)
+     CFRunLoopRun();
+     currentRunLoop = 0;
+ 
+-    IOObjectRelease(notificationIterator);
++    for (i = 0; i < vendorIdCount; i++) {
++        IOObjectRelease(notificationIterators[i]);
++    }
+     IONotificationPortDestroy(notificationPort);
+ 
+     DBG("RunLoopThread done\n");
+@@ -404,6 +426,9 @@ void usb_init()
+     {
+         adb_thread_t    tid;
+ 
++        notificationIterators = (io_iterator_t*)malloc(
++            vendorIdCount * sizeof(io_iterator_t));
++
+         adb_mutex_init(&start_lock, NULL);
+         adb_cond_init(&start_cond, NULL);
+ 
+@@ -428,6 +453,11 @@ void usb_cleanup()
+     close_usb_devices();
+     if (currentRunLoop)
+         CFRunLoopStop(currentRunLoop);
++
++    if (notificationIterators != NULL) {
++        free(notificationIterators);
++        notificationIterators = NULL;
++    }
+ }
+ 
+ int usb_write(usb_handle *handle, const void *buf, int len)
+diff --git a/adb/usb_vendors.h b/adb/usb_vendors.h
+new file mode 100644
+index 0000000..cee23a1
+--- /dev/null
++++ b/adb/usb_vendors.h
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2009 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef __USB_VENDORS_H
++#define __USB_VENDORS_H
++
++extern int vendorIds[];
++extern unsigned  vendorIdCount;
++
++void usb_vendors_init(void);
++
++#endif
+diff --git a/fastboot/protocol.c b/fastboot/protocol.c
+index 10a84c1..84e9837 100644
+--- a/fastboot/protocol.c
++++ b/fastboot/protocol.c
+@@ -216,7 +216,7 @@ int fb_download_data(usb_handle *usb, const void *data, unsigned size)
+     }
+ }
+ 
+-#define USB_BUF_SIZE 1024
++#define USB_BUF_SIZE 512
+ static char usb_buf[USB_BUF_SIZE];
+ static int usb_buf_len;
+ 
+diff --git a/include/system/audio.h b/include/system/audio.h
+index 093da96..aae0aba 100644
+--- a/include/system/audio.h
++++ b/include/system/audio.h
+@@ -749,11 +749,7 @@ enum {
+     AUDIO_DEVICE_IN_SPDIF                 = AUDIO_DEVICE_BIT_IN | 0x10000,
+     AUDIO_DEVICE_IN_BLUETOOTH_A2DP        = AUDIO_DEVICE_BIT_IN | 0x20000,
+     AUDIO_DEVICE_IN_LOOPBACK              = AUDIO_DEVICE_BIT_IN | 0x40000,
+-#ifdef QCOM_HARDWARE
+-    AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x100000,
+-    AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x200000,
+-    AUDIO_DEVICE_IN_FM_RX_A2DP            = AUDIO_DEVICE_BIT_IN | 0x400000,
+-#endif
++	AUDIO_DEVICE_IN_AF                    = AUDIO_DEVICE_BIT_IN | 0x1000000,
+     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
+ 
+     AUDIO_DEVICE_IN_ALL     = (AUDIO_DEVICE_IN_COMMUNICATION |
+@@ -775,11 +771,7 @@ enum {
+                                AUDIO_DEVICE_IN_SPDIF |
+                                AUDIO_DEVICE_IN_BLUETOOTH_A2DP |
+                                AUDIO_DEVICE_IN_LOOPBACK |
+-#ifdef QCOM_HARDWARE
+-                               AUDIO_DEVICE_IN_FM_RX |
+-                               AUDIO_DEVICE_IN_FM_RX_A2DP |
+-                               AUDIO_DEVICE_IN_PROXY |
+-#endif
++							   AUDIO_DEVICE_IN_AF |
+                                AUDIO_DEVICE_IN_DEFAULT),
+     AUDIO_DEVICE_IN_ALL_SCO = AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET,
+     AUDIO_DEVICE_IN_ALL_USB  = (AUDIO_DEVICE_IN_USB_ACCESSORY |
+diff --git a/init/Android.mk b/init/Android.mk
+index c6863bf..f17a47b 100755
+--- a/init/Android.mk
++++ b/init/Android.mk
+@@ -10,6 +10,7 @@ LOCAL_SRC_FILES:= \
+ 	property_service.c \
+ 	util.c \
+ 	parser.c \
++	logo.c \
+ 	keychords.c \
+ 	signal_handler.c \
+ 	init_parser.c \
+diff --git a/init/builtins.c b/init/builtins.c
+index d4b3f99..6000688 100644
+--- a/init/builtins.c
++++ b/init/builtins.c
+@@ -81,47 +81,61 @@ static int write_file(const char *path, const char *value)
+     }
+ }
+ 
++static int _open(const char *path)
++{
++    int fd;
++
++    fd = open(path, O_RDONLY | O_NOFOLLOW);
++    if (fd < 0)
++        fd = open(path, O_WRONLY | O_NOFOLLOW);
++
++    return fd;
++}
+ 
+ static int _chown(const char *path, unsigned int uid, unsigned int gid)
+ {
++    int fd;
+     int ret;
+ 
+-    struct stat p_statbuf;
+-
+-    ret = lstat(path, &p_statbuf);
+-    if (ret < 0) {
++    fd = _open(path);
++    if (fd < 0) {
+         return -1;
+     }
+ 
+-    if (S_ISLNK(p_statbuf.st_mode) == 1) {
+-        errno = EINVAL;
++    ret = fchown(fd, uid, gid);
++    if (ret < 0) {
++        int errno_copy = errno;
++        close(fd);
++        errno = errno_copy;
+         return -1;
+     }
+ 
+-    ret = chown(path, uid, gid);
++    close(fd);
+ 
+-    return ret;
++    return 0;
+ }
+ 
+ static int _chmod(const char *path, mode_t mode)
+ {
++    int fd;
+     int ret;
+ 
+-    struct stat p_statbuf;
+-
+-    ret = lstat(path, &p_statbuf);
+-    if (ret < 0) {
++    fd = _open(path);
++    if (fd < 0) {
+         return -1;
+     }
+ 
+-    if (S_ISLNK(p_statbuf.st_mode) == 1) {
+-        errno = EINVAL;
++    ret = fchmod(fd, mode);
++    if (ret < 0) {
++        int errno_copy = errno;
++        close(fd);
++        errno = errno_copy;
+         return -1;
+     }
+ 
+-    ret = chmod(path, mode);
++    close(fd);
+ 
+-    return ret;
++    return 0;
+ }
+ 
+ static int insmod(const char *filename, char *options)
+@@ -336,6 +350,44 @@ int do_export(int nargs, char **args)
+     return add_environment(args[1], args[2]);
+ }
+ 
++int do_format_userdata(int nargs, char **args)
++{
++ERROR("-----------rogge---------------do_format_userdata");
++    const char * devicePath = args[1];
++    char bootsector[512];
++    int fd;
++    pid_t child;
++    int status;
++
++    property_set("ro.udisk.label", args[2]);
++    fd = open(devicePath, O_RDONLY);
++    if (fd <= 0) {
++        ERROR("open device error: %s", strerror(errno));
++        return 1;
++    }
++    memset(bootsector, 0, 512);
++    read(fd, bootsector, 512);
++    close(fd);
++    if ((bootsector[510]==0x55) && (bootsector[511]==0xaa)) {
++        ERROR("dont need format %s", devicePath);
++        return 1;
++    } else {
++ERROR("-----------rogge---------------start format");
++        INFO("start format %s", devicePath);
++        child = fork();
++        if (child == 0) {
++            INFO("fork to format %s", devicePath);
++            execl("/system/bin/logwrapper", "/system/bin/logwrapper", "/system/bin/newfs_msdos",
++                    "-F", "32", "-O", "android", "-c", "8", "-L", args[2], args[1], NULL);
++            exit(-1);
++        }
++        INFO("wait for format %s", devicePath);
++        while (waitpid(-1, &status, 0) != child);
++        INFO("format %s ok", devicePath);
++        return 1;
++    }
++}
++
+ int do_hostname(int nargs, char **args)
+ {
+     return write_file("/proc/sys/kernel/hostname", args[1]);
+@@ -657,6 +709,14 @@ int do_swapon_all(int nargs, char **args)
+     return ret;
+ }
+ 
++#define INIT_IMAGE_FILE "/initlogo.rle"
++extern int load_argb8888_image(char *file_name);
++
++int do_show_initlogo(int nargs, char **args)
++{
++    return load_argb8888_image(INIT_IMAGE_FILE);
++}
++
+ int do_setcon(int nargs, char **args) {
+     if (is_selinux_enabled() <= 0)
+         return 0;
+diff --git a/init/init.c b/init/init.c
+index 1cce8d8..da282b1 100644
+--- a/init/init.c
++++ b/init/init.c
+@@ -696,6 +696,7 @@ static int console_init_action(int nargs, char **args)
+         have_console = 1;
+     close(fd);
+ 
++    if( load_argb8888_image(INIT_IMAGE_FILE) ) {
+     fd = open("/dev/tty0", O_WRONLY);
+     if (fd >= 0) {
+         const char *msg;
+@@ -717,7 +718,7 @@ static int console_init_action(int nargs, char **args)
+         write(fd, msg, strlen(msg));
+         close(fd);
+     }
+-
++    }
+     return 0;
+ }
+ 
+@@ -861,7 +862,7 @@ static int queue_property_triggers_action(int nargs, char **args)
+ }
+ 
+ #if BOOTCHART
+-int bootchart_init_action(int nargs, char **args)
++static int bootchart_init_action(int nargs, char **args)
+ {
+     bootchart_count = bootchart_init();
+     if (bootchart_count < 0) {
+@@ -1034,6 +1035,7 @@ static int charging_mode_booting(void)
+ #endif
+ }
+ 
++#include "init_mem_opt.c"
+ int main(int argc, char **argv)
+ {
+     int fd_count = 0;
+diff --git a/init/init.h b/init/init.h
+index 48ac12f..40536b4 100644
+--- a/init/init.h
++++ b/init/init.h
+@@ -141,7 +141,8 @@ void service_reset(struct service *svc);
+ void service_restart(struct service *svc);
+ void service_start(struct service *svc, const char *dynamic_args);
+ void property_changed(const char *name, const char *value);
+-
++#define INIT_IMAGE_FILE	"/initlogo.rle"
++int load_argb8888_image(char *fn);
+ extern struct selabel_handle *sehandle;
+ extern struct selabel_handle *sehandle_prop;
+ extern int selinux_reload_policy(void);
+diff --git a/init/init_mem_opt.c b/init/init_mem_opt.c
+new file mode 100644
+index 0000000..35b5131
+--- /dev/null
++++ b/init/init_mem_opt.c
+@@ -0,0 +1,624 @@
++/*
++ * memory optimization code
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <ctype.h>
++#include <signal.h>
++#include <sys/wait.h>
++#include <sys/mount.h>
++#include <sys/stat.h>
++#include <sys/poll.h>
++#include <errno.h>
++#include <stdarg.h>
++#include <mtd/mtd-user.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++
++#include <selinux/selinux.h>
++#include <selinux/label.h>
++#include <selinux/android.h>
++
++#include <libgen.h>
++
++#include <cutils/list.h>
++#include <cutils/android_reboot.h>
++#include <cutils/sockets.h>
++#include <cutils/iosched_policy.h>
++#include <cutils/fs.h>
++#include <private/android_filesystem_config.h>
++#include <termios.h>
++
++#include "devices.h"
++#include "init.h"
++#include "log.h"
++#include "property_service.h"
++#include "bootchart.h"
++#include "signal_handler.h"
++#include "keychords.h"
++#include "init_parser.h"
++#include "util.h"
++#include "ueventd.h"
++#include "watchdogd.h"
++
++#define DENSITY_LOW     120
++#define DENSITY_MEDIUM  160
++#define DENSITY_TV      213
++#define DENSITY_HIGH    240
++#define DENSITY_280     280
++#define DENSITY_XHIGH   320
++#define DENSITY_400     400
++#define DENSITY_XXHIGH  480
++#define DENSITY_560     560
++#define DENSITY_XXXHIGH 640
++
++#define SCREEN_SMALL    0
++#define SCREEN_NORMAL   1
++#define SCREEN_LARGE    2
++#define SCREEN_XLARGE   3
++
++int g_total_mem = 0; /* unit: MB */
++
++static const char* s_ScreenSizeConfig[] = {
++"SCREEN_SMALL",
++"SCREEN_NORMAL",
++"SCREEN_LARGE",
++"SCREEN_XLARGE"
++};
++
++static int get_dram_size(void)
++{
++#define MEMINFO_NODE    "/proc/meminfo"
++    FILE *fd;
++    char data[128], *tmp;
++    int dram_size = 1024;
++
++    fd = fopen(MEMINFO_NODE, "r");
++    if (fd == NULL) {
++        ERROR("cannot open %s, return default 1G\n", MEMINFO_NODE);
++        goto end;
++    }
++
++    while (fgets(data, sizeof(data), fd)) {
++        if (strstr(data, "MemTotal")) {
++            tmp = strchr(data, ':') + 1;
++            dram_size = atoi(tmp) >> 10; /* convert to MBytes */
++            break;
++        }
++    }
++
++    fclose(fd);
++end:
++    INFO("%s: return %d\n", __func__, dram_size);
++    return dram_size;
++}
++
++static bool get_lcd_resolution(int *width, int *height)
++{
++#define LCD_X_STR           "lcd_x          int       "
++#define LCD_Y_STR           "lcd_y          int       "
++#define DISP_SYS_NODE       "/sys/class/script/dump"
++#define SCRIPT_BUF_SIZE     0x10000
++    char *data = NULL, *temp;
++    bool ret = false;
++    int fd;
++
++    if (!width || !height)
++        return false;
++
++    data = malloc(SCRIPT_BUF_SIZE);
++    if (!data) {
++        ERROR("%s err: alloc data buf failed\n", __func__);
++        return false;
++    }
++    memset(data, 0, SCRIPT_BUF_SIZE);
++
++    fd = open(DISP_SYS_NODE, O_RDWR);
++    if (fd < 0) {
++        ERROR("%s err: cannot open %s\n", __func__, DISP_SYS_NODE);
++        free(data);
++        return false;
++    }
++
++    if (write(fd, "lcd0_para", strlen("lcd0_para")) < 0) {
++        ERROR("%s err: write lcd0_para to %s failed\n", __func__, DISP_SYS_NODE);
++        goto end;
++    }
++    if (read(fd, data, SCRIPT_BUF_SIZE) <= 0) {
++        if (write(fd, "lcd0", strlen("lcd0")) < 0) {
++            ERROR("%s err: write lcd0 to %s failed\n", __func__, DISP_SYS_NODE);
++            goto end;
++        }
++        if (read(fd, data, SCRIPT_BUF_SIZE) <= 0) {
++            ERROR("%s err: read /sys/class/script/dump failed\n", __func__);
++            goto end;
++        }
++    }
++
++    /* get lcd_x */
++    temp = strstr(data, LCD_X_STR);
++    if (!temp) {
++        ERROR("%s err: get lcd_x failed\n", __func__);
++        goto end;
++    } else
++        temp += strlen(LCD_X_STR);
++    if (width)
++        *width = atoi(temp);
++
++    /* get lcd_y */
++    temp = strstr(data, LCD_Y_STR);
++    if (!temp) {
++        ERROR("%s err: get lcd_y failed\n", __func__);
++        goto end;
++    } else
++        temp += strlen(LCD_Y_STR);
++    if (height)
++        *height = atoi(temp);
++
++    ret = true;
++
++end:
++    close(fd);
++    free(data);
++    return ret;
++}
++
++inline void trim(char *buf)
++{
++    char *temp, lastch;
++    int i = 0, first_valid = false;
++
++    if (!buf || *buf == 0)
++        return;
++
++    /* trim tail */
++    while ((temp = buf + strlen(buf) - 1) && *temp != 0) {
++        if (*temp==' ' || *temp=='\t'
++                || *temp=='\n' || *temp=='\r')
++            *temp = 0;
++        else
++            break;
++    }
++
++    if (*buf == 0)
++        return;
++
++    /* trim head */
++    while (i < (int)strlen(buf)) {
++        if (buf[i]==' ' || buf[i]=='\t'
++                || buf[i]=='\n' || buf[i]=='\r') {
++            i++;
++            continue;
++        } else if (buf[i] != 0) {
++            strcpy(buf, &buf[i]);
++            break;
++        } else {
++            buf[0] = 0;
++            break;
++        }
++    }
++}
++
++#define CONFIG_MEM_FILE     "/config_mem.ini"
++
++void config_item(char *buf)
++{
++    char data[1024], key[256], value[256];
++    bool find = false;
++    FILE *fd;
++    int len;
++
++    fd = fopen(CONFIG_MEM_FILE, "r");
++    if (fd == NULL) {
++        ERROR("cannot open %s\n", CONFIG_MEM_FILE);
++        return;
++    }
++
++    while (!feof(fd)) {
++        if (!fgets(data, sizeof(data), fd)) /* eof or read error */
++            continue;
++
++        if (strlen(data) >= sizeof(data) - 1) {
++            ERROR("%s err: line too long!\n", __func__);
++            goto end;
++        }
++
++        trim(data);
++
++        if (data[0]=='#' || data[0]==0) /* comment or blank line */
++            continue;
++
++        if (!find) {
++            if (data[0]=='[' && strstr(data, buf)) {
++                find = true;
++                continue;
++            }
++        } else {
++            if (data[0]=='[')
++                break; /* NEXT item, so break */
++            else if (!strstr(data, "=") || data[strlen(data)-1] == '=')
++                continue; /* not key=value style, or has no value field */
++
++            len = strlen(data) - strlen(strstr(data, "="));
++            strncpy(key, data, len);
++            key[len] = '\0';
++            trim(key);
++
++            strcpy(value, strstr(data, "=") + 1);
++            trim(value);
++
++            INFO("%s: get key->value %s %s\n", __func__, key, value);
++            if (key[0] == '/')  { /* file node, as: /sys/class/adj=12 */
++                sprintf(data, "echo %s > %s", value, key);
++                system(data);
++            } else /* property node, as: dalvik.vm.heapsize=184m */
++                property_set(key, value);
++        }
++    }
++
++end:
++    fclose(fd);
++}
++
++bool get_value_for_key(char *main_key, char *sub_key, char ret_value[], int len)
++{
++    char data[1024], tmp[256];
++    bool find_mainkey = false, ret = false;
++    FILE *fd = NULL;
++
++    fd = fopen(CONFIG_MEM_FILE, "r");
++    if (fd == NULL) {
++        ERROR("cannot open %s\n", CONFIG_MEM_FILE);
++        return false;
++    }
++
++    while (!feof(fd)) {
++        if (!fgets(data, sizeof(data), fd)) /* eof or read error */
++            continue;
++
++        if (strlen(data) >= sizeof(data) - 1) {
++            ERROR("%s err: line too long!\n", __func__);
++            goto end;
++        }
++
++        trim(data);
++
++        if (data[0]=='#' || data[0]==0) /* comment or blank line */
++            continue;
++
++        if (!find_mainkey) {
++            if (data[0]=='[' && !strncmp(data+1, main_key,
++                strlen(main_key))) { /* +1 means omit '[' */
++                find_mainkey = true;
++                continue;
++            }
++        } else {
++            if (data[0]=='[')
++                goto end; /* NEXT item, so break */
++            else if (!strstr(data, "=") || data[strlen(data)-1] == '=')
++                continue; /* not 'key = value' style, or has no value field */
++
++            len = strlen(data) - strlen(strstr(data, "="));
++            strncpy(tmp, data, len);
++            tmp[len] = '\0';
++            trim(tmp);
++
++            if (strcmp(tmp, sub_key))
++                continue; /* not subkey */
++
++            strcpy(tmp, strstr(data, "=") + 1);
++            trim(tmp);
++            if ((int)strlen(tmp) >= len) {
++                ERROR("%s err: %s->%s value too long!\n", __func__, main_key, sub_key);
++                goto end;
++            }
++
++            NOTICE("%s: get %s->%s: %s\n", __func__, main_key, sub_key, tmp);
++            strcpy(ret_value, tmp);
++            ret = true;
++            break;
++        }
++    }
++
++end:
++    fclose(fd);
++    return ret;
++}
++
++int getScreenSize(int width, int height) {
++    int max = width >= height ? width : height;
++    int min = width <= height ? width : height;
++
++    if ((min >= 720) && (max > 960)) {
++        return SCREEN_XLARGE;
++    } else if ((min >= 480) && (max > 640)) {
++        return SCREEN_LARGE;
++    } else if ((min >= 320) && (max > 480)) {
++        return SCREEN_NORMAL;
++    } else {
++        return SCREEN_SMALL;
++    }
++}
++
++int getDensityFromString2Int(char *sDensity) {
++    if ((NULL == sDensity) || 0 == *sDensity) {
++        return 0;
++    }
++
++    if (!strcmp(sDensity, "DENSITY_LOW")) {
++        return DENSITY_LOW;
++    } else if (!strcmp(sDensity, "DENSITY_MEDIUM")) {
++        return DENSITY_MEDIUM;
++    } else if (!strcmp(sDensity, "DENSITY_TV")) {
++        return DENSITY_TV;
++    } else if (!strcmp(sDensity, "DENSITY_HIGH")) {
++        return DENSITY_HIGH;
++    } else if (!strcmp(sDensity, "DENSITY_280")) {
++        return DENSITY_280;
++    } else if (!strcmp(sDensity, "DENSITY_XHIGH")) {
++        return DENSITY_XHIGH;
++    } else if (!strcmp(sDensity, "DENSITY_400")) {
++        return DENSITY_400;
++    } else if (!strcmp(sDensity, "DENSITY_XXHIGH")) {
++        return DENSITY_XXHIGH;
++    } else if (!strcmp(sDensity, "DENSITY_560")) {
++        return DENSITY_560;
++    } else if (!strcmp(sDensity, "DENSITY_XXXHIGH")) {
++        return DENSITY_XXXHIGH;
++    } else {
++        return 0;
++    }
++}
++
++int getMinimumMemory(int screen_size, int density, bool is64Bit) {
++    char data[1024];
++    bool find = false;
++    FILE *fd;
++    int len;
++    char *sScreenSizeRead    = NULL;
++    char *sDensityRead = NULL;
++    char *sCmpRead     = NULL;
++    char *sMemRead     = NULL;
++    int iDensityRead = 0;
++    int iMemRead      = 0;
++
++    fd = fopen(CONFIG_MEM_FILE, "r");
++    if (fd == NULL) {
++        ERROR("cannot open %s\n", CONFIG_MEM_FILE);
++        return 0;
++    }
++
++    while (!feof(fd)) {
++        if (!fgets(data, sizeof(data), fd)) /* eof or read error */
++            continue;
++
++        if (strlen(data) >= sizeof(data) - 1) {
++            ERROR("%s err: line too long!\n", __func__);
++            goto end;
++        }
++
++        trim(data);
++
++        if (data[0]=='#' || data[0]==0) /* comment or blank line */
++            continue;
++
++        if (!find) {
++            if (data[0]=='[' && strstr(data, "least_memory")) {
++                find = true;
++                continue;
++            }
++        } else {
++            if (data[0]=='[')
++                break; /* NEXT item, so break */
++
++            sScreenSizeRead = strtok(data , " ");
++            if ((NULL == sScreenSizeRead) || (0 == *sScreenSizeRead) || \
++                (strcmp(sScreenSizeRead, s_ScreenSizeConfig[screen_size]))) {
++                continue;
++            }
++
++            sDensityRead = strtok(NULL , " ");
++            if ((NULL == sDensityRead) || (0 == *sDensityRead)) {
++                continue;
++            }
++            iDensityRead = getDensityFromString2Int(sDensityRead);
++            if (iDensityRead <= 0) {
++                continue;
++            }
++
++            sCmpRead = strtok(NULL , " ");
++            if ((NULL == sCmpRead) || (0 == *sCmpRead)) {
++                continue;
++            }
++            if ((!strcmp(sCmpRead, "<=") && (density > iDensityRead)) || \
++                (!strcmp(sCmpRead, ">=") && (density < iDensityRead))) {
++                continue;
++            }
++
++            sMemRead = strtok(NULL , " ");
++            if ((NULL == sMemRead) || (0 == *sMemRead)) {
++                break;
++            }
++            if (!is64Bit) {
++                iMemRead = atoi(sMemRead);
++                break;
++            } 
++
++            sMemRead = strtok(NULL , " ");
++            if ((NULL == sMemRead) || (0 == *sMemRead)) {
++                break;
++            }
++            iMemRead = atoi(sMemRead);
++            break;
++        }
++    }
++
++end:
++    fclose(fd);
++    return iMemRead;
++}
++
++void config_low_ram_property(int screen_size, int density, bool is64Bit, int totalmem) {
++    int minMem = getMinimumMemory(screen_size, density, is64Bit);
++    /*if total memory is less than 1.5 * least memory requested by cdd,
++       then it's a low memory device */
++    int lowMemoryThreathHold = minMem + (minMem >> 1);
++
++    if (totalmem <= lowMemoryThreathHold) {
++        property_set("ro.config.low_ram", "true");
++    } else {
++        property_set("ro.config.low_ram", "false");
++    }
++}
++
++void config_heap_growth_limit_property(int screen_size, int density) {
++    char data[1024];
++    bool find = false;
++    FILE *fd;
++    int len;
++    char *sDensityRead = NULL;
++    char *sMemRead     = NULL;
++    int iDensityRead   = 0;
++
++    fd = fopen(CONFIG_MEM_FILE, "r");
++    if (fd == NULL) {
++        ERROR("cannot open %s\n", CONFIG_MEM_FILE);
++        return;
++    }
++
++    while (!feof(fd)) {
++        if (!fgets(data, sizeof(data), fd)) /* eof or read error */
++            continue;
++
++        if (strlen(data) >= sizeof(data) - 1) {
++            ERROR("%s err: line too long!\n", __func__);
++            goto end;
++        }
++
++        trim(data);
++
++        if (data[0]=='#' || data[0]==0) /* comment or blank line */
++            continue;
++
++        if (!find) {
++            if (data[0]=='[' && strstr(data, "heap_growth_limit")) {
++                find = true;
++                continue;
++            }
++        } else {
++            if (data[0]=='[')
++                break; /* NEXT item, so break */
++
++            sDensityRead = strtok(data , " ");
++            if ((NULL == sDensityRead) || (0 == *sDensityRead)) {
++                continue;
++            }
++            iDensityRead = getDensityFromString2Int(sDensityRead);
++            if ((iDensityRead <= 0) || (density > iDensityRead)) {
++                continue;
++            }
++
++            switch (screen_size) {
++                case SCREEN_XLARGE:
++                    sMemRead = strtok(NULL , " ");
++                case SCREEN_LARGE:
++                    sMemRead = strtok(NULL , " ");
++                case SCREEN_NORMAL:
++                    sMemRead = strtok(NULL , " ");
++                case SCREEN_SMALL:
++                    sMemRead = strtok(NULL , " ");
++                    if ((NULL != sMemRead) || (0 != *sMemRead)) {
++                        property_set("dalvik.vm.heapgrowthlimit", sMemRead);
++                    }
++                    break;
++                default :
++                    break;
++            }
++
++            break;
++
++        }
++    }
++
++end:
++    fclose(fd);
++    return;
++}
++
++void property_opt_for_mem(void)
++{
++    char buf[PROP_VALUE_MAX] = {0};
++    static int width = 0, height = 0;
++    int densityDPI = 0, width_dp = 0, height_dp=0, screenSize = 0;
++    bool bSupport64Bit = false;
++
++    ERROR("%s: start!\n", __func__);
++    if(property_get("ro.memopt.disable", buf) && !strcmp(buf,"true")) {
++        ERROR("%s: disable adaptive memory function!\n", __func__);
++        return;
++    }
++
++    if (!g_total_mem)
++        g_total_mem = get_dram_size();
++
++    if (property_get("ro.sf.lcd_density", buf)) {
++        densityDPI = atoi(buf);
++        if (densityDPI <= 0) {
++            ERROR("%s: ro.sf.lcd_density wrong value: %d(convert from %s) set, \
++                    disable adaptive memory function!\n", __func__, densityDPI, buf);
++            return;
++        }
++    } else {
++        ERROR("%s: ro.sf.lcd_density not set, disable adaptive memory function!\n", __func__);
++        return;
++    }
++
++    if (property_get("ro.product.cpu.abilist64", buf)) {
++        bSupport64Bit = true;
++    } else  {
++        bSupport64Bit = false;
++    }
++
++    /* dalvik heap para */
++    if (g_total_mem <= 512)
++        strcpy(buf, "dalvik_512m");
++    else if (g_total_mem > 512 && g_total_mem <= 1024)
++        strcpy(buf, "dalvik_1024m");
++    else if (g_total_mem > 1024 && g_total_mem <= 2048)
++        strcpy(buf, "dalvik_2048m");
++    config_item(buf);
++    /* hwui para */
++    if (!width || !height) {
++        if (!get_lcd_resolution(&width, &height)) {
++            ERROR("%s: get lcd resolution failed!\n", __func__);
++            return;
++        }
++    }
++
++    sprintf(buf, "hwui_%d", (width > height ? width : height));
++    config_item(buf);
++
++    width_dp = width * DENSITY_MEDIUM / densityDPI;
++    height_dp = height * DENSITY_MEDIUM / densityDPI;
++
++    screenSize = getScreenSize(width_dp, height_dp);
++
++    ERROR("%s: width_dp = %d; height_dp = %d; screenSize = %d; bSupport64Bit = %d, g_total_mem = %d \n",\
++            __func__, width_dp, height_dp, screenSize, bSupport64Bit, g_total_mem);
++
++    config_low_ram_property(screenSize, densityDPI, bSupport64Bit, g_total_mem);
++
++    if (!property_get("dalvik.vm.heapgrowthlimit", buf)) {
++        config_heap_growth_limit_property(screenSize, densityDPI);
++    }
++
++    system("echo 12000 > /sys/module/lowmemorykiller/parameters/minfree");
++    NOTICE("%s: end!\n", __func__);
++}
++
+diff --git a/init/init_parser.c b/init/init_parser.c
+index eec9090..01de8c4 100644
+--- a/init/init_parser.c
++++ b/init/init_parser.c
+@@ -102,6 +102,9 @@ static int lookup_keyword(const char *s)
+         if (!strcmp(s, "xport")) return K_export;
+         if (!strcmp(s, "xport_rc")) return K_export_rc;
+         break;
++    case 'f':
++        if (!strcmp(s, "ormat_userdata")) return K_format_userdata;
++        break;
+     case 'g':
+         if (!strcmp(s, "roup")) return K_group;
+         break;
+@@ -153,6 +156,7 @@ static int lookup_keyword(const char *s)
+         if (!strcmp(s, "etprop")) return K_setprop;
+         if (!strcmp(s, "etrlimit")) return K_setrlimit;
+         if (!strcmp(s, "etsebool")) return K_setsebool;
++        if (!strcmp(s, "how_initlogo")) return K_show_initlogo;
+         if (!strcmp(s, "ocket")) return K_socket;
+         if (!strcmp(s, "tart")) return K_start;
+         if (!strcmp(s, "top")) return K_stop;
+diff --git a/init/keywords.h b/init/keywords.h
+index 224a505..3eacdaf 100644
+--- a/init/keywords.h
++++ b/init/keywords.h
+@@ -10,6 +10,7 @@ int do_enable(int nargs, char **args);
+ int do_exec(int nargs, char **args);
+ int do_export(int nargs, char **args);
+ int do_export_rc(int nargs, char **args);
++int do_format_userdata(int nargs, char **args);
+ int do_hostname(int nargs, char **args);
+ int do_ifup(int nargs, char **args);
+ int do_insmod(int nargs, char **args);
+@@ -28,6 +29,7 @@ int do_setkey(int nargs, char **args);
+ int do_setprop(int nargs, char **args);
+ int do_setrlimit(int nargs, char **args);
+ int do_setsebool(int nargs, char **args);
++int do_show_initlogo(int nargs, char **args);
+ int do_start(int nargs, char **args);
+ int do_stop(int nargs, char **args);
+ int do_swapon_all(int nargs, char **args);
+@@ -64,6 +66,7 @@ enum {
+     KEYWORD(exec,        COMMAND, 1, do_exec)
+     KEYWORD(export,      COMMAND, 2, do_export)
+     KEYWORD(export_rc,   COMMAND, 1, do_export_rc)
++    KEYWORD(format_userdata,      COMMAND, 1, do_format_userdata)
+     KEYWORD(group,       OPTION,  0, 0)
+     KEYWORD(hostname,    COMMAND, 1, do_hostname)
+     KEYWORD(ifup,        COMMAND, 1, do_ifup)
+@@ -92,6 +95,7 @@ enum {
+     KEYWORD(setprop,     COMMAND, 2, do_setprop)
+     KEYWORD(setrlimit,   COMMAND, 3, do_setrlimit)
+     KEYWORD(setsebool,   COMMAND, 2, do_setsebool)
++    KEYWORD(show_initlogo,         COMMAND, 0, do_show_initlogo)
+     KEYWORD(socket,      OPTION,  0, 0)
+     KEYWORD(start,       COMMAND, 1, do_start)
+     KEYWORD(stop,        COMMAND, 1, do_stop)
+diff --git a/init/logo.c b/init/logo.c
+new file mode 100644
+index 0000000..1e8a1bd
+--- /dev/null
++++ b/init/logo.c
+@@ -0,0 +1,261 @@
++/*
++ * Copyright (C) 2008 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <fcntl.h>
++#include <sys/mman.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++
++#include <linux/fb.h>
++#include <linux/kd.h>
++
++#include "log.h"
++
++#ifdef ANDROID
++#include <cutils/memory.h>
++#else
++void android_memset16(void *_ptr, unsigned short val, unsigned count)
++{
++    unsigned short *ptr = _ptr;
++    count >>= 1;
++    while(count--)
++        *ptr++ = val;
++}
++#endif
++
++struct FB {
++    unsigned short *bits;
++    unsigned size;
++    int fd;
++    struct fb_fix_screeninfo fi;
++    struct fb_var_screeninfo vi;
++};
++
++#define fb_width(fb) ((fb)->vi.xres)
++#define fb_height(fb) ((fb)->vi.yres)
++#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 4)
++
++static int fb_open(struct FB *fb)
++{
++    fb->fd = open("/dev/graphics/fb0", O_RDWR);
++    if (fb->fd < 0)
++        return -1;
++
++    if (ioctl(fb->fd, FBIOGET_FSCREENINFO, &fb->fi) < 0)
++        goto fail;
++    if (ioctl(fb->fd, FBIOGET_VSCREENINFO, &fb->vi) < 0)
++        goto fail;
++
++    fb->bits = mmap(0, fb_size(fb), PROT_READ | PROT_WRITE,
++                    MAP_SHARED, fb->fd, 0);
++    if (fb->bits == MAP_FAILED)
++        goto fail;
++
++    return 0;
++
++fail:
++    close(fb->fd);
++    return -1;
++}
++
++static void fb_close(struct FB *fb)
++{
++    munmap(fb->bits, fb_size(fb));
++    close(fb->fd);
++}
++
++/* there's got to be a more portable way to do this ... */
++static void fb_update(struct FB *fb)
++{
++    fb->vi.yoffset = 1;
++    ioctl(fb->fd, FBIOPUT_VSCREENINFO, &fb->vi);
++    fb->vi.yoffset = 0;
++    ioctl(fb->fd, FBIOPUT_VSCREENINFO, &fb->vi);
++}
++
++static int vt_set_mode(int graphics)
++{
++    int fd, r;
++    fd = open("/dev/tty0", O_RDWR | O_SYNC);
++    if (fd < 0)
++        return -1;
++    r = ioctl(fd, KDSETMODE, (graphics ? KD_GRAPHICS : KD_TEXT));
++    close(fd);
++    return r;
++}
++
++/* 565RLE image format: [count(2 bytes), rle(2 bytes)] */
++
++int load_565rle_image(char *fn)
++{
++    struct FB fb;
++    struct stat s;
++    unsigned short *data, *bits, *ptr;
++    unsigned count, max;
++    int fd;
++
++    if (vt_set_mode(1))
++        return -1;
++
++    fd = open(fn, O_RDONLY);
++    if (fd < 0) {
++        ERROR("cannot open '%s'\n", fn);
++        goto fail_restore_text;
++    }
++
++    if (fstat(fd, &s) < 0) {
++        goto fail_close_file;
++    }
++
++    data = mmap(0, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
++    if (data == MAP_FAILED)
++        goto fail_close_file;
++
++    if (fb_open(&fb))
++        goto fail_unmap_data;
++
++    max = fb_width(&fb) * fb_height(&fb);
++    ptr = data;
++    count = s.st_size;
++    bits = fb.bits;
++    while (count > 3) {
++        unsigned n = ptr[0];
++        if (n > max)
++            break;
++        android_memset16(bits, ptr[1], n << 1);
++        bits += n;
++        max -= n;
++        ptr += 2;
++        count -= 4;
++    }
++
++    munmap(data, s.st_size);
++    fb_update(&fb);
++    fb_close(&fb);
++    close(fd);
++    unlink(fn);
++    return 0;
++
++fail_unmap_data:
++    munmap(data, s.st_size);
++fail_close_file:
++    close(fd);
++fail_restore_text:
++    vt_set_mode(0);
++    return -1;
++}
++
++int load_argb8888_image(char *fn)
++{
++    struct FB fb;
++    struct stat s;
++    unsigned long *data, *bits, *ptr;
++    unsigned long *lineptr;
++    unsigned long width;
++    unsigned long height;
++    unsigned long countw = 0;
++    unsigned long counth = 0;
++    unsigned long *linebits;
++    unsigned long fbsize;
++    int fd;
++
++    if (vt_set_mode(1))
++        return -1;
++
++    fd = open(fn, O_RDONLY);
++    if (fd < 0) {
++        ERROR("cannot open '%s'\n", fn);
++        goto fail_restore_text;
++    }
++
++    if (fstat(fd, &s) < 0)
++    {
++        ERROR("fstat failed!\n");
++        goto fail_close_file;
++    }
++
++    data = mmap(0, s.st_size, PROT_READ, MAP_SHARED, fd, 0);
++    if (data == MAP_FAILED)
++    {
++        ERROR("MMAP failed!\n");
++        goto fail_close_file;
++    }
++
++    if (fb_open(&fb))
++    {
++        ERROR("FB_OPEN failed!\n");
++        goto fail_unmap_data;
++    }
++
++    width       = fb_width(&fb);
++    height      = fb_height(&fb);
++
++    fbsize      = width * height * 4;
++    ERROR("width = %d\n",width);
++      ERROR("height = %d\n",height);
++      ERROR("s.st_size = %d\n",s.st_size);
++
++    if(fbsize != s.st_size)
++    {
++        ERROR("logo match failed!fbsize = %d\n",fbsize);
++
++        munmap(data, s.st_size);
++        fb_update(&fb);
++        fb_close(&fb);
++        close(fd);
++
++        return -1;
++    }
++
++    counth      = height;
++    linebits    = fb.bits;
++    lineptr     = data;
++
++    while (counth > 0)
++    {
++        bits    = linebits;
++        ptr     = lineptr;
++        countw  = width;
++        while(countw > 0)
++        {
++            *bits = *ptr;
++            ptr++;
++            bits++;
++            countw--;
++        }
++        linebits    += width;
++        lineptr     += width;
++        counth--;
++    }
++
++    munmap(data, s.st_size);
++    fb_update(&fb);
++    fb_close(&fb);
++    close(fd);
++    //unlink(fn);
++    return 0;
++
++fail_unmap_data:
++    munmap(data, s.st_size);
++fail_close_file:
++    close(fd);
++fail_restore_text:
++    vt_set_mode(0);
++    return -1;
++}
+diff --git a/init/property_service.c b/init/property_service.c
+index 322f4d8..d1a4f94 100644
+--- a/init/property_service.c
++++ b/init/property_service.c
+@@ -316,6 +316,7 @@ int property_set(const char *name, const char *value)
+         selinux_reload_policy();
+     }
+     property_changed(name, value);
++
+     return 0;
+ }
+ 
+@@ -419,6 +420,7 @@ void get_property_workspace(int *fd, int *sz)
+ }
+ 
+ static void load_properties_from_file(const char *, const char *);
++void property_opt_for_mem(void);
+ 
+ /*
+  * Filter is used to decide which properties to load: NULL loads all keys,
+@@ -478,6 +480,8 @@ static void load_properties(char *data, const char *filter)
+             property_set(key, value);
+         }
+     }
++
++	property_opt_for_mem();
+ }
+ 
+ /*
+@@ -629,6 +633,7 @@ void start_property_service(void)
+ 
+     listen(fd, 8);
+     property_set_fd = fd;
++
+ }
+ 
+ int get_property_set_fd()
+diff --git a/libcutils/Android.mk b/libcutils/Android.mk
+index bee2bd7..21db1d3 100644
+--- a/libcutils/Android.mk
++++ b/libcutils/Android.mk
+@@ -112,6 +112,7 @@ LOCAL_SRC_FILES := $(commonSources) \
+         debugger.c \
+         klog.c \
+         memory.c \
++        misc_rw.c \
+         partition_utils.c \
+         properties.c \
+         qtaguid.c \
+diff --git a/libcutils/android_reboot.c b/libcutils/android_reboot.c
+index 30738d7..0a04cb2 100644
+--- a/libcutils/android_reboot.c
++++ b/libcutils/android_reboot.c
+@@ -96,7 +96,7 @@ static void remount_ro(void)
+ 
+ 
+     /* Now poll /proc/mounts till it's done */
+-    while (!remount_ro_done() && (cnt < 3600)) {
++    while (!remount_ro_done() && (cnt < 50)) {
+         usleep(100000);
+         cnt++;
+     }
+@@ -120,8 +120,8 @@ int android_reboot(int cmd, int flags UNUSED, char *arg)
+     }
+ #endif
+ 
+-    sync();
+-    remount_ro();
++        sync();	
++        remount_ro();
+ 
+     switch (cmd) {
+         case ANDROID_RB_RESTART:
+diff --git a/libcutils/misc_rw.c b/libcutils/misc_rw.c
+new file mode 100644
+index 0000000..2436df1
+--- /dev/null
++++ b/libcutils/misc_rw.c
+@@ -0,0 +1,108 @@
++/*
++ * write boot command in misc partition
++ */
++
++#define LOG_TAG "misc_rw"
++
++#include <errno.h>
++#include <stdio.h>
++#include <string.h>
++#include <utils/Log.h>
++
++#define LOGE(...) fprintf(stderr, "E:" __VA_ARGS__)
++
++static const char *MISC_DEVICE = "/dev/block/by-name/misc";
++
++/* Bootloader Message
++ */
++struct bootloader_message {
++    char command[32];
++    char status[32];
++    char recovery[1024];
++};
++
++
++// ------------------------------------
++// for misc partitions on block devices
++// ------------------------------------
++
++static int get_bootloader_message_block(struct bootloader_message *out,
++                                        const char* device) {
++    FILE* f = fopen(device, "rb");
++    if (f == NULL) {
++        LOGE("Can't open %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    struct bootloader_message temp;
++    int count = fread(&temp, sizeof(temp), 1, f);
++    if (count != 1) {
++        LOGE("Failed reading %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    if (fclose(f) != 0) {
++        LOGE("Failed closing %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    memcpy(out, &temp, sizeof(temp));
++    return 0;
++}
++
++static int set_bootloader_message_block(const struct bootloader_message *in,
++                                        const char* device) {
++    FILE* f = fopen(device, "wb");
++    if (f == NULL) {
++        LOGE("Can't open %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    int count = fwrite(in, sizeof(*in), 1, f);
++    if (count != 1) {
++        LOGE("Failed writing %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    sync();
++    if (fclose(f) != 0) {
++        LOGE("Failed closing %s\n(%s)\n", device, strerror(errno));
++        return -1;
++    }
++    return 0;
++}
++
++/* force the next boot to recovery/efex */
++int write_misc(char *reason) {
++    struct bootloader_message boot, temp;
++
++    memset(&boot, 0, sizeof(boot));
++    if (!strcmp("recovery", reason)) {
++        reason = "boot-recovery";
++    }
++
++    strcpy(boot.command, reason);
++    if (set_bootloader_message_block(&boot, MISC_DEVICE) )
++        return -1;
++
++    //read for compare
++    memset(&temp, 0, sizeof(temp));
++    if (get_bootloader_message_block(&temp, MISC_DEVICE))
++        return -1;
++
++    if( memcmp(&boot, &temp, sizeof(boot)) )
++        return -1;
++
++    return 0;
++}
++
++/*
++ * The recovery tool communicates with the main system through /cache files.
++ *   /cache/recovery/command - INPUT - command line for tool, one arg per line
++ *   /cache/recovery/log - OUTPUT - combined log file from recovery run(s)
++ *   /cache/recovery/intent - OUTPUT - intent that was passed in
++ *
++ * The arguments which may be supplied in the recovery.command file:
++ *   --send_intent=anystring - write the text out to recovery.intent
++ *   --update_package=path - verify install an OTA package file
++ *   --wipe_data - erase user data (and cache), then reboot
++ *   --wipe_cache - wipe cache (but not user data), then reboot
++ *   --set_encrypted_filesystem=on|off - enables / diasables encrypted fs
++ */
++static const char *COMMAND_FILE = "/cache/recovery/command";
++
+diff --git a/libion/include/ion/ion.h b/libion/include/ion/ion.h
+index f47793d..65bc8cb 100644
+--- a/libion/include/ion/ion.h
++++ b/libion/include/ion/ion.h
+@@ -28,6 +28,15 @@ __BEGIN_DECLS
+ 
+ struct ion_handle;
+ 
++
++typedef struct {
++    ion_user_handle_t handle;
++    unsigned int phys_addr;
++    unsigned int size;
++}sunxi_phys_data;
++#define ION_IOC_SUNXI_PHYS_ADDR     7
++
++
+ int ion_open();
+ int ion_close(int fd);
+ int ion_alloc(int fd, size_t len, size_t align, unsigned int heap_mask,
+@@ -40,6 +49,7 @@ int ion_map(int fd, ion_user_handle_t handle, size_t length, int prot,
+             int flags, off_t offset, unsigned char **ptr, int *map_fd);
+ int ion_share(int fd, ion_user_handle_t handle, int *share_fd);
+ int ion_import(int fd, int share_fd, ion_user_handle_t *handle);
++unsigned long ion_getphyadr(int fd, ion_user_handle_t handle);
+ 
+ __END_DECLS
+ 
+diff --git a/libion/ion.c b/libion/ion.c
+index 80bdc2a..d169ca9 100644
+--- a/libion/ion.c
++++ b/libion/ion.c
+@@ -174,3 +174,20 @@ int ion_sync_fd(int fd, int handle_fd)
+     };
+     return ion_ioctl(fd, ION_IOC_SYNC, &data);
+ }
++
++unsigned long ion_getphyadr(int fd,ion_user_handle_t handle)
++{
++    int ret = 0;
++    struct ion_custom_data custom_data;
++    sunxi_phys_data phys_data;
++
++    custom_data.cmd = ION_IOC_SUNXI_PHYS_ADDR;
++    phys_data.handle = handle;
++    custom_data.arg = (unsigned long)&phys_data;
++    ret = ioctl(fd, ION_IOC_CUSTOM, &custom_data);
++    if(ret < 0)
++        return 0;
++
++    return phys_data.phys_addr;
++}
++
+diff --git a/libion/ion_test.c b/libion/ion_test.c
+index 8872282..495d62f 100644
+--- a/libion/ion_test.c
++++ b/libion/ion_test.c
+@@ -63,7 +63,7 @@ void ion_alloc_test()
+ 
+     ret = ion_free(fd, handle);
+     if (ret) {
+-        printf("%s failed: %s %d\n", __func__, strerror(ret), handle);
++        printf("%s failed: %s, handle %d\n", __func__, strerror(ret), (int)handle);
+         return;
+     }
+     ion_close(fd);
+diff --git a/libion/original-kernel-headers/linux/ion.h b/libion/original-kernel-headers/linux/ion.h
+index f09e7c1..580b85b 100644
+--- a/libion/original-kernel-headers/linux/ion.h
++++ b/libion/original-kernel-headers/linux/ion.h
+@@ -42,6 +42,7 @@ enum ion_heap_type {
+ 	ION_HEAP_TYPE_DMA,
+ 	ION_HEAP_TYPE_CUSTOM, /* must be last so device specific heaps always
+ 				 are at the end of this enum */
++	ION_HEAP_TYPE_SECURE,
+ 	ION_NUM_HEAPS = 16,
+ };
+ 
+@@ -49,6 +50,7 @@ enum ion_heap_type {
+ #define ION_HEAP_SYSTEM_CONTIG_MASK	(1 << ION_HEAP_TYPE_SYSTEM_CONTIG)
+ #define ION_HEAP_CARVEOUT_MASK		(1 << ION_HEAP_TYPE_CARVEOUT)
+ #define ION_HEAP_TYPE_DMA_MASK		(1 << ION_HEAP_TYPE_DMA)
++#define ION_HEAP_SECURE_MASK		(1 << ION_HEAP_TYPE_SECURE)
+ 
+ #define ION_NUM_HEAP_IDS		sizeof(unsigned int) * 8
+ 
+diff --git a/sdcard/sdcard.c b/sdcard/sdcard.c
+index a29462c..2225adf 100644
+--- a/sdcard/sdcard.c
++++ b/sdcard/sdcard.c
+@@ -40,6 +40,7 @@
+ #include <cutils/hashmap.h>
+ #include <cutils/log.h>
+ #include <cutils/multiuser.h>
++#include <cutils/sched_policy.h>
+ 
+ #include <private/android_filesystem_config.h>
+ 
+@@ -115,7 +116,7 @@
+ #define MAX_REQUEST_SIZE (sizeof(struct fuse_in_header) + sizeof(struct fuse_write_in) + MAX_WRITE)
+ 
+ /* Default number of threads. */
+-#define DEFAULT_NUM_THREADS 2
++#define DEFAULT_NUM_THREADS 4
+ 
+ /* Pseudo-error constant used to indicate that no fuse status is needed
+  * or that a reply has already been written. */
+@@ -1870,7 +1871,7 @@ static int run(const char* source_path, const char* dest_path, uid_t uid,
+         ERROR("cannot setgroups: %s\n", strerror(errno));
+         goto error;
+     }
+-
++    set_sched_policy(getpid(), SP_BACKGROUND);
+     res = setgid(gid);
+     if (res < 0) {
+         ERROR("cannot setgid: %s\n", strerror(errno));
+diff --git a/toolbox/newfs_msdos.c b/toolbox/newfs_msdos.c
+index 01517fd..c342adc 100644
+--- a/toolbox/newfs_msdos.c
++++ b/toolbox/newfs_msdos.c
+@@ -589,6 +589,10 @@ int newfs_msdos_main(int argc, char *argv[])
+         x = (u_int64_t)(bpb.bsec - x1) * bpb.bps * NPB /
+                 (bpb.spc * bpb.bps * NPB + fat / BPN * bpb.nft);
+         x2 = howmany((RESFTE + MIN(x, maxcls(fat))) * (fat / BPN), bpb.bps * NPB);
++        if ((fat == 32) && (bpb.bspf == 0)) {
++            if (((bpb.res + bpb.nft*x2)%bpb.spc) != 0)
++                x2 += (bpb.spc -(bpb.res + bpb.nft*x2)%bpb.spc)/bpb.nft;
++        }
+         if (set_spf) {
+             if (!bpb.bspf) {
+                 bpb.bspf = x2;
+-- 
+1.9.1
+

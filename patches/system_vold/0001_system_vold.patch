@@ -1,0 +1,346 @@
+From b9c0de3266282f65e4dcabb26cb3183c9db0f455 Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 11:05:33 +0300
+Subject: [PATCH] add allwinner additions
+
+Change-Id: I275f39c551e4999fcb1a4e12e3e9665affc93b24
+---
+ Android.mk        |  2 ++
+ Fat.cpp           | 29 ++++++++++++++++++++--
+ Fat.h             |  1 +
+ Tmpfs.cpp         | 51 ++++++++++++++++++++++++++++++++++++++
+ Tmpfs.h           | 12 +++++++++
+ Volume.cpp        |  2 ++
+ VolumeManager.cpp | 12 ++++-----
+ iso9660.cpp       | 74 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ iso9660.h         | 32 ++++++++++++++++++++++++
+ 9 files changed, 207 insertions(+), 8 deletions(-)
+ create mode 100644 Tmpfs.cpp
+ create mode 100644 Tmpfs.h
+ create mode 100644 iso9660.cpp
+ create mode 100644 iso9660.h
+
+diff --git a/Android.mk b/Android.mk
+index efea536..a48df6d 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -14,6 +14,8 @@ common_src_files := \
+ 	Ext4.cpp \
+ 	Fat.cpp \
+ 	Ntfs.cpp \
++	iso9660.cpp \
++	Tmpfs.cpp \
+ 	F2FS.cpp \
+ 	Loop.cpp \
+ 	Devmapper.cpp \
+diff --git a/Fat.cpp b/Fat.cpp
+index cd4ea5f..72a3376 100644
+--- a/Fat.cpp
++++ b/Fat.cpp
+@@ -170,8 +170,12 @@ int Fat::doMount(const char *fsPath, const char *mountPoint,
+ }
+ 
+ int Fat::format(const char *fsPath, unsigned int numSectors, bool wipe) {
++    return Fat::format(fsPath, numSectors, wipe, NULL);
++}
++
++int Fat::format(const char *fsPath, unsigned int numSectors, bool wipe, const char *label) {
+     int fd;
+-    const char *args[11];
++    const char *args[13];
+     int rc;
+     int status;
+ 
+@@ -188,20 +192,41 @@ int Fat::format(const char *fsPath, unsigned int numSectors, bool wipe) {
+     args[6] = "64";
+     args[7] = "-A";
+ 
++if (label) {
+     if (numSectors) {
+         char tmp[32];
+         snprintf(tmp, sizeof(tmp), "%u", numSectors);
+         const char *size = tmp;
+         args[8] = "-s";
+         args[9] = size;
++        args[10] = "-L";
++        args[11] = label;
++        args[12] = fsPath;
++        rc = android_fork_execvp(13, (char **)args, &status,
++                false, true);
++    } else {
++        args[8] = "-L";
++        args[9] = label;
+         args[10] = fsPath;
+-        rc = android_fork_execvp(ARRAY_SIZE(args), (char **)args, &status,
++        rc = android_fork_execvp(11, (char **)args, &status, false,
++                true);
++    }
++} else {
++    if (numSectors) {
++        char tmp[32];
++        snprintf(tmp, sizeof(tmp), "%u", numSectors);
++        const char *size = tmp;
++        args[8] = "-s";
++        args[9] = size;
++        args[10] = fsPath;
++        rc = android_fork_execvp(11, (char **)args, &status,
+                 false, true);
+     } else {
+         args[8] = fsPath;
+         rc = android_fork_execvp(9, (char **)args, &status, false,
+                 true);
+     }
++}
+ 
+     if (rc != 0) {
+         SLOGE("Filesystem format failed due to logwrap error");
+diff --git a/Fat.h b/Fat.h
+index 19614d1..b01c41c 100644
+--- a/Fat.h
++++ b/Fat.h
+@@ -27,6 +27,7 @@ public:
+                        int ownerUid, int ownerGid, int permMask,
+                        bool createLost);
+     static int format(const char *fsPath, unsigned int numSectors, bool wipe);
++    static int format(const char *fsPath, unsigned int numSectors, bool wipe, const char *label);
+ 
+ private:
+     static void wipe(const char *fsPath, unsigned int numSectors);
+diff --git a/Tmpfs.cpp b/Tmpfs.cpp
+new file mode 100644
+index 0000000..dbaa715
+--- /dev/null
++++ b/Tmpfs.cpp
+@@ -0,0 +1,51 @@
++#include <stdio.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/mman.h>
++#include <sys/mount.h>
++#include <sys/wait.h>
++
++#include <linux/kdev_t.h>
++
++#define LOG_TAG "Vold"
++
++#include <cutils/log.h>
++#include <cutils/properties.h>
++
++#include <logwrap/logwrap.h>
++
++#include "Tmpfs.h"
++#include "VoldUtil.h"
++
++extern "C" int mount(const char *, const char *, const char *, unsigned long, const void *);
++
++int Tmpfs::doMount(const char *mountPoint,
++                 int ownerUid, int ownerGid) {
++    int rc;
++    unsigned long flags;
++    char mountData[255];
++
++    flags = MS_NODEV | MS_NOSUID;
++
++    sprintf(mountData,
++            "uid=%d,gid=%d",
++            ownerUid, ownerGid);
++
++    rc = mount("tmpfs", mountPoint, "tmpfs", flags, mountData);
++
++    if (rc && errno == EROFS) {
++        flags |= MS_RDONLY;
++        rc = mount("tmpfs", mountPoint, "tmpfs", flags, mountData);
++    }
++
++    return rc;
++}
+diff --git a/Tmpfs.h b/Tmpfs.h
+new file mode 100644
+index 0000000..d7a4f37
+--- /dev/null
++++ b/Tmpfs.h
+@@ -0,0 +1,12 @@
++#ifndef _TMPFS_H
++#define _TMPFS_H
++
++#include <unistd.h>
++
++class Tmpfs {
++public:
++    static int doMount(const char *mountPoint,
++                 int ownerUid, int ownerGid);
++};
++
++#endif
+diff --git a/Volume.cpp b/Volume.cpp
+index a2db960..097e45e 100644
+--- a/Volume.cpp
++++ b/Volume.cpp
+@@ -53,6 +53,8 @@
+ #ifdef VOLD_ENABLE_EXFAT
+ #include "Exfat.h"
+ #endif
++#include "iso9660.h"
++#include "Tmpfs.h"
+ #include "F2FS.h"
+ #include "Process.h"
+ #include "cryptfs.h"
+diff --git a/VolumeManager.cpp b/VolumeManager.cpp
+index 4dcb57b..bebf221 100644
+--- a/VolumeManager.cpp
++++ b/VolumeManager.cpp
+@@ -1904,18 +1904,18 @@ bool VolumeManager::isMountpointMounted(const char *mp)
+ }
+ 
+ int VolumeManager::cleanupAsec(Volume *v, bool force) {
+-    int rc = 0;
++    /* Only EXTERNAL_STORAGE needs ASEC cleanup. */
++    const char *externalPath = getenv("EXTERNAL_STORAGE") ?: "/mnt/sdcard";
++    if (0 != strcmp(v->getMountpoint(), externalPath))
++        return 0;
++
++    int rc = unmountAllAsecsInDir(Volume::SEC_ASECDIR_EXT);
+ 
+     char asecFileName[255];
+ 
+     AsecIdCollection removeAsec;
+     AsecIdCollection removeObb;
+ 
+-    // Only primary storage needs ASEC cleanup
+-    if (!(v->getFlags() & VOL_PROVIDES_ASEC)) {
+-        return 0;
+-    }
+-
+     for (AsecIdCollection::iterator it = mActiveContainers->begin(); it != mActiveContainers->end();
+             ++it) {
+         ContainerData* cd = *it;
+diff --git a/iso9660.cpp b/iso9660.cpp
+new file mode 100644
+index 0000000..4287d79
+--- /dev/null
++++ b/iso9660.cpp
+@@ -0,0 +1,74 @@
++/*
++ * Copyright (C) 2008 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/mman.h>
++#include <sys/mount.h>
++
++#include <linux/kdev_t.h>
++
++#define LOG_TAG "Vold"
++
++#include <cutils/log.h>
++#include <cutils/properties.h>
++
++#include "iso9660.h"
++
++extern "C" int logwrap(int argc, const char **argv, int background);
++extern "C" int mount(const char *, const char *, const char *, unsigned long, const void *);
++
++int iso9660::check(const char *fsPath) {
++    return 0;
++}
++
++int iso9660::doMount(const char *fsPath, const char *mountPoint,
++                 bool ro, bool remount, bool executable,
++                 int ownerUid, int ownerGid, int permMask, bool createLost) {
++    int rc;
++    unsigned long flags;
++    char mountData[255];
++
++    flags = MS_NODEV | MS_NOSUID;
++
++    flags |= (remount ? MS_REMOUNT : 0);
++
++
++    sprintf(mountData,
++            "utf8,uid=%d,gid=%d",
++            ownerUid, ownerGid);
++
++    rc = mount(fsPath, mountPoint, "iso9660", flags, mountData);
++
++    if (rc && errno == EROFS) {
++        SLOGE("%s appears to be a read only filesystem - retrying mount RO", fsPath);
++        flags |= MS_RDONLY;
++        rc = mount(fsPath, mountPoint, "iso9660", flags, mountData);
++    }
++
++    return rc;
++}
+diff --git a/iso9660.h b/iso9660.h
+new file mode 100644
+index 0000000..c100fee
+--- /dev/null
++++ b/iso9660.h
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (C) 2008 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#ifndef _ISO9660_H
++#define _ISO9660_H
++
++#include <unistd.h>
++
++class iso9660 {
++public:
++    static int check(const char *fsPath);
++    static int doMount(const char *fsPath, const char *mountPoint,
++                       bool ro, bool remount, bool executable,
++                       int ownerUid, int ownerGid, int permMask,
++                       bool createLost);
++
++};
++
++#endif
+-- 
+1.9.1
+
