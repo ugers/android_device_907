@@ -1,0 +1,26 @@
+From 42ff9784e23c7a2ab2f02345b8d930bfd6b77ed7 Mon Sep 17 00:00:00 2001
+From: maniacx <macs18max@gmail.com>
+Date: Sun, 2 Aug 2015 00:12:50 +0400
+Subject: [PATCH] Revert "Fix an apk icon animation corruption issue"
+
+Low end device UI slows down with this
+
+This reverts commit dbac4a767dd128f88932c925471b0a778a24d6b2.
+---
+ libs/hwui/DamageAccumulator.cpp | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/libs/hwui/DamageAccumulator.cpp b/libs/hwui/DamageAccumulator.cpp
+index 3bd0da9..420e331 100644
+--- a/libs/hwui/DamageAccumulator.cpp
++++ b/libs/hwui/DamageAccumulator.cpp
+@@ -138,7 +138,6 @@ static inline void mapRect(const RenderProperties& props, const SkRect& in, SkRe
+     }
+     temp.offset(props.getLeft(), props.getTop());
+     out->join(temp);
+-    out->join(in);
+ }
+ 
+ static DirtyStack* findParentRenderNode(DirtyStack* frame) {
+-- 
+2.1.4
