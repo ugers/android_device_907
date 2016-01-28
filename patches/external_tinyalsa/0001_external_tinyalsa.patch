@@ -1,0 +1,92 @@
+From d693ae6b43c492eae847b010a4746e572030449a Mon Sep 17 00:00:00 2001
+From: yugers <yugers@gmail.com>
+Date: Thu, 28 Jan 2016 11:16:04 +0300
+Subject: [PATCH] add by allwinner
+
+Change-Id: I741611422e265f5de270ee74ff872f729dea69a4
+---
+ include/tinyalsa/asoundlib.h |  3 +++
+ pcm.c                        | 56 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
+
+diff --git a/include/tinyalsa/asoundlib.h b/include/tinyalsa/asoundlib.h
+index 809e02d..73ab514 100644
+--- a/include/tinyalsa/asoundlib.h
++++ b/include/tinyalsa/asoundlib.h
+@@ -250,6 +250,9 @@ int pcm_wait(struct pcm *pcm, int timeout);
+  */
+ int pcm_set_avail_min(struct pcm *pcm, int avail_min);
+ 
++int pcm_get_node_number(char *name);
++
++
+ /*
+  * MIXER API
+  */
+diff --git a/pcm.c b/pcm.c
+index d8af58a..4ef4843 100644
+--- a/pcm.c
++++ b/pcm.c
+@@ -1298,3 +1298,59 @@ int pcm_ioctl(struct pcm *pcm, int request, ...)
+ 
+     return ioctl(pcm->fd, request, arg);
+ }
++
++int pcm_get_node_number(char *name)
++{
++	char card[32];
++	char id[32];
++	int i = 0;
++	int j = 0;
++	int fd = 0;
++	int ret = 0;
++
++	for(i = 0; i < 10; i++){
++		memset(card, 0, 32);
++		memset(id, 0, 32);
++
++		/* "/sys/class/sound/cardx" */
++		sprintf(card, "/sys/class/sound/card%d", i);
++		ret = access(card, F_OK);
++		if(ret != 0){
++			continue;
++		}
++
++		/* "/sys/class/sound/cardx/id" */
++		strcat(card, "/id");
++		ret = access(card, F_OK);
++		if(ret != 0){
++			continue;
++		}
++
++		/* compare */
++		fd = open(card, O_RDONLY);
++		if(fd < 0){
++			continue;
++		}
++
++		ret = read(fd, id, 32);
++		if(ret < 0){
++			close(fd);
++			continue;
++		}
++
++		/* ?????§Ù? */
++		for(j = 0; j < 32; j++){
++			if(id[j] == 0x0a){
++		            id[j] = 0;
++			}
++		}
++
++		if(!strcmp(id, name)){
++			close(fd);
++			return i;
++		}
++
++		close(fd);
++	}
++	return -1;
++}
+-- 
+1.9.1
+
