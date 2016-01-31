@@ -1,0 +1,28 @@
+From 1b5d3ed932fa31a863f2b88227d0b996eb00065a Mon Sep 17 00:00:00 2001
+From: fire855 <thefire855@gmail.com>
+Date: Sun, 31 Jan 2016 17:00:08 +0100
+Subject: [PATCH 2/2] nl80211: The AP SME condition causes problems on driver
+ initialization Original commit:
+ https://github.com/voodik/android_external_wpa_supplicant_8/commit/ddfe72ecf79d17f5f5123801a9e3194746d3defc
+
+Change-Id: Ib085914b1851682b3c5d9fe65cd26209710c3cb1
+---
+ src/drivers/driver_nl80211.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/drivers/driver_nl80211.c b/src/drivers/driver_nl80211.c
+index d7e910b..f9135ae 100644
+--- a/src/drivers/driver_nl80211.c
++++ b/src/drivers/driver_nl80211.c
+@@ -4043,7 +4043,7 @@ static int wiphy_info_handler(struct nl_msg *msg, void *arg)
+ 	wiphy_info_tdls(capa, tb[NL80211_ATTR_TDLS_SUPPORT],
+ 			tb[NL80211_ATTR_TDLS_EXTERNAL_SETUP]);
+ 
+-	if (tb[NL80211_ATTR_DEVICE_AP_SME])
++	//if (tb[NL80211_ATTR_DEVICE_AP_SME])
+ 		info->device_ap_sme = 1;
+ 
+ 	wiphy_info_feature_flags(info, tb[NL80211_ATTR_FEATURE_FLAGS]);
+-- 
+2.5.0
+
