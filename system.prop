@@ -13,6 +13,10 @@ debug.hwui.render_dirty_regions=false
 wifi.interface=wlan0
 wifi.supplicant_scan_interval=60
 
+# To get USB-Bluetooth work
+config.disable_bluetooth=false
+persist.service.bt.a2dp.sink=true
+
 # Disable StrictMode
 persist.sys.strictmode.visual=0
 persist.sys.strictmode.disable=1

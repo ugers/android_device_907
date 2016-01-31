@@ -13,6 +13,7 @@
 /dev/ttyHS2                             u:object_r:hci_attach_dev:s0
 # Bluetooth
 /sys/class/rfkill/rfkill0/state u:object_r:sysfs_bluetooth_writable:s0
+/system/bin/mngblt		u:object_r:mngblt_exec:s0
 
 # cedar_dev
 /dev/cedar_dev    			u:object_r:cedar_device:s0

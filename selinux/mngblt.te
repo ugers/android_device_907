@@ -1,0 +1,8 @@
+type mngblt, domain;
+type mngblt_exec, exec_type, file_type;
+# Started by init
+init_daemon_domain(mngblt)
+
+#============= mngblt ==============
+allow mngblt self:capability chown;
+allow mngblt usb_device:chr_file setattr;

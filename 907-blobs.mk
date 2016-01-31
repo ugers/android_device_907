@@ -30,7 +30,6 @@ PRODUCT_COPY_FILES += \
 	$(COMMON_PATH)/prebuilt/etc/firmware/ath3k-1.fw:system/vendor/firmware/ath3k-1.fw \
 	$(COMMON_PATH)/prebuilt/etc/3g_dongle.cfg:system/etc/3g_dongle.cfg \
 	$(COMMON_PATH)/prebuilt/etc/3ginfo.gz:system/etc/3ginfo.gz \
-   	$(COMMON_PATH)/hardware/bluetooth/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf \
 	$(COMMON_PATH)/prebuilt/etc/camera.cfg:system/etc/camera.cfg \
 	$(COMMON_PATH)/prebuilt/etc/gps.conf:system/etc/gps.conf \
 	$(COMMON_PATH)/prebuilt/etc/usb_modeswitch.sh:system/etc/usb_modeswitch.sh \

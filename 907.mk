@@ -38,13 +38,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
-	ro.sys.fw.dex2oat_thread_count=2 \
 	dalvik.vm.dex2oat-swap=true \
 	dalvik.vm.dex2oat-flags=--no-watch-dog \
 	dalvik.vm.dex2oat-filter=interpret-only \
 	dalvik.vm.image-dex2oat-filter=speed \
 	dalvik.vm.profiler=1 \
-	persist.sys.dalvik.vm.lib.2=libart.so \
+	dalvik.vm.dex2oat-Xms=8m \
+	dalvik.vm.dex2oat-Xmx=128m \
 	dalvik.vm.isa.arm.features=default \
 	
 PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
@@ -65,7 +65,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.config.nocheckin=1 \
 	ro.spk_dul.used=false \
 	ro.zram.default=1 \
+	ro.sw.embeded.telephony=false \
 	persist.sys.root_access=3 \
+	com.android.terminal=1 \
 	persist.sys.vold.switchexternal=0 \
 	persist.sys.force_highendgfx=true \
 	persist.service.adb.enable=1 \
@@ -78,6 +80,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     	persist.sys.isUsbOtgEnabled=true \
 	sys.io.scheduler=bfq \
 	config.disable_atlas=true \
+
+# Reduce background apps limit to 16 on low-tier devices
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.sys.fw.bg_apps_limit=16
 
 DEVICE_PACKAGE_OVERLAYS := $(COMMON_PATH)/overlay
 
@@ -139,6 +145,8 @@ PRODUCT_PACKAGES += \
 # Bluetooth
 PRODUCT_PACKAGES += \
 	libusb  \
+	libbt-utils \
+	libbt-hci \
 	hciconfig \
 	hcitool \
 
@@ -195,9 +203,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	com.android.future.usb.accessory
 
-# ext4 filesystem utils
+# Filesystem management tools
 PRODUCT_PACKAGES += \
-	e2fsck \
+	e2fsck
+
+# ext4 filesystem utils
+#PRODUCT_PACKAGES += \
 	libext2fs \
 	libext2_blkid \
 	libext2_uuid \
@@ -205,6 +216,13 @@ PRODUCT_PACKAGES += \
 	libext2_com_err \
 	libext2_e2p \
 	make_ext4fs \
+
+# f2fs filesystem utils
+PRODUCT_PACKAGES += \
+	mkfs.f2fs \
+	fsck.f2fs \
+	make_f2fs \
+	fibmap.f2fs \
 	
 # extra - present in stock images
 PRODUCT_PACKAGES += \

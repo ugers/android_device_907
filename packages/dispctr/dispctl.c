@@ -130,6 +130,8 @@ main(int argc, char *argv[])
 		cmd[0] = 1;
 		break;
 	case FB_MODE_TWO_SAME_SCREEN_TB:
+		cmd[0] = 2;
+		break;
 	case FB_MODE_TWO_DIFF_SCREEN_SAME_CONTENTS:
 	default:
 		(void)close(fd);
@@ -138,7 +140,7 @@ main(int argc, char *argv[])
 	}
 
 	printf("Detecting HDMI");
-	while (ioctl(fd, CMD_HDMI | HDMI_GET_HPD_STATUS, cmd) != 1) {
+	while (ioctl(fd, CMD_HDMI | HDMI_GET_HPD_STATUS, cmd) != 2) {
 		if (retry-- > 0) {
 			printf(".");
 			sleep(1);
@@ -152,7 +154,7 @@ main(int argc, char *argv[])
 
 	for (tvmode = TV_MODE_720P_50HZ; tvmode <= TV_MODE_1080P_60HZ; tvmode++) {
 		cmd[1] = tvmode;
-		if (ioctl(fd, CMD_HDMI | HDMI_SUPPORT_MODE, cmd) == 1)
+		if (ioctl(fd, CMD_HDMI | HDMI_SUPPORT_MODE, cmd) == 2)
 			break;
 	}
 

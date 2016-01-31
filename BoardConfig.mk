@@ -55,13 +55,14 @@ BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
 BLUETOOTH_HCI_USE_USB := true
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/softwinner/907/hardware/bluetooth
-BOARD_BLUEDROID_VENDOR_CONF := device/softwinner/907/hardware/bluetooth/vnd_generic_usb.txt
+#BOARD_BLUEDROID_VENDOR_CONF := device/softwinner/907/hardware/bluetooth/vnd_generic_usb.txt
 BOARD_BLUETOOTH_DOES_NOT_USE_RFKILL := true
-TARGET_NEEDS_BLUETOOTH_INIT_DELAY := true
+#TARGET_NEEDS_BLUETOOTH_INIT_DELAY := true
 BOARD_HAS_VIBRATOR_IMPLEMENTATION := ../../device/softwinner/907/hardware/include/vibrator.c
 
 # Partition sizes; must be in decimal
 TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 33554432
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 33554432
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 524288000
@@ -80,7 +81,7 @@ BOARD_EGL_NEEDS_FNW := true
 BOARD_EGL_SYSTEMUI_PBSIZE_HACK := true  #encrease buffer size for SystemUI
 BOARD_NO_ALLOW_DEQUEUE_CURRENT_BUFFER := true
 TARGET_32_BIT_SURFACEFLINGER := true #use only 32bit lib
-
+BOARD_USES_HDMI := true
 # Workaround for no SYNC support
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 
@@ -100,14 +101,14 @@ BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/fi
 RECOVERY_FSTAB_VERSION := 2
 BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
-TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
+#BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
+#TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
 #TARGET_RECOVERY_UI_LIB := librecovery_ui_crane_evb
 #TARGET_RECOVERY_UPDATER_LIBS :=
 
 # TWRP recovery
 #BOARD_HAS_SDCARD_INTERNAL := true
-#TARGET_RECOVERY_PIXEL_FORMAT := "RGB565"
+#TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"
 #DEVICE_RESOLUTION := 1024x768
 #TW_FLASH_FROM_STORAGE := true
 #TW_NO_REBOOT_BOOTLOADER := true
@@ -118,6 +119,9 @@ TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 #TW_EXTERNAL_STORAGE_PATH := "/sdcard"
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
 #TWHAVE_SELINUX := true
+#TW_NO_CPU_TEMP := true
+#TW_USE_TOOLBOX := false
+#BOARD_CUSTOM_GRAPHICS := ../../../device/softwinner/907/recovery/graphics.c
 #BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 #BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
 #TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/twrp.fstab
@@ -147,7 +151,7 @@ BOARD_HOSTAPD_DRIVER             := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
 BOARD_WLAN_DEVICE                := rtl8192cu
 SW_BOARD_USR_WIFI                := rtl8192cu
-
+BOARD_NO_APSME_ATTR		 := true
 WIFI_DRIVER_MODULE_NAME   := "8192cu"
 WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
 
@@ -192,6 +196,7 @@ BOARD_SEPOLICY_UNION += \
     unconfined.te \
     untrusted_app.te \
     vold.te \
+    mngblt.te \
     wpa_supplicant.te \
     wpa.te \
     zygote.te \

@@ -3,9 +3,9 @@
 /boot          emmc   /dev/block/nandc
 /bootloader    emmc   /dev/block/nanda
 
-/cache         ext4   /dev/block/nandh
-/data          ext4   /dev/block/nande
-/system        ext4   /dev/block/nandd 
+/cache         f2fs   /dev/block/nandh
+/data          f2fs   /dev/block/nande
+/system        f2fs   /dev/block/nandd 
 /recovery      ext4   /dev/block/nandg
 
 /emmc          vfat   /dev/block/nandi

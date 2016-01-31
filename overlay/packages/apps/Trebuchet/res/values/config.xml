@@ -1,0 +1,6 @@
+<resources>
+<!-- Miscellaneous -->
+    <bool name="is_tablet">true</bool>
+    <bool name="allow_rotation">true</bool>
+    <bool name="config_largeIcons">true</bool>
+</resources>

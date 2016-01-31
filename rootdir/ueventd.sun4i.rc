@@ -18,17 +18,18 @@
 /dev/android_adb          0660   adb        adb
 /dev/ppp                  0660   radio      vpn
 /dev/disp                 0777   system     system 
-/dev/g2d                  0777   system     system 
-/dev/cedar_dev            0666   system     system 
+/dev/g2d                  0660    media       media
+/dev/fd_dev               0660    media       media 
+/dev/cedar_dev            0660    media       media 
 /dev/ace_dev              0666   system     system 
 /dev/ump                  0777   system	    graphics
 /dev/mali                 0777   system	    graphics
 /dev/ump                  0777   system     graphics
 /dev/graphics/*           0660   root       graphics
-/dev/video0               0777   system	    system
-/dev/video1               0777   system	    system
-/dev/snd/pcmC0D0c         0777   system     system
-/dev/snd/pcmC0D0p         0777   system     system
+/dev/video0               0770    media       media
+/dev/video1               0770    media       media
+/dev/snd/pcmC0D0c         0770    media       media
+/dev/snd/pcmC0D0p         0770    media       media
 /dev/block/nandf          0666	 system		  system
 /dev/ttyS1                0660   bluetooth  bluetooth
 /dev/ttyHS2               0660   bluetooth  bluetooth
@@ -40,8 +41,9 @@
 /dev/pixcir_i2c_ts0       0777   system     system
 /dev/pa_dev               0777	 system	    system
 /dev/dmard06              0777   system     system
-/dev/ttyACM0              0777   system     system
-/dev/ttyACM1              0777   system     system
+/dev/ttyACM0              0777    system      system
+/dev/ttyACM1              0777    system      system
+/dev/ttyACM2              0777    system      system
 
 # sysfs properties, for mma7660 gsensor
 /sys/devices/virtual/input/input*   name        0660  root   input
@@ -63,7 +65,7 @@
 /dev/uhid                 0660    bluetooth bluetooth
  
 # bluetooth device
-/dev/bus/usb/001/005      0660    bluetooth bluetooth
+/dev/bus/usb/001/*      0660    bluetooth bluetooth
 
 #ChristianTroy
 #/sys/devices/platform/sw-ehci.1/usb2/2-1/2-1.1/2-1.1:1.0/bluetooth/hci0/rfkill* state  0777 system system
