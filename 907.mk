@@ -104,16 +104,11 @@ PRODUCT_COPY_FILES += \
 	
 # Wifi
 PRODUCT_PACKAGES += \
-    dhcpcd.conf \
     libwpa_client \
     hostapd \
+    dhcpcd.conf \
     wpa_supplicant \
-    wpa_supplicant.conf \
-    wpa_supplicant_overlay.conf \
-    p2p_supplicant_overlay.conf
-
-PRODUCT_COPY_FILES += \
-	$(COMMON_PATH)/hardware/realtek/wlan/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf
+    wpa_supplicant.conf
 
 # Device specific settings
 PRODUCT_PACKAGES += \
