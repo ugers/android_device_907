@@ -14,6 +14,9 @@ on init
 	symlink /storage/sdcard1 /extsd
 	symlink /storage/sdcard1 /mnt/extsd
 
+    	write /sys/block/zram0/comp_algorithm lz4
+    	write /sys/block/zram0/max_comp_streams 2
+
 on fs
 	setprop ro.crypto.umount_sd false
 	mount_all /fstab.sun4i
@@ -105,6 +108,10 @@ service init_bltt /system/bin/mngblt
     oneshot
 
 on post-fs-data
+    	# create dalvik-cache, so as to enforce our permissions
+    	mkdir /data/dalvik-cache 0771 root root
+    	mkdir /data/dalvik-cache/arm 0771 system system
+
     	# give system access to wpa_supplicant.conf for backup and restore
     	chmod 0770 /data/misc/wifi
     	chmod 0660 /data/misc/wifi/wpa_supplicant.conf
@@ -157,7 +164,7 @@ service p2p_supplicant /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
     oneshot
 
 # dhcpcd daemons
-service dhcpcd_wlan0 /system/bin/dhcpcd -aABDKL
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
     class main
     disabled
     oneshot    
@@ -166,6 +173,7 @@ service iprenew_wlan0 /system/bin/dhcpcd -n
     class main
     disabled
     oneshot
+
 
 service dhcpcd_p2p /system/bin/dhcpcd -aABKL
     class main
@@ -234,11 +242,19 @@ on property:sys.perf.profile=0
 # Balanced
 on property:sys.perf.profile=1
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 432000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 528000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1008000
+    setprop sys.io.scheduler noop
 
 # Performance
 on property:sys.perf.profile=2
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1008000
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1008000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1056000
+    setprop sys.io.scheduler bfq
+
+on property:init.svc.bootanim=running
+    setprop sys.perf.profile 2
+
+on property:init.svc.bootanim=stopped
+    setprop sys.perf.profile 1

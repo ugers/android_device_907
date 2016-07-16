@@ -44,10 +44,14 @@ __BEGIN_DECLS
  *
  * GRALLOC_MODULE_API_VERSION_0_2:
  * Add support for flexible YCbCr format with (*lock_ycbcr)() method.
+ *
+ * GRALLOC_MODULE_API_VERSION_0_3:
+ * Add support for fence passing to/from lock/unlock.
  */
 
 #define GRALLOC_MODULE_API_VERSION_0_1  HARDWARE_MODULE_API_VERSION(0, 1)
 #define GRALLOC_MODULE_API_VERSION_0_2  HARDWARE_MODULE_API_VERSION(0, 2)
+#define GRALLOC_MODULE_API_VERSION_0_3  HARDWARE_MODULE_API_VERSION(0, 3)
 
 #define GRALLOC_DEVICE_API_VERSION_0_1  HARDWARE_DEVICE_API_VERSION(0, 1)
 
@@ -71,7 +75,7 @@ enum {
     GRALLOC_USAGE_SW_READ_OFTEN         = 0x00000003,
     /* mask for the software read values */
     GRALLOC_USAGE_SW_READ_MASK          = 0x0000000F,
-
+    
     /* buffer is never written in software */
     GRALLOC_USAGE_SW_WRITE_NEVER        = 0x00000000,
     /* buffer is rarely written in software */
@@ -120,12 +124,28 @@ enum {
      */
     GRALLOC_USAGE_PROTECTED             = 0x00004000,
 
+    /* buffer may be used as a cursor */
+    GRALLOC_USAGE_CURSOR                = 0x00008000,
+
     /* implementation-specific private usage flags */
     GRALLOC_USAGE_PRIVATE_0             = 0x10000000,
     GRALLOC_USAGE_PRIVATE_1             = 0x20000000,
     GRALLOC_USAGE_PRIVATE_2             = 0x40000000,
     GRALLOC_USAGE_PRIVATE_3             = 0x80000000,
     GRALLOC_USAGE_PRIVATE_MASK          = 0xF0000000,
+
+#ifdef EXYNOS4_ENHANCEMENTS
+    /* SAMSUNG */
+    GRALLOC_USAGE_PRIVATE_NONECACHE     = 0x00800000,
+
+    GRALLOC_USAGE_HW_FIMC1              = 0x01000000,
+    GRALLOC_USAGE_HW_ION                = 0x02000000,
+    GRALLOC_USAGE_YUV_ADDR              = 0x04000000,
+    GRALLOC_USAGE_CAMERA                = 0x08000000,
+
+    /* SEC Private usage , for Overlay path at HWC */
+    GRALLOC_USAGE_HWC_HWOVERLAY         = 0x20000000,
+#endif
 };
 
 enum {
@@ -226,6 +246,10 @@ typedef struct gralloc_module_t {
     int (*unlock)(struct gralloc_module_t const* module,
             buffer_handle_t handle);
 
+#ifdef EXYNOS4_ENHANCEMENTS
+    int (*getphys) (struct gralloc_module_t const* module,
+            buffer_handle_t handle, void** paddr);
+#endif
 
     /* reserved for future use */
     int (*perform)(struct gralloc_module_t const* module,
@@ -239,8 +263,17 @@ typedef struct gralloc_module_t {
      * difference that it fills a struct ycbcr with a description of the buffer
      * layout, and zeroes out the reserved fields.
      *
-     * This will only work on buffers with HAL_PIXEL_FORMAT_YCbCr_*_888, and
-     * will return -EINVAL on any other buffer formats.
+     * If the buffer format is not compatible with a flexible YUV format (e.g.
+     * the buffer layout cannot be represented with the ycbcr struct), it
+     * will return -EINVAL.
+     *
+     * This method must work on buffers with HAL_PIXEL_FORMAT_YCbCr_*_888
+     * if supported by the device, as well as with any other format that is
+     * requested by the multimedia codecs when they are configured with a
+     * flexible-YUV-compatible color-format with android native buffers.
+     *
+     * Note that this method may also be called on buffers of other formats,
+     * including non-YUV formats.
      *
      * Added in GRALLOC_MODULE_API_VERSION_0_2.
      */
@@ -250,8 +283,53 @@ typedef struct gralloc_module_t {
             int l, int t, int w, int h,
             struct android_ycbcr *ycbcr);
 
+    /*
+     * The (*lockAsync)() method is like the (*lock)() method except
+     * that the buffer's sync fence object is passed into the lock
+     * call instead of requiring the caller to wait for completion.
+     *
+     * The gralloc implementation takes ownership of the fenceFd and
+     * is responsible for closing it when no longer needed.
+     *
+     * Added in GRALLOC_MODULE_API_VERSION_0_3.
+     */
+    int (*lockAsync)(struct gralloc_module_t const* module,
+            buffer_handle_t handle, int usage,
+            int l, int t, int w, int h,
+            void** vaddr, int fenceFd);
+
+    /*
+     * The (*unlockAsync)() method is like the (*unlock)() method
+     * except that a buffer sync fence object is returned from the
+     * lock call, representing the completion of any pending work
+     * performed by the gralloc implementation.
+     *
+     * The caller takes ownership of the fenceFd and is responsible
+     * for closing it when no longer needed.
+     *
+     * Added in GRALLOC_MODULE_API_VERSION_0_3.
+     */
+    int (*unlockAsync)(struct gralloc_module_t const* module,
+            buffer_handle_t handle, int* fenceFd);
+
+    /*
+     * The (*lockAsync_ycbcr)() method is like the (*lock_ycbcr)()
+     * method except that the buffer's sync fence object is passed
+     * into the lock call instead of requiring the caller to wait for
+     * completion.
+     *
+     * The gralloc implementation takes ownership of the fenceFd and
+     * is responsible for closing it when no longer needed.
+     *
+     * Added in GRALLOC_MODULE_API_VERSION_0_3.
+     */
+    int (*lockAsync_ycbcr)(struct gralloc_module_t const* module,
+            buffer_handle_t handle, int usage,
+            int l, int t, int w, int h,
+            struct android_ycbcr *ycbcr, int fenceFd);
+
     /* reserved for future use */
-    void* reserved_proc[6];
+    void* reserved_proc[3];
 } gralloc_module_t;
 
 /*****************************************************************************/
@@ -264,20 +342,35 @@ typedef struct gralloc_module_t {
 typedef struct alloc_device_t {
     struct hw_device_t common;
 
+#ifdef QCOM_BSP
     /*
+     * (*allocSize)() Allocates a buffer in graphic memory with the requested
+     * bufferSize parameter and returns a buffer_handle_t and the stride in
+     * pixels to allow the implementation to satisfy hardware constraints on
+     * the width of a pixmap (eg: it may have to be multiple of 8 pixels).
+     * The CALLER TAKES OWNERSHIP of the buffer_handle_t.
+     *
+     * Returns 0 on success or -errno on error.
+     */
+    int (*allocSize)(struct alloc_device_t* dev,
+            int w, int h, int format, int usage,
+            buffer_handle_t* handle, int* stride, int bufferSize);
+#endif
+
+    /* 
      * (*alloc)() Allocates a buffer in graphic memory with the requested
      * parameters and returns a buffer_handle_t and the stride in pixels to
      * allow the implementation to satisfy hardware constraints on the width
-     * of a pixmap (eg: it may have to be multiple of 8 pixels).
+     * of a pixmap (eg: it may have to be multiple of 8 pixels). 
      * The CALLER TAKES OWNERSHIP of the buffer_handle_t.
      *
      * If format is HAL_PIXEL_FORMAT_YCbCr_420_888, the returned stride must be
      * 0, since the actual strides are available from the android_ycbcr
      * structure.
-     *
+     * 
      * Returns 0 on success or -errno on error.
      */
-
+    
     int (*alloc)(struct alloc_device_t* dev,
             int w, int h, int format, int usage,
             buffer_handle_t* handle, int* stride);

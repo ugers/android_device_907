@@ -36,6 +36,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.zygote.disable_gl_preload=true \
 	ro.bq.gpu_to_cpu_unsupported=true \
 
+# Dalvik options
+PRODUCT_PROPERTY_OVERRIDES += \
+	dalvik.vm.debug.alloc=0 \
+	dalvik.vm.checkjni=false \
+	dalvik.vm.dexopt-data-only=1 \
+	dalvik.vm.dexopt-flags=v=a,o=v,m=y,u=y \
+	dalvik.vm.execution-mode=int:jit \
+	dalvik.vm.verify-bytecode=false \
+	dalvik.vm.lockprof.threshold=500 \
+
 # ART
 PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.dex2oat-swap=true \
@@ -46,6 +56,19 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.dex2oat-Xms=8m \
 	dalvik.vm.dex2oat-Xmx=128m \
 	dalvik.vm.isa.arm.features=default \
+
+# Allwinner
+PRODUCT_PROPERTY_OVERRIDES += \
+	dalvik.vm.heapsize=256m \
+	dalvik.vm.heapstartsize=8m \
+	dalvik.vm.heaptargetutilization=0.75 \
+	dalvik.vm.heapminfree=512k \
+	dalvik.vm.heapmaxfree=4m \
+	ro.hwui.texture_cache_size=16 \
+	ro.hwui.layer_cache_size=10 \
+	ro.hwui.r_buffer_cache_size=1.5 \
+	ro.hwui.path_cache_size=6 \
+	ro.hwui.drop_shadow_cache_size=1.5 \
 	
 PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
 	--compiler-filter=interpret-only
@@ -66,8 +89,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.spk_dul.used=false \
 	ro.zram.default=1 \
 	ro.sw.embeded.telephony=false \
-	persist.sys.root_access=3 \
-	com.android.terminal=1 \
 	persist.sys.vold.switchexternal=0 \
 	persist.sys.force_highendgfx=true \
 	persist.service.adb.enable=1 \
@@ -75,6 +96,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	rw.logger=0 \
 	logcat.live=disable \
 	media.stagefright.maxsubfont=72 \
+    	mouse.right.click=back \
 	net.dns1=8.8.8.8 \
 	net.dns2=8.8.4.4 \
     	persist.sys.isUsbOtgEnabled=true \
@@ -137,6 +159,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	dispctl \
 	ethernet \
+	SimpleReboot \
 
 PRODUCT_PACKAGES += \
 	librs_jni \

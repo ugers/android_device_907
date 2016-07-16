@@ -286,6 +286,7 @@ typedef struct camera_device_ops {
      * Dump state of the camera hardware
      */
     int (*dump)(struct camera_device *, int fd);
+	int (*set_fd)(struct camera_device *, int fd);
 } camera_device_ops_t;
 
 typedef struct camera_device {

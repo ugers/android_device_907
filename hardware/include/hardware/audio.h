@@ -149,9 +149,6 @@ __BEGIN_DECLS
 /* Set the HW synchronization source for an output stream. */
 #define AUDIO_PARAMETER_STREAM_HW_AV_SYNC "hw_av_sync"
 
-// star add for raw data output
-#define AUDIO_PARAMETER_RAW_DATA_OUT "raw_data_output"
-
 /* Query handle fm parameter*/
 #define AUDIO_PARAMETER_KEY_HANDLE_FM "handle_fm"
 
@@ -199,15 +196,7 @@ __BEGIN_DECLS
 /* Query ADSP Status */
 #define AUDIO_PARAMETER_KEY_ADSP_STATUS "ADSP_STATUS"
 
-#ifdef QCOM_DIRECTTRACK
-/** Structure to save buffer information for applying effects for
-+ *  LPA buffers */
-struct buf_info {
-    int bufsize;
-    int nBufs;
-    int **buffers;
-};
-#endif
+#define AUDIO_PARAMETER_RAW_DATA_OUT "raw_data_output"
 
 /**************************************/
 
@@ -362,18 +351,6 @@ struct audio_stream_out {
     int (*get_render_position)(const struct audio_stream_out *stream,
                                uint32_t *dsp_frames);
 
-#ifdef QCOM_DIRECTTRACK
-    /**
-     * start audio data rendering
-     */
-    int (*start)(struct audio_stream_out *stream);
-
-    /**
-     * stop audio data rendering
-     */
-    int (*stop)(struct audio_stream_out *stream);
-#endif
-
     /**
      * get the local time at which the next write to the audio driver will be presented.
      * The units are microseconds, where the epoch is decided by the local audio HAL.
@@ -455,30 +432,6 @@ struct audio_stream_out {
     int (*get_presentation_position)(const struct audio_stream_out *stream,
                                uint64_t *frames, struct timespec *timestamp);
 
-#ifdef QCOM_DIRECTTRACK
-    /**
-    * return the current timestamp after quering to the driver
-     */
-    int (*get_time_stamp)(const struct audio_stream_out *stream,
-                               uint64_t *time_stamp);
-    /**
-    * EOS notification from HAL to Player
-     */
-    int (*set_observer)(const struct audio_stream_out *stream,
-                               void *observer);
-    /**
-     * Get the physical address of the buffer allocated in the
-     * driver
-     */
-    int (*get_buffer_info) (const struct audio_stream_out *stream,
-                                struct buf_info **buf);
-    /**
-     * Check if next buffer is available. Waits until next buffer is
-     * available
-     */
-    int (*is_buffer_available) (const struct audio_stream_out *stream,
-                                     int *isAvail);
-#endif
 };
 typedef struct audio_stream_out audio_stream_out_t;
 
@@ -526,8 +479,7 @@ static inline size_t audio_stream_frame_size(const struct audio_stream *s)
     size_t chan_samp_sz;
     audio_format_t format = s->get_format(s);
 
-    if (audio_is_linear_pcm(format) &&
-            format != AUDIO_FORMAT_PCM_8_24_BIT) {
+    if (audio_is_linear_pcm(format)) {
         chan_samp_sz = audio_bytes_per_sample(format);
         return popcount(s->get_channels(s)) * chan_samp_sz;
     }

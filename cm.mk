@@ -39,4 +39,4 @@ DATE     := $(shell date +%Y%m%d)
 PRODUCT_BUILD_PROP_OVERRIDES += PRODUCT_NAME=nakasi TARGET_DEVICE=grouper BUILD_FINGERPRINT="google/nakasi/grouper:5.1.1/LMY49F/402395:user/release-keys" PRIVATE_BUILD_DESC="nakasi-user 5.1.1/LMY49F 402395 release-keys"
 
 # Allow ADB (to access dev settings)
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0 ro.secure=0 service.adb.enable=1 persist.sys.usb.config=mass_storage ro.debuggable=1 persist.service.adb.enable=1 rild.libpath=/system/lib/libsoftwinner-ril.so
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0 ro.secure=0 service.adb.enable=1 persist.sys.usb.config=mtp ro.debuggable=1 persist.service.adb.enable=1 rild.libpath=/system/lib/libsoftwinner-ril.so dalvik.vm.dex2oat-Xmx=128m

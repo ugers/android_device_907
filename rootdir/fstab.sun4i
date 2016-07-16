@@ -5,7 +5,9 @@
 
 /dev/block/nandd       /system        ext4     rw                                             wait
 /dev/block/nande       /data          f2fs     rw,noatime,nosuid,nodev,nodiratime,discard    wait
+/dev/block/nande       /data          ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0,journal_checksum,noauto_da_alloc    wait
 /dev/block/nandh       /cache         f2fs     rw,noatime,nosuid,nodev,nodiratime,discard		    wait
+/dev/block/nandh       /cache         ext4     rw,noatime,nosuid,nodev,nomblk_io_submit,barrier=0				      wait
 
 /devices/virtual/block/nand     	   auto    auto    defaults        wait,voldmanaged=sdcard0:9,nonremovable,noemulatedsd
 /devices/platform/sunxi-mmc.0/mmc_host     auto    auto    defaults        wait,voldmanaged=sdcard1:auto,noemulatedsd

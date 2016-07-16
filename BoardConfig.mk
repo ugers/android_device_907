@@ -142,6 +142,12 @@ TARGET_HARDWARE_INCLUDE := $(TOP)/device/softwinner/907/hardware/include
 # Use our own init.rc
 TARGET_PROVIDES_INIT_RC := true
 
+SMALLER_FONT_FOOTPRINT := true
+MINIMAL_FONT_FOOTPRINT := true
+BOARD_USE_LEGACY_UI := true
+VSYNC_EVENT_PHASE_OFFSET_NS := 0
+SF_VSYNC_EVENT_PHASE_OFFSET_NS := 0
+
 # Wifi stuff
 BOARD_WIFI_VENDOR                := realtek
 WPA_SUPPLICANT_VERSION           := VER_0_8_X
@@ -151,7 +157,7 @@ BOARD_HOSTAPD_DRIVER             := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB        := lib_driver_cmd_rtl
 BOARD_WLAN_DEVICE                := rtl8192cu
 SW_BOARD_USR_WIFI                := rtl8192cu
-BOARD_NO_APSME_ATTR		 := true
+BOARD_NO_APSME_ATTR		 := false
 WIFI_DRIVER_MODULE_NAME   := "8192cu"
 WIFI_DRIVER_MODULE_PATH   := "/system/lib/modules/8192cu.ko"
 

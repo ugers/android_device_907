@@ -29,15 +29,6 @@ __BEGIN_DECLS
 /* The enums were moved here mostly from
  * frameworks/base/include/media/AudioSystem.h
  */
-#ifdef QCOM_HARDWARE
-/* request to open a direct output with get_output() (by opposition to
- * sharing an output with other AudioTracks)
- */
-typedef enum {
-    AUDIO_POLICY_OUTPUT_FLAG_INDIRECT = 0x0,
-    AUDIO_POLICY_OUTPUT_FLAG_DIRECT = 0x1
-} audio_policy_output_flags_t;
-#endif
 
 /* device categories used for audio_policy->set_force_use() */
 typedef enum {
@@ -53,6 +44,7 @@ typedef enum {
     AUDIO_POLICY_FORCE_DIGITAL_DOCK,
     AUDIO_POLICY_FORCE_NO_BT_A2DP, /* A2DP sink is not preferred to speaker or wired HS */
     AUDIO_POLICY_FORCE_SYSTEM_ENFORCED,
+    AUDIO_POLICY_FORCE_HDMI_SYSTEM_AUDIO_ENFORCED,
 
     AUDIO_POLICY_FORCE_CFG_CNT,
     AUDIO_POLICY_FORCE_CFG_MAX = AUDIO_POLICY_FORCE_CFG_CNT - 1,
@@ -67,6 +59,7 @@ typedef enum {
     AUDIO_POLICY_FORCE_FOR_RECORD,
     AUDIO_POLICY_FORCE_FOR_DOCK,
     AUDIO_POLICY_FORCE_FOR_SYSTEM,
+    AUDIO_POLICY_FORCE_FOR_HDMI_SYSTEM_AUDIO,
 
     AUDIO_POLICY_FORCE_USE_CNT,
     AUDIO_POLICY_FORCE_USE_MAX = AUDIO_POLICY_FORCE_USE_CNT - 1,

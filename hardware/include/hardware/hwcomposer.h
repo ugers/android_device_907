@@ -61,7 +61,7 @@ typedef enum e_hwc_format
     HWC_FORMAT_YUV420PLANAR	= 0x58,
     HWC_FORMAT_DEFAULT      = 0x99,    // The actual color format is determined
     HWC_FORMAT_MAXVALUE     = 0x100
-} e_hwc_format_t;
+}e_hwc_format_t;
 
 typedef enum e_hwc_3d_src_mode 
 {
@@ -72,13 +72,13 @@ typedef enum e_hwc_3d_src_mode
     HWC_3D_SRC_MODE_LI = 0x4,//line interleaved
 
     HWC_3D_SRC_MODE_NORMAL = 0xFF//2d
-} e_hwc_3d_src_mode_t;
+}e_hwc_3d_src_mode_t;
 
 /* names for setParameter() */
 typedef enum e_hwc_3d_out_mode{
     HWC_3D_OUT_MODE_2D 		            = 0x0,//left picture
     HWC_3D_OUT_MODE_HDMI_3D_1080P24_FP 	= 0x1,
-    HWC_3D_OUT_MODE_ANAGLAGH 	        = 0x2,//·ЦЙ«
+    HWC_3D_OUT_MODE_ANAGLAGH 	        = 0x2,//*
     HWC_3D_OUT_MODE_ORIGINAL 	        = 0x3,//original pixture
 
     HWC_3D_OUT_MODE_LI                  = 0x4,//line interleaved
@@ -89,7 +89,7 @@ typedef enum e_hwc_3d_out_mode{
 
     HWC_3D_OUT_MODE_HDMI_3D_720P50_FP   = 0x9,
     HWC_3D_OUT_MODE_HDMI_3D_720P60_FP   = 0xa
-} e_hwc_3d_out_mode_t;
+}e_hwc_3d_out_mode_t;
 
 /* names for setParameter() */
 typedef enum e_hwc_layer_cmd{
@@ -129,7 +129,9 @@ typedef enum e_hwc_layer_cmd{
 
 	HWC_LAYER_SETTOP		= 0x1a,
 	HWC_LAYER_SETBOTTOM		= 0x1b,
-} e_hwc_layer_cmd_t;
+
+	HWC_LAYER_HDMI_OUT		= 0x1c,
+}e_hwc_layer_cmd_t;
 
 typedef enum e_hwc_mode
 {
@@ -139,7 +141,7 @@ typedef enum e_hwc_mode
 	HWC_MODE_SCREEN0_AND_SCREEN1    = 3,
 	HWC_MODE_SCREEN0_BE             = 4,
 	HWC_MODE_SCREEN0_GPU            = 5,
-} e_hwc_mode_t;
+}e_hwc_mode_t;
 
 typedef struct tag_HWCLayerInitPara
 {
@@ -147,7 +149,7 @@ typedef struct tag_HWCLayerInitPara
 	uint32_t		h;
 	uint32_t		format;
 	uint32_t		screenid;
-} layerinitpara_t;
+}layerinitpara_t;
 
 typedef struct tag_Video3DInfo
 {
@@ -156,7 +158,7 @@ typedef struct tag_Video3DInfo
 	e_hwc_format_t format;
 	e_hwc_3d_src_mode_t src_mode;
 	e_hwc_3d_out_mode_t display_mode;
-} video3Dinfo_t;
+}video3Dinfo_t;
 
 typedef struct tag_LIBHWCLAYERPARA
 {
@@ -173,7 +175,8 @@ typedef struct tag_LIBHWCLAYERPARA
     unsigned long   flag_stride;        //dit maf flag line stride
     unsigned char   maf_valid;
     unsigned char   pre_frame_valid;
-} libhwclayerpara_t;
+    unsigned char   drm_flag;
+}libhwclayerpara_t;
 
 
 typedef struct screen_para
@@ -184,10 +187,11 @@ typedef struct screen_para
     unsigned int valid_height[2];//screen height that can be seen
     unsigned int app_width[2];//the width that app use
     unsigned int app_height[2];//the height that app use
-} screen_para_t;
+}screen_para_t;
 
 
 /*****************************************************************************/
+
 
 typedef struct hwc_rect {
     int left;
@@ -960,6 +964,25 @@ static inline int hwc_close_1(hwc_composer_device_1_t* device) {
 }
 
 /*****************************************************************************/
+/* cmd parameter for setParameter() */
+typedef enum{
+	DISPLAY_CMD_SET3DMODE = 0x01,
+	DISPLAY_CMD_SETBACKLIGHTMODE = 0x02,
+	DISPLAY_CMD_SETBACKLIGHTDEMOMODE = 0x03,
+	DISPLAY_CMD_SETDISPLAYENHANCEMODE = 0x04,
+	DISPLAY_CMD_SETDISPLAYENHANCEDEMOMODE = 0x05,
+    DISPLAY_CMD_SETOUTPUTMODE = 0x06,
+    DISPLAY_CMD_HDMIPERSENT = 0x07
+}__display_cmd_t;
+
+typedef enum
+{
+    DISPLAY_2D_ORIGINAL = 0,
+    DISPLAY_2D_LEFT = 1,
+    DISPLAY_2D_TOP = 2,
+    DISPLAY_3D_LEFT_RIGHT_HDMI = 3,
+    DISPLAY_3D_TOP_BOTTOM_HDMI = 4
+}__display_3d_mode;
 
 __END_DECLS
 
