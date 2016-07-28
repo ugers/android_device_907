@@ -128,9 +128,5 @@
     
     <!-- The default iface on which to monitor data use -->
     <string name="config_datause_iface" translatable="false">wlan0</string>
-	
-    <!-- Performance profiles -->
-    <string name="config_perf_profile_prop">sys.perf.profile</string>
-    <string name="config_perf_profile_default_entry">1</string>
     
   </resources>

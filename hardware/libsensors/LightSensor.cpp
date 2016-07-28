@@ -19,6 +19,7 @@
 #include <errno.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #include <poll.h>
 #include <unistd.h>
 #include <dirent.h>

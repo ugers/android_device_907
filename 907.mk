@@ -17,7 +17,6 @@ COMMON_PATH := device/softwinner/907
 
 PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
-	$(COMMON_PATH)/prebuilt/lib/modules/ssd253x_ts.ko:root/lib/modules/ssd253x_ts.ko \
 	$(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
 
@@ -45,8 +44,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	dalvik.vm.dex2oat-flags=--no-watch-dog \
 	dalvik.vm.dex2oat-filter=interpret-only \
 	dalvik.vm.image-dex2oat-filter=speed \
-	dalvik.vm.profiler=1 \
-	dalvik.vm.isa.arm.features=lpae
+	dalvik.vm.profiler=1
 	
 PRODUCT_DEX_PREOPT_DEFAULT_FLAGS := \
 	--compiler-filter=interpret-only
@@ -129,9 +127,9 @@ PRODUCT_PACKAGES += \
 	audio.primary.exDroid \
 	audio.a2dp.default \
 	audio.usb.default \
-	display.sun4i \
-	gralloc.sun4i \
-	power.sun4i \
+	display.exDroid \
+	gralloc.exDroid \
+	power.exDroid \
 	hwcomposer.exDroid \
 	sensors.exDroid \
 	lights.exDroid \

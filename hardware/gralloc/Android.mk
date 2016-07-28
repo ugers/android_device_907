@@ -26,7 +26,7 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 
 MALI_DDK_TEST_PATH := hardware/arm/
 
-LOCAL_MODULE := gralloc.sun4i
+LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := liblog libcutils libMali libGLESv1_CM libUMP

@@ -2,5 +2,4 @@ type mount, domain;
 permissive mount;
 type mount_exec, file_type, exec_type;
 domain_auto_trans(vold, mount_exec, mount)
-unconfined_domain(mount)
 allow mount_exec fuse_device:file open;

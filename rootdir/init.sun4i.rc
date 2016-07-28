@@ -1,113 +1,87 @@
 import init.sun4i.usb.rc
 
-on init
-	export EXTERNAL_STORAGE /storage/sdcard0
-	export SECONDARY_STORAGE /storage/sdcard1
-	mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
-	mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
-	mkdir /mnt/media_rw/usbdisk0 0700 media_rw media_rw
-	mkdir /storage/sdcard0 0770 root root
-	mkdir /storage/sdcard1 0770 root root
-	mkdir /storage/usbdisk0 0770 root root
-	symlink /storage/sdcard0 /sdcard
-	symlink /storage/sdcard0 /mnt/sdcard
-	symlink /storage/sdcard1 /extsd
-	symlink /storage/sdcard1 /mnt/extsd
-
 on fs
-	setprop ro.crypto.umount_sd false
-	mount_all /fstab.sun4i
-	swapon_all /fstab.sun4i
+    setprop ro.crypto.umount_sd false
+    mount_all /fstab.sun4i
+    swapon_all /fstab.sun4i
 
-   	chmod 0770 /data/misc/wifi 
+    chmod 0770 /data/misc/wifi
+
 on boot	
-        # Enable interactive governor
-        write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    # Enable interactive governor
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
 
-        # chown adequately for power HAL
-        chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/input_boost
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-        chown system system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-        
-        # cpufreq interactive governor: timer 20ms, min sample 20ms, hispeed 700MHz
-        write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 20000
-        write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 20000
-        write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 696000
+    # chown adequately for power HAL
+    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/input_boost
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
+    chown system system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
 
-	# gpu drivers
-	insmod /system/lib/modules/ump.ko
-	insmod /system/lib/modules/mali.ko
-	# display ioctl wrapper
-	insmod /system/lib/modules/disp_ump.ko
-	# touchscreen drivers
-	insmod /system/lib/modules/ft5x_ts.ko
-	insmod /system/lib/modules/goodix_hack.ko
-	insmod /system/lib/modules/goodix_touch_3F.ko
-	insmod /system/lib/modules/goodix_touch.ko
-	insmod /system/lib/modules/gt801_2plus1.ko
-        insmod /system/lib/modules/gt80x.ko
-        insmod /system/lib/modules/gt811_ts.ko
-	insmod /system/lib/modules/gt82x_ts.ko
-	insmod /system/lib/modules/ssd253x-ts.ko
-	insmod /system/lib/modules/ssd253x_ts.ko
-	insmod /system/lib/modules/Novatek_TouchDriver.ko
-	insmod /system/lib/modules/pixcir_cxx.ko
-	insmod /system/lib/modules/elan_ts.ko
-	# gsensor drivers
-	insmod /system/lib/modules/bma250.ko
-	insmod /system/lib/modules/mecs.ko
-	insmod /system/lib/modules/mxc622x.ko
-	insmod /system/lib/modules/mma7660.ko
-	insmod /system/lib/modules/mma8452.ko
-	insmod /system/lib/modules/kxte9.ko
-	insmod /system/lib/modules/dmard06.ko
-	# camera drivers
-	insmod /system/lib/modules/videobuf-core.ko
-	insmod /system/lib/modules/videobuf-dma-contig.ko   
-	insmod /system/lib/modules/gc0308.ko
-	insmod /system/lib/modules/gc0308b.ko
-	insmod /system/lib/modules/gt2005.ko
-	insmod /system/lib/modules/mt9m112.ko
-	insmod /system/lib/modules/ov5640.ko
-        insmod /system/lib/modules/gc2015.ko
-        insmod /system/lib/modules/hi253.ko
-        insmod /system/lib/modules/hi704.ko
-	insmod /system/lib/modules/sun4i_csi1.ko
-	insmod /system/lib/modules/sun4i_csi0.ko
-	# usb ethernet drivers
-	insmod /system/lib/modules/usbnet.ko
-	insmod /system/lib/modules/asix.ko
-	insmod /system/lib/modules/sr9600.ko
-	insmod /system/lib/modules/qf9700.ko
-	insmod /system/lib/modules/mcs7830.ko
-	insmod /system/lib/modules/rtl8150.ko
-	insmod /system/lib/modules/cdc_ether.ko
-	# other
-	insmod /system/lib/modules/cp2526.ko
-        insmod /system/lib/modules/ssd253x_duod.ko
-	# misc
-	chown system system /sys/class/timed_output/sun4i-vibrator/enable
-	chown system system /sys/class/rfkill/rfkill0/state
-	chmod 0777  /sys/class/rfkill/rfkill0/state
-	write /sys/class/rfkill/rfkill0/state 0
+    # cpufreq interactive governor: timer 20ms, min sample 20ms, hispeed 700MHz
+    write /sys/devices/system/cpu/cpufreq/interactive/timer_rate 20000
+    write /sys/devices/system/cpu/cpufreq/interactive/min_sample_time 20000
+    write /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq 696000
+
+    # gpu drivers
+    insmod /system/lib/modules/ump.ko
+    insmod /system/lib/modules/mali.ko
+    # display ioctl wrapper
+    insmod /system/lib/modules/disp_ump.ko
+    # touchscreen drivers
+    insmod /system/lib/modules/ssd253x_ts.ko
+    # gsensor drivers
+    insmod /system/lib/modules/bma250.ko
+    insmod /system/lib/modules/mecs.ko
+    insmod /system/lib/modules/mxc622x.ko
+    insmod /system/lib/modules/mma7660.ko
+    insmod /system/lib/modules/mma8452.ko
+    insmod /system/lib/modules/kxte9.ko
+    insmod /system/lib/modules/dmard06.ko
+    # camera drivers
+    insmod /system/lib/modules/videobuf-core.ko
+    insmod /system/lib/modules/videobuf-dma-contig.ko   
+    insmod /system/lib/modules/gc0308.ko
+    insmod /system/lib/modules/gc0308b.ko
+    insmod /system/lib/modules/gt2005.ko
+    insmod /system/lib/modules/mt9m112.ko
+    insmod /system/lib/modules/ov5640.ko
+    insmod /system/lib/modules/gc2015.ko
+    insmod /system/lib/modules/hi253.ko
+    insmod /system/lib/modules/hi704.ko
+    insmod /system/lib/modules/sun4i_csi1.ko
+    insmod /system/lib/modules/sun4i_csi0.ko
+    # usb ethernet drivers
+    insmod /system/lib/modules/usbnet.ko
+    insmod /system/lib/modules/asix.ko
+    insmod /system/lib/modules/sr9600.ko
+    insmod /system/lib/modules/qf9700.ko
+    insmod /system/lib/modules/mcs7830.ko
+    insmod /system/lib/modules/rtl8150.ko
+    insmod /system/lib/modules/cdc_ether.ko
+    # other
+    insmod /system/lib/modules/cp2526.ko
+    insmod /system/lib/modules/ssd253x_duod.ko
+    # misc
+    chown system system /sys/class/timed_output/sun4i-vibrator/enable
+    chown system system /sys/class/rfkill/rfkill0/state
+    chmod 0777  /sys/class/rfkill/rfkill0/state
+    write /sys/class/rfkill/rfkill0/state 0
 
 on post-fs
-
-# bluetooth power up/down interface
-        chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
-        chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
-        chmod 0660 /sys/class/rfkill/rfkill0/state
-        chown bluetooth net_bt_stack /sys/class/rfkill/rfkill1/type
-        chown bluetooth net_bt_stack /sys/class/rfkill/rfkill1/state
-    	chmod 0660 /sys/class/rfkill/rfkill0/state
-    	chmod 0660 /sys/class/rfkill/rfkill0/type
-        write /sys/class/rfkill/rfkill0/state 0
-        setprop rw.bluetooth.status "0"
+    # bluetooth power up/down interface
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill1/type
+    chown bluetooth net_bt_stack /sys/class/rfkill/rfkill1/state
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chmod 0660 /sys/class/rfkill/rfkill0/type
+    write /sys/class/rfkill/rfkill0/state 0
+    setprop rw.bluetooth.status "0"
 
     # bluetooth LPM
     chmod 0220 /proc/bluetooth/sleep/lpm
@@ -117,37 +91,24 @@ on post-fs
     write /proc/bluetooth/sleep/lpm 1
 
 on post-fs-data
-    	# give system access to wpa_supplicant.conf for backup and restore
-    	chmod 0770 /data/misc/wifi
-    	chmod 0660 /data/misc/wifi/wpa_supplicant.conf
-    	mkdir /data/misc/wifi/sockets 0770 wifi wifi
-    	mkdir /data/misc/dhcp 0770 dhcp dhcp
-    	chown dhcp dhcp /data/misc/dhcp
+    # give system access to wpa_supplicant.conf for backup and restore
+    chmod 0770 /data/misc/wifi
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
 
-	setprop wifi.interface "wlan0"
-	setprop wlan.interface "wlan0"
-	setprop wlan.driver.status "ok"
+    setprop wifi.interface "wlan0"
+    setprop wlan.interface "wlan0"
+    setprop wlan.driver.status "ok"
 
-	mkdir /data/misc/sensors 0777 system system
-    	mkdir /data/media 0770 media_rw media_rw
-	chown media_rw media_rw /data/media
-        # change back to bluetooth from system
-        chown bluetooth net_bt_stack /data/misc/bluetooth
-        # Set indication (checked by vold) that we have finished this action
-	setprop vold.post_fs_data_done 1
-
-# virtual sdcard daemon running as media_rw (1023)
-service fuse_sdcard0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard0 /storage/sdcard0
-    class late_start
-    disabled
-
-service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
-    class late_start
-    disabled
-
-service fuse_usbdisk0 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/usbdisk0 /storage/usbdisk0
-    class late_start
-    disabled
+    mkdir /data/misc/sensors 0777 system system
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+    # change back to bluetooth from system
+    chown bluetooth net_bt_stack /data/misc/bluetooth
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
 
 # wifi related service
 service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
@@ -222,25 +183,3 @@ service memsicd /system/bin/logwrapper /system/bin/memsicd
    class troy
    oneshot
 
-on property:sys.boot_completed=1
-    start ril-daemon
-    start u3gmonitor
-
-## CyanogenMod Performance Profiles
-# Powersave
-on property:sys.perf.profile=0
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor powersave
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 432000
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1008000
-
-# Balanced
-on property:sys.perf.profile=1
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor ondemand
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 432000
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1008000
-
-# Performance
-on property:sys.perf.profile=2
-    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor performance
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 1008000
-	write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1008000

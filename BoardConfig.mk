@@ -65,6 +65,8 @@ BOARD_BOOTIMAGE_PARTITION_SIZE := 33554432
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 33554432
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 524288000
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 952107008
+BOARD_CACHEIMAGE_PARTITION_SIZE := 402653184
+BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_FLASH_BLOCK_SIZE := 4096
 
 # EGL stuff
@@ -153,35 +155,13 @@ WIFI_DRIVER_FW_PATH_AP    := ""
 WIFI_DRIVER_FW_PATH_P2P   := ""
 WIFI_DRIVER_FW_PATH_PARAM := ""
 
-#TARGET_CUSTOM_WIFI := hardware/realtek/wlan/libhardware_legacy/wifi/wifi_realtek.c
-
 # Selinux
 BOARD_SEPOLICY_DIRS += \
     device/softwinner/907/selinux
 
-BOARD_SEPOLICY_UNION += \
-    device.te \
-    dhcp.te \
-    domain.te \
-    drmserver.te \
-    file.te \
-    file_contexts \
-    healthd.te \
-    init.te \
-    mac_update.te \
-    mount.te \
-    netd.te \
-    rild.te \
-    surfaceflinger.te \
-    ueventd.te \
-    untrusted_app.te \
-    vold.te \
-    wpa_supplicant.te \
-    zygote.te \
-
 # Beware: set only prebuilt OR source+config
 TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
 BOARD_KERNEL_BASE := 0x40000000
-BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=5 androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=5 androidboot.hardware=sun4i androidboot.selinux=disabled
 
 COMMON_GLOBAL_CFLAGS += "-DICS_CAMERA_BLOB -DICS_AUDIO_BLOB"

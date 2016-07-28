@@ -16,7 +16,6 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
 $(call inherit-product, device/softwinner/907/907.mk)
 $(call inherit-product, device/softwinner/907/hardware/Android.mk)
-$(call inherit-product, device/softwinner/907/packages/Android.mk)
 $(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 $(call inherit-product-if-exists, vendor/softwinner/907/907-vendor.mk)
 

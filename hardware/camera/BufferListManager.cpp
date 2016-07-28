@@ -5,6 +5,8 @@
 #endif
 #define LOG_TAG "BufferListManager"
 #include <cutils/log.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "BufferListManager.h"
 

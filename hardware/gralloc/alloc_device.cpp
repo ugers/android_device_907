@@ -24,6 +24,7 @@
 #include <cutils/atomic.h>
 #include <hardware/hardware.h>
 #include <hardware/gralloc.h>
+#include "graphics.h"
 
 #include "alloc_device.h"
 #include "gralloc_priv.h"

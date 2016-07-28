@@ -17,6 +17,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -415,21 +416,28 @@ int framebuffer_device_open(hw_module_t const* module, const char* name, hw_devi
 
 	alloc_device_t* gralloc_device;
 	status = gralloc_open(module, &gralloc_device);
-	if (status < 0)
-	{
-		return status;
-	}
-
-	private_module_t* m = (private_module_t*)module;
-	status = init_frame_buffer(m);
-	if (status < 0)
-	{
-		gralloc_close(gralloc_device);
-		return status;
+	if (status < 0) {
+	    ALOGE("Failed to open gralloc device");
+	    return status;
 	}
 
 	/* initialize our state here */
-	framebuffer_device_t *dev = new framebuffer_device_t();
+	framebuffer_device_t *dev = (framebuffer_device_t *)malloc(sizeof(framebuffer_device_t));
+        if (dev == NULL) {
+            ALOGE("Failed to allocate memory for dev");
+	    gralloc_close(gralloc_device);
+	    return status;
+	}    
+
+	private_module_t* m = (private_module_t*)module;
+	status = init_frame_buffer(m);
+	if (status < 0) {
+            ALOGE("Failed to init framebuffer");
+            free(dev);
+            gralloc_close(gralloc_device);
+            return status;
+	}
+
 	memset(dev, 0, sizeof(*dev));
 
 	/* initialize the procs */

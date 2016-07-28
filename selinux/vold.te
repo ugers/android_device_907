@@ -1,4 +1,3 @@
-allow vold mount_exec:file x_file_perms;
 allow vold device:blk_file { rw_file_perms create };
 allow vold device:dir create_dir_perms;
 allow vold log_device:dir write;
