@@ -13,7 +13,7 @@ Compilation Notes
 
 	cd ~/android/omni
 
-3)Init the CyanogenMod repository
+3)Init the OmniRom repository
 
 	repo init -u https://github.com/omnirom/android.git -b android-4.4
 
