@@ -32,7 +32,20 @@ on boot
     # display ioctl wrapper
     insmod /system/lib/modules/disp_ump.ko
     # touchscreen drivers
+    insmod /system/lib/modules/ft5x_ts.ko
+    insmod /system/lib/modules/goodix_hack.ko
+    insmod /system/lib/modules/goodix_touch_3F.ko
+    insmod /system/lib/modules/goodix_touch.ko
+    insmod /system/lib/modules/gt801_2plus1.ko
+    insmod /system/lib/modules/gt80x.ko
+    insmod /system/lib/modules/gt811_ts.ko
+    insmod /system/lib/modules/gt82x_ts.ko
+    insmod /system/lib/modules/ssd253x-ts.ko
     insmod /system/lib/modules/ssd253x_ts.ko
+    insmod /system/lib/modules/sun4i_ts.ko
+    insmod /system/lib/modules/Novatek_TouchDriver.ko
+    insmod /system/lib/modules/pixcir_cxx.ko
+    insmod /system/lib/modules/elan_ts.ko
     # gsensor drivers
     insmod /system/lib/modules/bma250.ko
     insmod /system/lib/modules/mecs.ko
@@ -55,6 +68,8 @@ on boot
     insmod /system/lib/modules/sun4i_csi1.ko
     insmod /system/lib/modules/sun4i_csi0.ko
     # usb ethernet drivers
+    insmod /system/lib/modules/bcmdhd.ko
+    insmod /system/lib/modules/bcm_btlpm.ko
     insmod /system/lib/modules/usbnet.ko
     insmod /system/lib/modules/asix.ko
     insmod /system/lib/modules/sr9600.ko
@@ -62,6 +77,8 @@ on boot
     insmod /system/lib/modules/mcs7830.ko
     insmod /system/lib/modules/rtl8150.ko
     insmod /system/lib/modules/cdc_ether.ko
+    insmod /system/lib/modules/smsc75xx.ko
+    insmod /system/lib/modules/smsc95xx.ko
     # other
     insmod /system/lib/modules/cp2526.ko
     insmod /system/lib/modules/ssd253x_duod.ko
@@ -111,21 +128,29 @@ on post-fs-data
     setprop vold.post_fs_data_done 1
 
 # wifi related service
-service wpa_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
-	-c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
-	-O/data/misc/wifi/sockets -g@android:wpa_wlan0
+service wpa_supplicant /system/bin/wpa_supplicant \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+    -O/data/misc/wifi/sockets \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    #   we will start as root and wpa_supplicant will switch to user wifi
+    #   after setting up the capabilities required for WEXT
+    #   user wifi
+    #   group wifi inet keystore
     class main
-    socket wpa_wlan0 dgram 0660 wifi wifi
-    group system wifi inet
+    socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
 
-service p2p_supplicant /system/bin/logwrapper /system/bin/wpa_supplicant -Dnl80211 -iwlan0 \
-	-c/data/misc/wifi/wpa_supplicant.conf -e/data/misc/wifi/entropy.bin \
-	-O/data/misc/wifi/sockets -g@android:wpa_wlan0
+service p2p_supplicant /system/bin/wpa_supplicant \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf \
+    -e/data/misc/wifi/entropy.bin -N \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -I/system/etc/wifi/wpa_supplicant_overlay.conf \
+    -O/data/misc/wifi/sockets \
+    -g@android:wpa_wlan0
     class main
-    socket wpa_wlan0 dgram 0660 wifi wifi
-    group system wifi inet
+    socket wpa_wlan0 dgram 660 wifi wifi
     disabled
     oneshot
 
