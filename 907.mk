@@ -70,6 +70,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	net.dns1=8.8.8.8 \
 	net.dns2=8.8.4.4 \
 	ro.zram.default=1 \
+	ro.crypto.state=unencrypted \
 	rw.logger=0 \
 	config.disable_atlas=true
 
