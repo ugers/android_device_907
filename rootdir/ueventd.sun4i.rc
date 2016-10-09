@@ -29,7 +29,7 @@
 /dev/video1               0777   system	    system
 /dev/snd/pcmC0D0c         0777   system     system
 /dev/snd/pcmC0D0p         0777   system     system
-/dev/block/nandf          0666	 system		  system
+/dev/block/nandf          0666	 system     system
 /dev/ttyS1                0660   bluetooth  bluetooth
 /dev/ttyHS2               0660   bluetooth  bluetooth
 /dev/ttyUSB0              0777   system     system
@@ -42,6 +42,7 @@
 /dev/dmard06              0777   system     system
 /dev/ttyACM0              0777   system     system
 /dev/ttyACM1              0777   system     system
+/dev/ttyACM2              0777   system     system
 
 # sysfs properties, for mma7660 gsensor
 /sys/devices/virtual/input/input*   name        0660  root   input
