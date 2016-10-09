@@ -1,6 +1,6 @@
 /* //device/system/rild/rild.c
 **
-** Copyright 2006, The Android Open Source Project
+** Copyright 2006 The Android Open Source Project
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -30,31 +30,48 @@
 #include <cutils/properties.h>
 #include <cutils/sockets.h>
 #include <sys/capability.h>
-#include <linux/prctl.h>
+#include <sys/prctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <libril/ril_ex.h>
 
 #include <private/android_filesystem_config.h>
 #include "hardware/qemu_pipe.h"
 
+#include "radio_monitor.h"
+
 #define LIB_PATH_PROPERTY   "rild.libpath"
 #define LIB_ARGS_PROPERTY   "rild.libargs"
 #define MAX_LIB_ARGS        16
+#define MAX_CAP_NUM         (CAP_TO_INDEX(CAP_LAST_CAP) + 1)
 
-static void usage(const char *argv0)
-{
+static void usage(const char *argv0) {
     fprintf(stderr, "Usage: %s -l <ril impl library> [-- <args for impl library>]\n", argv0);
-    exit(-1);
+    exit(EXIT_FAILURE);
 }
+
+extern char rild[MAX_SOCKET_NAME_LENGTH];
 
 extern void RIL_register (const RIL_RadioFunctions *callbacks);
 
-extern void RIL_onRequestComplete(RIL_Token t, RIL_Errno e,
-                           void *response, size_t responselen);
+extern void RIL_register_socket (RIL_RadioFunctions *(*rilUimInit)
+        (const struct RIL_Env *, int, char **), RIL_SOCKET_TYPE socketType, int argc, char **argv);
 
+extern void RIL_onRequestComplete(RIL_Token t, RIL_Errno e,
+        void *response, size_t responselen);
+
+extern void RIL_setRilSocketName(char *);
+
+#if defined(ANDROID_MULTI_SIM)
 extern void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
-                                size_t datalen);
+        size_t datalen, RIL_SOCKET_ID socket_id);
+#else
+extern void RIL_onUnsolicitedResponse(int unsolResponse, const void *data,
+        size_t datalen);
+#endif
 
 extern void RIL_requestTimedCallback (RIL_TimedCallback callback,
-                               void *param, const struct timeval *relativeTime);
+        void *param, const struct timeval *relativeTime);
 
 
 static struct RIL_Env s_rilEnv = {
@@ -65,8 +82,7 @@ static struct RIL_Env s_rilEnv = {
 
 extern void RIL_startEventLoop();
 
-static int make_argv(char * args, char ** argv)
-{
+static int make_argv(char * args, char ** argv) {
     // Note: reserve argv[0]
     int count = 1;
     char * tok;
@@ -85,31 +101,75 @@ static int make_argv(char * args, char ** argv)
  * Our group, cache, was set by init.
  */
 void switchUser() {
+    char debuggable[PROP_VALUE_MAX];
+
     prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
     setuid(AID_RADIO);
 
     struct __user_cap_header_struct header;
-    struct __user_cap_data_struct cap;
-    header.version = _LINUX_CAPABILITY_VERSION;
+    memset(&header, 0, sizeof(header));
+    header.version = _LINUX_CAPABILITY_VERSION_3;
     header.pid = 0;
-    cap.effective = cap.permitted = (1 << CAP_NET_ADMIN) | (1 << CAP_NET_RAW);
-    cap.inheritable = 0;
-    capset(&header, &cap);
+
+    struct __user_cap_data_struct data[MAX_CAP_NUM];
+    memset(&data, 0, sizeof(data));
+
+    data[CAP_TO_INDEX(CAP_NET_ADMIN)].effective |= CAP_TO_MASK(CAP_NET_ADMIN);
+    data[CAP_TO_INDEX(CAP_NET_ADMIN)].permitted |= CAP_TO_MASK(CAP_NET_ADMIN);
+
+    data[CAP_TO_INDEX(CAP_NET_RAW)].effective |= CAP_TO_MASK(CAP_NET_RAW);
+    data[CAP_TO_INDEX(CAP_NET_RAW)].permitted |= CAP_TO_MASK(CAP_NET_RAW);
+
+    data[CAP_TO_INDEX(CAP_BLOCK_SUSPEND)].effective |= CAP_TO_MASK(CAP_BLOCK_SUSPEND);
+    data[CAP_TO_INDEX(CAP_BLOCK_SUSPEND)].permitted |= CAP_TO_MASK(CAP_BLOCK_SUSPEND);
+
+    if (capset(&header, &data[0]) == -1) {
+        RLOGE("capset failed: %s", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    /*
+     * Debuggable build only:
+     * Set DUMPABLE that was cleared by setuid() to have tombstone on RIL crash
+     */
+    property_get("ro.debuggable", debuggable, "0");
+    if (strcmp(debuggable, "1") == 0) {
+        prctl(PR_SET_DUMPABLE, 1, 0, 0, 0);
+    }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     const char * rilLibPath = NULL;
     char **rilArgv;
     void *dlHandle;
     const RIL_RadioFunctions *(*rilInit)(const struct RIL_Env *, int, char **);
+    const RIL_RadioFunctions *(*rilUimInit)(const struct RIL_Env *, int, char **);
+    char *err_str = NULL;
+
     const RIL_RadioFunctions *funcs;
     char libPath[PROPERTY_VALUE_MAX];
     unsigned char hasLibArgs = 0;
-    int ret = 0;
 
     int i;
-#if 0
+    const char *clientId = NULL;
+    RLOGD("**RIL Daemon Started**");
+    RLOGD("**RILd param count=%d**", argc);
+
+	
+	char platform[PROPERTY_VALUE_MAX] = {0};
+	RLOGD("add property_get check");
+	//is telephony platform?
+	if(property_get("ro.sw.embeded.telephony", platform, "false")){
+		RLOGD("platform = %s",platform);
+		if(!strcmp(platform, "false")) {
+			RLOGD("platform: wifi-only");
+			radio_monitor();
+		}
+	     else{
+			RLOGD("platform: telephony");
+		}
+	}
+	
     umask(S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
     for (i = 1; i < argc ;) {
         if (0 == strcmp(argv[i], "-l") && (argc - i > 1)) {
@@ -119,9 +179,22 @@ int main(int argc, char **argv)
             i++;
             hasLibArgs = 1;
             break;
+        } else if (0 == strcmp(argv[i], "-c") &&  (argc - i > 1)) {
+            clientId = argv[i+1];
+            i += 2;
         } else {
             usage(argv[0]);
         }
+    }
+
+    if (clientId == NULL) {
+        clientId = "0";
+    } else if (atoi(clientId) >= MAX_RILDS) {
+        RLOGE("Max Number of rild's supported is: %d", MAX_RILDS);
+        exit(0);
+    }
+    if (strncmp(clientId, "0", MAX_CLIENT_ID_LENGTH)) {
+        RIL_setRilSocketName(strncat(rild, clientId, MAX_SOCKET_NAME_LENGTH));
     }
 
     if (rilLibPath == NULL) {
@@ -133,46 +206,15 @@ int main(int argc, char **argv)
             rilLibPath = libPath;
         }
     }
-#else
-	ret = property_get(LIB_PATH_PROPERTY, libPath, NULL);
-	if (ret <= 0) {
-		/* nothing to do */
-    } else {
-        rilLibPath = libPath;
-    }
-
-    umask(S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH);
-    for (i = 1; i < argc ;) {
-        if (0 == strcmp(argv[i], "-l") && (argc - i > 1)) {
-			if(rilLibPath == NULL){
-				rilLibPath = argv[i + 1];
-			}
-            i += 2;
-        } else if (0 == strcmp(argv[i], "--")) {
-            i++;
-            hasLibArgs = 1;
-            break;
-        } else {
-            usage(argv[0]);
-        }
-    }
-
-	if (rilLibPath == NULL) {
-		RLOGD("err: get rilLibPath failed\n");
-		goto done;
-	}
-
-#endif
-    RLOGD("\nrilLibPath = %s\n\n", rilLibPath);
 
     /* special override when in the emulator */
-#if 0 //ignore this by SW
+#if 1
     {
-        static char*  arg_overrides[3];
+        static char*  arg_overrides[5];
         static char   arg_device[32];
         int           done = 0;
 
-#define  REFERENCE_RIL_PATH  "/system/lib/libreference-ril.so"
+#define  REFERENCE_RIL_PATH  "libreference-ril.so"
 
         /* first, read /proc/cmdline into memory */
         char          buffer[1024], *p, *q;
@@ -272,22 +314,34 @@ int main(int argc, char **argv)
     }
 OpenLib:
 #endif
-   // switchUser();
-
+    //switchUser();
     dlHandle = dlopen(rilLibPath, RTLD_NOW);
 
     if (dlHandle == NULL) {
         RLOGE("dlopen failed: %s", dlerror());
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     RIL_startEventLoop();
 
-    rilInit = (const RIL_RadioFunctions *(*)(const struct RIL_Env *, int, char **))dlsym(dlHandle, "RIL_Init");
+    rilInit =
+        (const RIL_RadioFunctions *(*)(const struct RIL_Env *, int, char **))
+        dlsym(dlHandle, "RIL_Init");
 
     if (rilInit == NULL) {
         RLOGE("RIL_Init not defined or exported in %s\n", rilLibPath);
-        exit(-1);
+        exit(EXIT_FAILURE);
+    }
+
+    dlerror(); // Clear any previous dlerror
+    rilUimInit =
+        (const RIL_RadioFunctions *(*)(const struct RIL_Env *, int, char **))
+        dlsym(dlHandle, "RIL_SAP_Init");
+    err_str = dlerror();
+    if (err_str) {
+        RLOGW("RIL_SAP_Init not defined or exported in %s: %s\n", rilLibPath, err_str);
+    } else if (!rilUimInit) {
+        RLOGW("RIL_SAP_Init defined as null in %s. SAP Not usable\n", rilLibPath);
     }
 
     if (hasLibArgs) {
@@ -301,18 +355,32 @@ OpenLib:
         argc = make_argv(args, rilArgv);
     }
 
+    rilArgv[argc++] = "-c";
+    rilArgv[argc++] = clientId;
+    RLOGD("RIL_Init argc = %d clientId = %s", argc, rilArgv[argc-1]);
+
     // Make sure there's a reasonable argv[0]
     rilArgv[0] = argv[0];
 
     funcs = rilInit(&s_rilEnv, argc, rilArgv);
+    RLOGD("RIL_Init rilInit completed");
 
     RIL_register(funcs);
 
+    RLOGD("RIL_Init RIL_register completed");
+
+    if (rilUimInit) {
+        RLOGD("RIL_register_socket started");
+        RIL_register_socket(rilUimInit, RIL_SAP_SOCKET, argc, rilArgv);
+    }
+
+    RLOGD("RIL_register_socket completed");
+
 done:
 
-    while(1) {
-        // sleep(UINT32_MAX) seems to return immediately on bionic
-        sleep(0x00ffffff);
+    RLOGD("RIL_Init starting sleep loop");
+    while (true) {
+        sleep(UINT32_MAX);
     }
 }
 
