@@ -18,7 +18,7 @@ persist.sys.strictmode.visual=0
 persist.sys.strictmode.disable=1
 
 #Default USB Config (Do not change this)
-persist.sys.usb.config=mass_storage,adb
+persist.sys.usb.config=mtp,adb
 # Enable\Diasble surface dithering. May improve visual quality
 persist.sys.use_dithering=0
 # Purge unused assets. May free more memory
