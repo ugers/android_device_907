@@ -31,7 +31,7 @@ PRODUCT_PROPERTY_OVERRIDES := \
 # Graphics
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.opengles.version = 131072 \
-	drm.service.enabled=true \
+	drm.service.enabled=false \
 
 # Fix Graphics Issues
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -53,7 +53,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	service.adb.root=1 \
 	ro.eventproc.start=0 \
 	ro.debuggable=1 \
-	ro.com.google.locationfeatures=1 \
+	ro.com.google.locationfeatures=0 \
 	ro.kernel.android.checkjni=0 \
 	ro.vold.umsdirtyratio=40 \
 	ro.media.enc.jpeg.quality=100 \
@@ -99,14 +99,28 @@ PRODUCT_COPY_FILES += \
 	frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
 	frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:system/etc/media_codecs_google_telephony.xml \
 	frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml
-	
+
+# Busybox for AOSP
+PRODUCT_PACKAGES += \
+	busybox \
+
+PRODUCT_PACKAGES += \
+	libwebviewchromium_plat_support \
+	libwebviewchromium_loader \
+
+# APP'S for AOSP
+PRODUCT_PACKAGES += \
+	ESFileExplorer \
+	SimpleReboot \
+	SoundRecorder \
+
 # Wifi
 PRODUCT_PACKAGES += \
-    libwpa_client \
-    hostapd \
-    dhcpcd.conf \
-    wpa_supplicant \
-    wpa_supplicant.conf
+	libwpa_client \
+	hostapd \
+	dhcpcd.conf \
+	wpa_supplicant \
+	wpa_supplicant.conf \
 
 # Device specific settings
 PRODUCT_PACKAGES += \
@@ -183,5 +197,5 @@ PRODUCT_AAPT_PREF_CONFIG := mdpi
 PRODUCT_NAME := full_907
 PRODUCT_DEVICE := 907
 
-TARGET_SCREEN_HEIGHT := 600
+TARGET_SCREEN_HEIGHT := 768
 TARGET_SCREEN_WIDTH := 1024

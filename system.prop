@@ -40,6 +40,7 @@ ro.property.fontScale=1.15
 # RIL config
 rild.libpath=/system/lib/libsoftwinner-ril.so
 rild.libargs=-d /dev/ttyUSB2
+ro.sw.embeded.telephony=false
 
 # Hardware info
 ro.sys.cputype=AllWinner A10
@@ -47,5 +48,5 @@ ro.device.cpu=AllWinner A10
 ro.device.gpu=ARM Mali 400MP
 ro.device.rear_cam=2 MP
 ro.device.front_cam=0.3 MP
-ro.device.screen_res=1024x600
+ro.device.screen_res=1024x768
 ro.chip_type=a10
