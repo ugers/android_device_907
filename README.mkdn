@@ -39,8 +39,6 @@ Compilation Notes
 
 6) Finally you're ready to build it:
 
-	export APPLY_PATCHES_907=1
-	source build/envsetup.sh
-	brunch cm_907-userdebug
+source build/envsetup.sh && lunch aosp_907-userdebug && make otapackage -j5
 
 Credits to ugers,fire855
