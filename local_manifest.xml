@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote  name="github"
+           fetch="https://github.com" />
+  <remove-project name="platform/hardware/mediatek" />
+  <remove-project name="platform/hardware/nvidia/audio" />
+  <remove-project name="device/asus/deb" />
+  <remove-project name="device/asus/flo" />
+  <remove-project name="device/asus/flo-kernel" />
+  <remove-project name="device/asus/fugu" />
+  <remove-project name="device/asus/fugu-kernel" />
+  <remove-project name="device/lge/bullhead" />
+  <remove-project name="device/lge/bullhead-kernel" />
+  <remove-project name="device/generic/arm64" />
+  <remove-project name="device/generic/mips" />
+  <remove-project name="device/generic/mini-emulator-arm64" />
+  <remove-project name="device/generic/qemu" />
+  <remove-project name="platform/bionic" />
+  <remove-project name="platform/system/vold" />
+  <remove-project name="platform/frameworks/webview" />
+  <remove-project name="platform/external/chromium-webview" />
+  <remove-project name="platform/frameworks/native"/>
+  <remove-project name="platform/frameworks/base"/>
+  <remove-project name="platform/system/core"/>
+  <remove-project name="platform/packages/apps/DeskClock"/>
+  <remove-project name="platform/packages/apps/Launcher3"/>
+  <remove-project name="platform/packages/apps/Settings"/>
+  <remove-project name="platform/external/tinyalsa"/>
+  <remove-project name="platform/hardware/libhardware_legacy"/>
+  <project remote="github" revision="aosp-6.0" name="ugers/android_device_907" path="device/softwinner/907" />
+  <project remote="github" revision="cm-13.0" name="temasek/android_frameworks_webview" path="frameworks/webview" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_frameworks_native" path="frameworks/native" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_frameworks_base" path="frameworks/base" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_packages_apps_DeskClock" path="packages/apps/DeskClock" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_packages_apps_Launcher3" path="packages/apps/Launcher3" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_packages_apps_Settings" path="packages/apps/Settings" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_external_tinyalsa" path="external/tinyalsa" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_hardware_libhardware_legacy" path="hardware/libhardware_legacy" />
+  <project remote="github" revision="aosp-6.0" name="fire855/android_bionic-allwinner" path="bionic" />
+  <project remote="github" revision="aosp-6.0" name="fire855/android_system_vold-allwinner" path="system/vold" />
+  <project remote="github" revision="aosp-6.0" name="ugers/android_system_core" path="system/core" />
+  <project remote="github" revision="android-6.0" name="omnirom/android_external_busybox" path="external/busybox" />
+</manifest>
