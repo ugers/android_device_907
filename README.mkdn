@@ -1,4 +1,4 @@
-CyanogenMod Sun4i
+AOSP Sun4i
 ===============
 Working
 -----------------
@@ -12,6 +12,7 @@ Not Working
 -----------------
 - Wifi
 - HW video en/decoding
+- PC connecion
 
 Compilation Notes
 -----------------
@@ -20,22 +21,17 @@ Compilation Notes
 
 1) Create a directory
 
-	mkdir cyanogen
+	mkdir AOSP
 
 2) Change to the created directory
 
-	cd cyanogen
+	cd AOSP
 
-3) Init the CyanogenMod repository
+3) Init the AOSP repository
 
-	repo init -u git://github.com/CyanogenMod/android.git -b cm-12.1
+	repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.1_r63
 
-4) Paste this lines inside new file .repo/local_manifest.xml
-
-	<?xml version="1.0" encoding="UTF-8"?>
-	<manifest>
-	  <project remote="github" revision="cm-12.1" name="fire855/android_device_907" path="device/softwinner/907" />
-	</manifest>
+4) Cut local_manifest.xml and paste in .repo/local_manifests/local_manifest.xml
 
 5) Now type this command:
 
@@ -47,4 +43,4 @@ Compilation Notes
 	source build/envsetup.sh
 	brunch cm_907-userdebug
 
-Credits to ugers, shaun2029 and christiantroy
+Credits to ugers,fire855
