@@ -1,3 +1,0 @@
-#!/system/bin/sh
-
-sqlite3 /data/data/com.android.providers.settings/databases/settings.db "UPDATE global SET value='0' WHERE name='bluetooth_on';"

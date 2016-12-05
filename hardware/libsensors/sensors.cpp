@@ -64,22 +64,22 @@ static int sensors__get_sensors_list(struct sensors_module_t* module,
 }
 
 static struct hw_module_methods_t sensors_module_methods = {
-open: open_sensors
+.open = open_sensors
 };
 
 struct sensors_module_t HAL_MODULE_INFO_SYM = {
-common: {
-tag: HARDWARE_MODULE_TAG,
-     version_major: 1,
-     version_minor: 1,
-     id: SENSORS_HARDWARE_MODULE_ID,
-     name: "Sensor module",
-     author: "Freescale Semiconductor Inc.",
-     methods: &sensors_module_methods,
-     dso : NULL,
-     reserved : {},
+.common = {
+.tag = HARDWARE_MODULE_TAG,
+     .module_api_version = 1,
+     .hal_api_version = 1,
+     .id = SENSORS_HARDWARE_MODULE_ID,
+     .name = "Sensor module",
+     .author = "Freescale Semiconductor Inc.",
+     .methods = &sensors_module_methods,
+     .dso = NULL,
+     .reserved = {},
         },
-get_sensors_list: sensors__get_sensors_list,
+.get_sensors_list = sensors__get_sensors_list,
 };
 
 struct sensors_poll_context_t {

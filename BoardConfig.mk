@@ -71,7 +71,7 @@ BOARD_FLASH_BLOCK_SIZE := 4096
 
 # EGL stuff
 BOARD_EGL_CFG := device/softwinner/907/egl.cfg
-COMMON_GLOBAL_CFLAGS += -DWORKAROUND_BUG_10194508
+BOARD_GLOBAL_CFLAGS += -DWORKAROUND_BUG_10194508
 BOARD_EGL_WORKAROUND_BUG_10194508 := true
 USE_OPENGL_RENDERER := true
 ENABLE_WEBGL := true
@@ -92,13 +92,13 @@ CEDARX_CHIP_VERSION := F23
 CEDARX_USE_SWAUDIO := N
 
 # CWM Recovery
-#BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
+BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/softwinner/907/recovery/recovery_keys.c
 BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
 RECOVERY_FSTAB_VERSION := 2
 BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_RECOVERY_FSTAB := device/softwinner/907/rootdir/fstab.sun4i
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
+#BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 #TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
 #TARGET_RECOVERY_UI_LIB := librecovery_ui_crane_evb
 #TARGET_RECOVERY_UPDATER_LIBS :=
@@ -115,6 +115,8 @@ BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 #TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
 #TW_EXTERNAL_STORAGE_PATH := "/sdcard"
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
+#TW_EXCLUDE_ENCRYPTED_BACKUPS := true
+#TW_EXCLUDE_SUPERSU := true
 #TWHAVE_SELINUX := true
 #BOARD_UMS_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun/file"
 #BOARD_UMS_2ND_LUNFILE := "/sys/class/android_usb/android0/f_mass_storage/lun1/file"
@@ -162,6 +164,12 @@ BOARD_SEPOLICY_DIRS += \
 # Beware: set only prebuilt OR source+config
 TARGET_PREBUILT_KERNEL := device/softwinner/907/kernel
 BOARD_KERNEL_BASE := 0x40000000
-BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=5 androidboot.hardware=sun4i androidboot.selinux=disabled
+BOARD_KERNEL_CMDLINE := console=ttyS0,115200 rw init=/init loglevel=5 androidboot.hardware=sun4i androidboot.selinux=permessive
 
-COMMON_GLOBAL_CFLAGS += "-DICS_CAMERA_BLOB -DICS_AUDIO_BLOB"
+# Skip API checks.
+WITHOUT_CHECK_API := true
+
+# Don't try to build and run all tests by default.
+ANDROID_NO_TEST_CHECK := true
+
+BOARD_GLOBAL_CFLAGS += "-DICS_CAMERA_BLOB -DICS_AUDIO_BLOB"

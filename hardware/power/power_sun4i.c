@@ -262,23 +262,23 @@ static struct hw_module_methods_t power_module_methods = {
 };
 
 struct sun4i_power_module HAL_MODULE_INFO_SYM = {
-    base: {
-        common: {
-            tag: HARDWARE_MODULE_TAG,
-            module_api_version: POWER_MODULE_API_VERSION_0_2,
-            hal_api_version: HARDWARE_HAL_API_VERSION,
-            id: POWER_HARDWARE_MODULE_ID,
-            name: "SUN4I Power HAL",
-            author: "The Android Open Source Project",
-            methods: &power_module_methods,
+    .base = {
+        .common = {
+            .tag = HARDWARE_MODULE_TAG,
+            .module_api_version = POWER_MODULE_API_VERSION_0_2,
+            .hal_api_version = HARDWARE_HAL_API_VERSION,
+            .id = POWER_HARDWARE_MODULE_ID,
+            .name = "SUN4I Power HAL",
+            .author = "The Android Open Source Project",
+            .methods = &power_module_methods,
         },
 
-       init: sun4i_power_init,
-       setInteractive: sun4i_power_set_interactive,
-       powerHint: sun4i_power_hint,
+       .init = sun4i_power_init,
+       .setInteractive = sun4i_power_set_interactive,
+       .powerHint = sun4i_power_hint,
     },
 
-    lock: PTHREAD_MUTEX_INITIALIZER,
-    boostpulse_fd: -1,
-    boostpulse_warned: 0,
+    .lock = PTHREAD_MUTEX_INITIALIZER,
+    .boostpulse_fd = -1,
+    .boostpulse_warned = 0,
 };

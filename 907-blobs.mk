@@ -41,10 +41,6 @@ PRODUCT_COPY_FILES += \
     	$(COMMON_PATH)/prebuilt/etc/media_profiles.xml:system/etc/media_profiles.xml \
     	$(COMMON_PATH)/prebuilt/etc/audio_effects.conf:system/etc/audio_effects.conf \
 
-# Bootanimation
-PRODUCT_COPY_FILES += \
-    	$(COMMON_PATH)/prebuilt/media/bootanimation.zip:system/media/bootanimation.zip
-
 # /system/lib
 PRODUCT_COPY_FILES += \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/prebuilt/lib/egl,system/lib/egl) \

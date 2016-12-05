@@ -1,18 +1,4 @@
 AOSP Sun4i
-===============
-Working
------------------
-- Touchscreen
-- Audio
-- Sensors
-- Storage
-- Camera (photo recording)
-
-Not Working
------------------
-- Wifi
-- HW video en/decoding
-- PC connecion
 
 Compilation Notes
 -----------------
@@ -29,7 +15,7 @@ Compilation Notes
 
 3) Init the AOSP repository
 
-	repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.1_r63
+	repo init -u https://android.googlesource.com/platform/manifest -b android-7.0.0_r14
 
 4) Cut local_manifest.xml and paste in .repo/local_manifests/local_manifest.xml
 

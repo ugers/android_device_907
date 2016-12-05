@@ -189,7 +189,7 @@ typedef struct screen_para
 
 /*****************************************************************************/
 
-typedef struct hwc_rect {
+/*typedef struct hwc_rect {
     int left;
     int top;
     int right;
@@ -213,7 +213,7 @@ typedef struct hwc_color {
     uint8_t g;
     uint8_t b;
     uint8_t a;
-} hwc_color_t;
+} hwc_color_t;*/
 
 typedef struct hwc_layer_1 {
     /*

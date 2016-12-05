@@ -1153,9 +1153,8 @@ int V4L2CameraDevice::getCurrentFaceFrame(void * frame)
 	if ((mCurrentV4l2buf->isThumbAvailable == 1)
 		&& (mCurrentV4l2buf->thumbUsedForPreview == 1))
 	{
-		memcpy(frame, 
-				(void*)mCurrentV4l2buf->addrVirY + ALIGN_4K(ALIGN_32B(mCurrentV4l2buf->width) * mCurrentV4l2buf->height * 3 / 2), 
-				ALIGN_32B(mCurrentV4l2buf->thumbWidth) * mCurrentV4l2buf->thumbHeight);
+	memcpy(frame, (char*)mCurrentV4l2buf->addrVirY + ALIGN_4K(ALIGN_32B(mCurrentV4l2buf->width) * mCurrentV4l2buf->height * 3 / 2), 
+			ALIGN_32B(mCurrentV4l2buf->thumbWidth) * mCurrentV4l2buf->thumbHeight);
 	}
 	else
 	{
@@ -1390,7 +1389,7 @@ int V4L2CameraDevice::v4l2QueryBuf()
 					i, mVideoBuffer.buf_vir_addr[i], mVideoBuffer.buf_phy_addr[i], buffer_len);
 			
 			memset((void*)mVideoBuffer.buf_vir_addr[i], 0x10, mFrameWidth * mFrameHeight);
-			memset((void*)mVideoBuffer.buf_vir_addr[i] + mFrameWidth * mFrameHeight, 
+			memset((char*)mVideoBuffer.buf_vir_addr[i] + mFrameWidth * mFrameHeight, 
 					0x80, mFrameWidth * mFrameHeight / 2);
 		}
 	} 

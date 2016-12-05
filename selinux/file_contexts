@@ -12,7 +12,3 @@
 
 # for wpa_supp
 /dev/rfkill                             u:object_r:rfkill_device:s0
-
-# rild
-/system/bin/mount.exfat        		u:object_r:mount_exec:s0
-/system/bin/ntfs-3g            		u:object_r:mount_exec:s0

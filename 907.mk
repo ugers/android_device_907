@@ -17,6 +17,7 @@ COMMON_PATH := device/softwinner/907
 
 PRODUCT_COPY_FILES := \
 	$(COMMON_PATH)/kernel:kernel \
+        $(COMMON_PATH)/prebuilt/lib/modules/ft5x_ts.ko:root/lib/modules/ft5x_ts.ko \
 	$(COMMON_PATH)/prebuilt/bin/reboot-recovery.sh:root/sbin/reboot-recovery.sh \
 	$(call find-copy-subdir-files,*,$(COMMON_PATH)/rootdir,root)
 
@@ -105,15 +106,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
 	busybox \
 
-PRODUCT_PACKAGES += \
-	libwebviewchromium_plat_support \
-	libwebviewchromium_loader \
-
 # APP'S for AOSP
 PRODUCT_PACKAGES += \
 	ESFileExplorer \
 	SimpleReboot \
-	SoundRecorder \
 
 # Wifi
 PRODUCT_PACKAGES += \
@@ -152,7 +148,7 @@ PRODUCT_PACKAGES += \
 	chat \
 	u3gmonitor \
 	devlistener \
-	camera.exDroid \
+	#camera.exDroid \
 
 # CyanogenMOD
 PRODUCT_PACKAGES += \
