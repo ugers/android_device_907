@@ -6,7 +6,7 @@ Subject: [PATCH] system_core
 Change-Id: I45356b81f7f67b5d922fc6409e8082e0fbd892ae
 
 diff --git a/include/system/audio.h b/include/system/audio.h
-index a953536..044ed62 100644
+index 667fe41..cf41b78 100644
 --- a/include/system/audio.h
 +++ b/include/system/audio.h
 @@ -82,6 +82,7 @@ typedef enum {
@@ -17,7 +17,7 @@ index a953536..044ed62 100644
      AUDIO_SOURCE_CNT,
      AUDIO_SOURCE_MAX                 = AUDIO_SOURCE_CNT - 1,
      AUDIO_SOURCE_HOTWORD             = 1999, /* A low-priority, preemptible audio source for
-@@ -479,6 +480,7 @@ enum {
+@@ -477,6 +478,7 @@ enum {
      AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN * 0x1000,
      AUDIO_DEVICE_IN_ANC_HEADSET           = AUDIO_DEVICE_BIT_IN | 0x2000,
      AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x4000,
@@ -25,22 +25,22 @@ index a953536..044ed62 100644
      AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_IN_BUILTIN_MIC,
  #else
      AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN | 0x1,
-@@ -494,6 +496,7 @@ enum {
-     AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET     = AUDIO_DEVICE_BIT_IN | 0x400,
-     AUDIO_DEVICE_IN_USB_ACCESSORY         = AUDIO_DEVICE_BIT_IN | 0x800,
-     AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN | 0x1000,
+@@ -501,6 +503,7 @@ enum {
+     AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x8000,
+     AUDIO_DEVICE_IN_FM_RX_A2DP            = AUDIO_DEVICE_BIT_IN | 0x10000,
+ #endif
 +    AUDIO_DEVICE_IN_AF                    = AUDIO_DEVICE_BIT_IN | 0x1000000,
-     AUDIO_DEVICE_IN_ANC_HEADSET           = AUDIO_DEVICE_BIT_IN | 0x2000,
-     AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x4000,
- #ifdef QCOM_HARDWARE
-@@ -516,6 +519,7 @@ enum {
+     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
+ #endif
+ 
+@@ -517,6 +520,7 @@ enum {
                                 AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET |
                                 AUDIO_DEVICE_IN_USB_ACCESSORY |
                                 AUDIO_DEVICE_IN_USB_DEVICE |
 +                               AUDIO_DEVICE_IN_AF |
                                 AUDIO_DEVICE_IN_PROXY |
                                 AUDIO_DEVICE_IN_ANC_HEADSET |
- #ifdef QCOM_HARDWARE
+ #ifdef MTK_HARDWARE
 diff --git a/include/system/camera.h b/include/system/camera.h
 index 9cc8286..8a87422 100644
 --- a/include/system/camera.h
@@ -332,4 +332,3 @@ index f56fc6a..c9a8380 100644
  __END_DECLS
  
  #endif
-
