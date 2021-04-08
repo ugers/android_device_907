@@ -10,18 +10,18 @@ diff --git a/system/core/init/property_service.c b/system/core/init/property_ser
      { "net.gprs.",        AID_RADIO,    0 },
      { "net.ppp",          AID_RADIO,    0 },
      { "net.qmi",          AID_RADIO,    0 },
-@@ -99,6 +99,7 @@ struct {
+@@ -98,6 +98,7 @@ struct {
      { "persist.security.", AID_SYSTEM,   0 },
      { "persist.service.bdroid.", AID_BLUETOOTH,   0 },
      { "selinux."         , AID_SYSTEM,   0 },
 +    { "audio.routing",    AID_MEDIA,     0 },
-     { "wc_transport.",     AID_BLUETOOTH,   AID_SYSTEM },
      { "net.pdp",          AID_RADIO,    AID_RADIO },
      { "service.bootanim.exit", AID_GRAPHICS, 0 },
+ #ifdef PROPERTY_PERMS_APPEND
 diff --git a/system/core/init/init.c b/system/core/init/init.c
 --- a/system/core/init/init.c
 +++ b/system/core/init/init.c
-@@ -753,7 +753,8 @@ static int console_init_action(int nargs, char **args)
+@@ -655,7 +655,8 @@ static int console_init_action(int nargs, char **args)
      close(fd);
  
  #ifdef INITLOGO
@@ -34,32 +34,32 @@ diff --git a/system/core/init/init.c b/system/core/init/init.c
 diff --git a/system/core/init/init.h b/system/core/init/init.h
 --- a/system/core/init/init.h
 +++ b/system/core/init/init.h
-@@ -139,6 +139,7 @@ void service_for_each_flags(unsigned matchflags,
- #define INIT_IMAGE_FILE  "/initlogo.rle"
-  
+@@ -137,6 +137,7 @@ void property_changed(const char *name, const char *value);
+ #define INIT_IMAGE_FILE	"/initlogo.rle"
+ 
  int load_565rle_image( char *file_name );
 +int load_argb8888_image(char *fn);
  #endif
-  
+ 
  extern struct selabel_handle *sehandle;
 diff --git a/system/core/init/logo.c b/system/core/init/logo.c
 --- a/system/core/init/logo.c
 +++ b/system/core/init/logo.c
 @@ -49,7 +49,8 @@ struct FB {
-
+ 
  #define fb_width(fb) ((fb)->vi.xres)
  #define fb_height(fb) ((fb)->vi.yres)
 -#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 2)
-+#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 4)
 +//#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 2)
-
++#define fb_size(fb) ((fb)->vi.xres * (fb)->vi.yres * 4)
+ 
  static int fb_open(struct FB *fb)
  {
-@@ -161,3 +162,101 @@ int load_565rle_image(char *fn)
+@@ -161,3 +162,101 @@ fail_restore_text:
      return -1;
  }
-
-+ int load_argb8888_image(char *fn)
+ 
++int load_argb8888_image(char *fn)
 +{
 +    struct FB fb;
 +    struct stat s;
@@ -107,7 +107,7 @@ diff --git a/system/core/init/logo.c b/system/core/init/logo.c
 +    fbsize      = width * height * 4;
 +    ERROR("width = %d\n",width);
 +    ERROR("height = %d\n",height);
-+        ERROR("s.st_size = %d\n",s.st_size);
++    ERROR("s.st_size = %d\n",s.st_size);
 +    
 +    if(fbsize != s.st_size)
 +    {
@@ -160,35 +160,35 @@ diff --git a/system/core/init/logo.c b/system/core/init/logo.c
 diff --git a/system/core/include/system/audio.h b/system/core/include/system/audio.h
 --- a/system/core/include/system/audio.h
 +++ b/system/core/include/system/audio.h
-@@ -82,6 +82,7 @@
-                                           /*  play the mix captured by this audio source.      */
+@@ -84,6 +84,7 @@ typedef enum {
      AUDIO_SOURCE_FM_RX               = 9,
      AUDIO_SOURCE_FM_RX_A2DP          = 10,
+ #endif
 +    AUDIO_SOURCE_AF                  = 11,/* Allwinner */
      AUDIO_SOURCE_CNT,
      AUDIO_SOURCE_MAX                 = AUDIO_SOURCE_CNT - 1,
-     AUDIO_SOURCE_HOTWORD             = 1999, /* A low-priority, preemptible audio source for
-@@ -450,6 +451,7 @@ enum {
+ } audio_source_t;
+@@ -449,6 +450,7 @@ enum {
+     AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET     = AUDIO_DEVICE_BIT_IN * 0x400,
+     AUDIO_DEVICE_IN_USB_ACCESSORY         = AUDIO_DEVICE_BIT_IN * 0x800,
      AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN * 0x1000,
-     AUDIO_DEVICE_IN_ANC_HEADSET           = AUDIO_DEVICE_BIT_IN | 0x2000,
-     AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x4000,
 +    AUDIO_DEVICE_IN_AF                    = AUDIO_DEVICE_BIT_IN | 0x1000000,
      AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_IN_BUILTIN_MIC,
  #else
-      AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN | 0x1,
-@@ -465,6 +467,7 @@ enum {
-     AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET     = AUDIO_DEVICE_BIT_IN | 0x400,
-     AUDIO_DEVICE_IN_USB_ACCESSORY         = AUDIO_DEVICE_BIT_IN | 0x800,
-     AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN | 0x1000,
+     AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN | 0x1,
+@@ -472,6 +474,7 @@ enum {
+     AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x8000,
+     AUDIO_DEVICE_IN_FM_RX_A2DP            = AUDIO_DEVICE_BIT_IN | 0x10000,
+ #endif
 +    AUDIO_DEVICE_IN_AF                    = AUDIO_DEVICE_BIT_IN | 0x1000000,
-     AUDIO_DEVICE_IN_ANC_HEADSET           = AUDIO_DEVICE_BIT_IN | 0x2000,
-     AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x4000,
- #ifdef QCOM_HARDWARE
-@@ -487,6 +490,7 @@ enum {
-                                AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET |
-                                AUDIO_DEVICE_IN_USB_ACCESSORY |
-                                AUDIO_DEVICE_IN_USB_DEVICE |
+     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
+ #endif
+ 
+@@ -496,6 +499,7 @@ enum {
+                                AUDIO_DEVICE_IN_FM_RX |
+                                AUDIO_DEVICE_IN_FM_RX_A2DP |
+ #endif
 +                               AUDIO_DEVICE_IN_AF |
-                                AUDIO_DEVICE_IN_PROXY |
-                                AUDIO_DEVICE_IN_ANC_HEADSET |
- #ifdef QCOM_HARDWARE
+                                AUDIO_DEVICE_IN_DEFAULT),
+     AUDIO_DEVICE_IN_ALL_SCO = AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET,
+ };
